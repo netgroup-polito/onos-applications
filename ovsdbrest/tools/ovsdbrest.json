@@ -1,0 +1,15 @@
+{
+	"apps": {
+		"org.onosproject.ovsdbrest": {
+			"ovsdbrest": {
+				"nodes": [
+					{
+						"ovsdbIp": "10.0.0.1",
+						"ovsdbPort": "7777"
+					}
+				]
+			}
+		}
+	}
+}
+

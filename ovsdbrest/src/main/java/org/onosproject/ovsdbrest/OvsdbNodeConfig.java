@@ -18,13 +18,14 @@ import java.util.Set;
 public class OvsdbNodeConfig extends Config<ApplicationId> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-
+    private static final String NODES = "nodes";
     private static final String OVSDB_PORT = "ovsdbPort";
     private static final String OVSDB_IP = "ovsdbIp";
 
     public Set<OvsdbNode> getNodes() {
         Set<OvsdbNode> nodes = Sets.newConcurrentHashSet();
-        JsonNode jsnoNodes = object.path("nodes");
+
+        JsonNode jsnoNodes = object.path(NODES);
         jsnoNodes.forEach(node -> {
             IpAddress ovsdbIp = IpAddress.valueOf(node.path(OVSDB_IP).textValue());
             TpPort port = TpPort.tpPort(node.path(OVSDB_PORT).intValue());
