@@ -28,7 +28,8 @@ public class OvsdbNodeConfig extends Config<ApplicationId> {
         JsonNode jsnoNodes = object.path(NODES);
         jsnoNodes.forEach(node -> {
             IpAddress ovsdbIp = IpAddress.valueOf(node.path(OVSDB_IP).textValue());
-            TpPort port = TpPort.tpPort(node.path(OVSDB_PORT).intValue());
+            TpPort port = TpPort.tpPort(Integer.parseInt(node.path(OVSDB_PORT).asText()));
+            log.info("Ovsdb port: " + port.toString());
             nodes.add(new OvsdbNode(ovsdbIp, port));
         });
         return nodes;

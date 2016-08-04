@@ -2,10 +2,12 @@ package org.onosproject.ovsdbrest;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.Reference;
 import org.onlab.packet.IpAddress;
 import org.onlab.util.ItemNotFoundException;
 import org.onosproject.cluster.ClusterService;
@@ -51,6 +53,8 @@ import static org.onlab.util.Tools.groupedThreads;
 /**
  * Bridge and port controller.
  */
+@Component(immediate = true)
+@Service
 public class OvsdbRestComponent implements OvsdbRestService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -172,6 +176,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
 
     private void connectOvsdb(OvsdbNode node) {
         if (!isOvsdbConnected(node)) {
+            log.info("connecting ovsdb at {}:{}", node.ovsdbIp(), node.ovsdbPort());
             controller.connect(node.ovsdbIp(), node.ovsdbPort());
         }
     }
@@ -274,7 +279,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
             return;
         }
         ovsdbNodes = config.getNodes();
-        ovsdbNodes.forEach(node -> connectOvsdb(node));
+        ovsdbNodes.forEach(this::connectOvsdb);
     }
 
     /**
