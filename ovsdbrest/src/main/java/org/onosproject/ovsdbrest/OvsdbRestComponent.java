@@ -128,6 +128,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
     @Override
     public void createBridge(IpAddress ipAddress, String bridgeName) {
         OvsdbNode ovsdbNode;
+        log.info("Creating bridge {} at {}", ipAddress, bridgeName);
         try { //  gets the target ovsdb node
              ovsdbNode = ovsdbNodes.stream().filter(node -> !node.ovsdbIp().equals(ipAddress)).findFirst().get();
         } catch (NoSuchElementException nsee) {
