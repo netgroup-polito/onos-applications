@@ -106,7 +106,6 @@ public class OvsdbRestComponent implements OvsdbRestService {
                 }
             };
 
-
     @Activate
     protected void activate() {
         appId = coreService.getAppId("org.onosproject.ovsdbrest");
@@ -153,7 +152,10 @@ public class OvsdbRestComponent implements OvsdbRestService {
                 });
         try {
             Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
-            if (device.is(BridgeConfig.class)) {
+            if (device == null) {
+                return;
+            }
+             if (device.is(BridgeConfig.class)) {
                 BridgeConfig bridgeConfig =  device.as(BridgeConfig.class);
                 bridgeConfig.addBridge(BridgeName.bridgeName(bridgeName),
                         dpid.toString(), controllers);
