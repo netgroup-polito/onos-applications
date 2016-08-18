@@ -17,8 +17,10 @@ import org.onosproject.net.Device;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.Port;
 import org.onosproject.net.behaviour.BridgeConfig;
+import org.onosproject.net.behaviour.BridgeDescription;
 import org.onosproject.net.behaviour.BridgeName;
 import org.onosproject.net.behaviour.ControllerInfo;
+import org.onosproject.net.behaviour.DefaultBridgeDescription;
 import org.onosproject.net.config.NetworkConfigListener;
 import org.onosproject.net.config.ConfigFactory;
 import org.onosproject.net.config.NetworkConfigRegistry;
@@ -93,7 +95,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
             newSingleThreadExecutor(groupedThreads("onos/ovsdb-rest-ctl", "event-handler", log));
     private final NetworkConfigListener configListener = new InternalConfigListener();
     private final DeviceListener deviceListener = new InternalDeviceListener();
-    private final AtomicLong datapathId = new AtomicLong(0);
+    private final AtomicLong datapathId = new AtomicLong(4);
 
     private final OvsdbHandler ovsdbHandler = new OvsdbHandler();
     private final BridgeHandler bridgeHandler = new BridgeHandler();
@@ -117,6 +119,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
 
     @Deactivate
     protected void deactivate() {
+        // TODO for some reasons when this app is deactivated, the device driver doesn't work anymore
         configService.removeListener(configListener);
         deviceService.removeListener(deviceListener);
         configRegistry.unregisterConfigFactory(configFactory);
@@ -127,17 +130,17 @@ public class OvsdbRestComponent implements OvsdbRestService {
     @Override
     public void createBridge(IpAddress ipAddress, String bridgeName) {
         OvsdbNode ovsdbNode;
-        log.info("Creating bridge {} at {}", ipAddress, bridgeName);
+        log.info("Creating bridge {} at {}", bridgeName, ipAddress);
         try { //  gets the target ovsdb node
-             ovsdbNode = ovsdbNodes.stream().filter(node -> !node.ovsdbIp().equals(ipAddress)).findFirst().get();
+             ovsdbNode = ovsdbNodes.stream().filter(node -> node.ovsdbIp().equals(ipAddress)).findFirst().get();
         } catch (NoSuchElementException nsee) {
             log.info(nsee.getMessage());
             return;
         }
+
         // construct a unique dev id
-        // TODO: check uniqueness
-        DeviceId dpid = DeviceId.deviceId("of:" + datapathId.getAndIncrement());
-        bridgeIds.put(bridgeName, dpid);
+        DeviceId dpid = getNextUniqueDatapathId(datapathId);
+
         Set<DeviceId> dpIds = ovsdbNodeDevIdsSetMap
                 .computeIfAbsent(ovsdbNode, (k) -> Sets.newConcurrentHashSet());
         dpIds.add(dpid);
@@ -147,18 +150,24 @@ public class OvsdbRestComponent implements OvsdbRestService {
         }
         List<ControllerInfo> controllers = new ArrayList<>();
         Sets.newHashSet(clusterService.getNodes()).forEach(controller -> {
-                    ControllerInfo ctrlInfo = new ControllerInfo(controller.ip(), OFPORT, "tcp");
-                    controllers.add(ctrlInfo);
-                });
+            ControllerInfo ctrlInfo = new ControllerInfo(controller.ip(), OFPORT, "tcp");
+            controllers.add(ctrlInfo);
+        });
         try {
             Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
             if (device == null) {
                 return;
             }
-             if (device.is(BridgeConfig.class)) {
-                BridgeConfig bridgeConfig =  device.as(BridgeConfig.class);
-                bridgeConfig.addBridge(BridgeName.bridgeName(bridgeName),
-                        dpid.toString(), controllers);
+            if (device.is(BridgeConfig.class)) {
+                BridgeConfig bridgeConfig = device.as(BridgeConfig.class);
+                BridgeDescription bridgeDescription = DefaultBridgeDescription.builder()
+                        .name(bridgeName)
+                        .datapathId(dpid.toString())
+                        .controllers(controllers)
+                        .build();
+                bridgeConfig.addBridge(bridgeDescription);
+                bridgeIds.put(bridgeName, bridgeDescription.deviceId().get());
+                log.info("Correctly created bridge {} at {}", bridgeName, ipAddress);
             } else {
                 log.warn("The bridging behaviour is not supported in device {}", device.id());
             }
@@ -170,6 +179,49 @@ public class OvsdbRestComponent implements OvsdbRestService {
     @Override
     public void deleteBridge(IpAddress ipAddress, String bridgeName) {
 
+        OvsdbNode ovsdbNode;
+        log.info("Deleting bridge {} at {}", bridgeName, ipAddress);
+        try { //  gets the target ovsdb node
+            ovsdbNode = ovsdbNodes.stream().filter(node -> node.ovsdbIp().equals(ipAddress)).findFirst().get();
+        } catch (NoSuchElementException nsee) {
+            log.info(nsee.getMessage());
+            return;
+        }
+        DeviceId deviceId = bridgeIds.get(bridgeName);
+        log.info("Device id is: " + deviceId.toString());
+
+        bridgeIds.remove(bridgeName);
+
+        adminService.removeDevice(deviceId);
+
+        // ??? ->
+        //Set<DeviceId> dpIds = ovsdbNodeDevIdsSetMap
+        //        .computeIfAbsent(ovsdbNode, (k) -> Sets.newConcurrentHashSet());
+        //dpIds.remove(deviceId);
+        // <- ???
+
+        List<ControllerInfo> controllers = new ArrayList<>();
+        Sets.newHashSet(clusterService.getNodes()).forEach(controller -> {
+            ControllerInfo ctrlInfo = new ControllerInfo(controller.ip(), OFPORT, "tcp");
+            controllers.add(ctrlInfo);
+        });
+
+        try {
+            Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
+            if (device == null) {
+                return;
+            }
+            if (device.is(BridgeConfig.class)) {
+                BridgeConfig bridgeConfig = device.as(BridgeConfig.class);
+                bridgeConfig.deleteBridge(BridgeName.bridgeName(bridgeName));
+                adminService.removeDevice(deviceId);
+                log.info("Correctly deleted bridge {} at {}", bridgeName, ipAddress);
+            } else {
+                log.warn("The bridging behaviour is not supported in device {}", device.id());
+            }
+        } catch (ItemNotFoundException e) {
+            log.warn("Failed to delete bridge on {}", ovsdbNode.ovsdbIp());
+        }
     }
 
     @Override
@@ -185,13 +237,29 @@ public class OvsdbRestComponent implements OvsdbRestService {
     }
 
     /**
+     * Gets an available datapath id for the new bridge.
+     *
+     * @return the datapath id
+     */
+    private DeviceId getNextUniqueDatapathId(AtomicLong datapathId) {
+        DeviceId dpid;
+        do {
+            String stringId = String.format("%16X", datapathId.getAndIncrement()).replace(' ', '0');
+            log.info("String id is: " + stringId);
+            dpid = DeviceId.deviceId(stringId);
+        } while (deviceService.getDevice(dpid) != null);
+        return dpid;
+    }
+
+    /**
      * Checks if the bridge exists and available.
      *
      * @return true if the bridge is available, false otherwise
      */
     private boolean isBridgeCreated(String bridgeName) {
         DeviceId deviceId = bridgeIds.get(bridgeName);
-        return (deviceService.getDevice(deviceId) != null
+        return (deviceId != null
+                && deviceService.getDevice(deviceId) != null
                 && deviceService.isAvailable(deviceId));
     }
 

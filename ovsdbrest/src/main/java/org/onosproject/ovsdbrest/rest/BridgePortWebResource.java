@@ -6,11 +6,15 @@ import org.onosproject.ovsdbrest.OvsdbRestService;
 import org.onosproject.rest.AbstractWebResource;
 import org.slf4j.Logger;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -27,7 +31,7 @@ public class BridgePortWebResource extends AbstractWebResource {
     private final Logger log = getLogger(getClass());
 
     @GET
-    @Path("test")
+    @Path("/test")
     public Response getTest() {
         return Response.status(200).build();
     }
@@ -48,5 +52,16 @@ public class BridgePortWebResource extends AbstractWebResource {
             log.info("Json parse error: " + ioe.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).build();
         }
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteBridge(InputStream stream,
+                                 @HeaderParam("ovsdb-ip") String ovsdbIp,
+                                 @HeaderParam("bridge-name") String bridgeName) {
+        IpAddress ipAddress = IpAddress.valueOf(ovsdbIp);
+        OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
+        ovsdbRestService.deleteBridge(ipAddress, bridgeName);
+        return Response.status(200).build();
     }
 }
