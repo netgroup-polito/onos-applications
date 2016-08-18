@@ -11,13 +11,15 @@ public interface OvsdbRestService {
      * Creates a new bridge.
      * @param bridgeName bridge name
      */
-    void createBridge(IpAddress ipAddress, String bridgeName);
+    void createBridge(IpAddress ipAddress, String bridgeName) throws OvsdbRestException.OvsdbDeviceException,
+            OvsdbRestException.BridgeAlreadyExistsException;
 
     /**
      * Deletes a bridge.
      * @param bridgeName bridge identifier
      */
-    void deleteBridge(IpAddress ipAddress, String bridgeName);
+    void deleteBridge(IpAddress ipAddress, String bridgeName) throws OvsdbRestException.OvsdbDeviceException,
+            OvsdbRestException.BridgeNotFoundException;
 
     /**
      * Creates a port of hte bridge.

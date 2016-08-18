@@ -128,14 +128,16 @@ public class OvsdbRestComponent implements OvsdbRestService {
     }
 
     @Override
-    public void createBridge(IpAddress ipAddress, String bridgeName) {
+    public void createBridge(IpAddress ipAddress, String bridgeName)
+            throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeAlreadyExistsException {
+
         OvsdbNode ovsdbNode;
         log.info("Creating bridge {} at {}", bridgeName, ipAddress);
         try { //  gets the target ovsdb node
              ovsdbNode = ovsdbNodes.stream().filter(node -> node.ovsdbIp().equals(ipAddress)).findFirst().get();
         } catch (NoSuchElementException nsee) {
             log.info(nsee.getMessage());
-            return;
+            throw new OvsdbRestException.OvsdbDeviceException(nsee.getMessage());
         }
 
         // construct a unique dev id
@@ -146,7 +148,8 @@ public class OvsdbRestComponent implements OvsdbRestService {
         dpIds.add(dpid);
 
         if (isBridgeCreated(bridgeName)) {
-            return;
+            log.warn("A bridge with this name already exists, aborting.");
+            throw new OvsdbRestException.BridgeAlreadyExistsException();
         }
         List<ControllerInfo> controllers = new ArrayList<>();
         Sets.newHashSet(clusterService.getNodes()).forEach(controller -> {
@@ -156,7 +159,8 @@ public class OvsdbRestComponent implements OvsdbRestService {
         try {
             Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
             if (device == null) {
-                return;
+                log.warn("Ovsdb device not found, aborting.");
+                throw new OvsdbRestException.OvsdbDeviceException("Ovsdb device not found");
             }
             if (device.is(BridgeConfig.class)) {
                 BridgeConfig bridgeConfig = device.as(BridgeConfig.class);
@@ -173,31 +177,36 @@ public class OvsdbRestComponent implements OvsdbRestService {
             }
         } catch (ItemNotFoundException e) {
             log.warn("Failed to create integration bridge on {}", ovsdbNode.ovsdbIp());
+            throw new OvsdbRestException.OvsdbDeviceException("Error with ovsdb device: item not found");
         }
     }
 
     @Override
-    public void deleteBridge(IpAddress ipAddress, String bridgeName) {
+    public void deleteBridge(IpAddress ipAddress, String bridgeName)
+            throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException {
 
         OvsdbNode ovsdbNode;
         log.info("Deleting bridge {} at {}", bridgeName, ipAddress);
+
         try { //  gets the target ovsdb node
             ovsdbNode = ovsdbNodes.stream().filter(node -> node.ovsdbIp().equals(ipAddress)).findFirst().get();
         } catch (NoSuchElementException nsee) {
-            log.info(nsee.getMessage());
-            return;
+            log.warn(nsee.getMessage());
+            throw new OvsdbRestException.OvsdbDeviceException(nsee.getMessage());
         }
+
         DeviceId deviceId = bridgeIds.get(bridgeName);
+        if (deviceId == null) {
+            log.warn("No bridge with this name, aborting.");
+            throw new OvsdbRestException.BridgeNotFoundException();
+        }
+
         log.info("Device id is: " + deviceId.toString());
 
-        bridgeIds.remove(bridgeName);
-
-        adminService.removeDevice(deviceId);
-
         // ??? ->
-        //Set<DeviceId> dpIds = ovsdbNodeDevIdsSetMap
-        //        .computeIfAbsent(ovsdbNode, (k) -> Sets.newConcurrentHashSet());
-        //dpIds.remove(deviceId);
+        Set<DeviceId> dpIds = ovsdbNodeDevIdsSetMap
+                .computeIfAbsent(ovsdbNode, (k) -> Sets.newConcurrentHashSet());
+        dpIds.remove(deviceId);
         // <- ???
 
         List<ControllerInfo> controllers = new ArrayList<>();
@@ -209,11 +218,13 @@ public class OvsdbRestComponent implements OvsdbRestService {
         try {
             Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
             if (device == null) {
-                return;
+                log.warn("Ovsdb device not found, aborting.");
+                throw new OvsdbRestException.OvsdbDeviceException("Ovsdb device not found");
             }
             if (device.is(BridgeConfig.class)) {
                 BridgeConfig bridgeConfig = device.as(BridgeConfig.class);
                 bridgeConfig.deleteBridge(BridgeName.bridgeName(bridgeName));
+                bridgeIds.remove(bridgeName);
                 adminService.removeDevice(deviceId);
                 log.info("Correctly deleted bridge {} at {}", bridgeName, ipAddress);
             } else {
@@ -221,6 +232,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
             }
         } catch (ItemNotFoundException e) {
             log.warn("Failed to delete bridge on {}", ovsdbNode.ovsdbIp());
+            throw new OvsdbRestException.OvsdbDeviceException("Error with ovsdb device: item not found");
         }
     }
 

@@ -2,6 +2,7 @@ package org.onosproject.ovsdbrest.rest;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.onlab.packet.IpAddress;
+import org.onosproject.ovsdbrest.OvsdbRestException;
 import org.onosproject.ovsdbrest.OvsdbRestService;
 import org.onosproject.rest.AbstractWebResource;
 import org.slf4j.Logger;
@@ -36,7 +37,7 @@ public class BridgePortWebResource extends AbstractWebResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response addBridge(InputStream stream) {
         try {
             ObjectNode requestBody = (ObjectNode) mapper().readTree(stream);
@@ -49,17 +50,27 @@ public class BridgePortWebResource extends AbstractWebResource {
         } catch (IOException ioe) {
             log.info("Json parse error: " + ioe.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+        } catch (OvsdbRestException.BridgeAlreadyExistsException ex) {
+            return Response.status(Response.Status.CONFLICT).entity("A bridge with this name already exists").build();
+        } catch (OvsdbRestException.OvsdbDeviceException ex) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build();
         }
     }
 
     @DELETE
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response deleteBridge(InputStream stream,
                                  @HeaderParam("ovsdb-ip") String ovsdbIp,
                                  @HeaderParam("bridge-name") String bridgeName) {
-        IpAddress ipAddress = IpAddress.valueOf(ovsdbIp);
-        OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-        ovsdbRestService.deleteBridge(ipAddress, bridgeName);
-        return Response.status(200).build();
+        try {
+            IpAddress ipAddress = IpAddress.valueOf(ovsdbIp);
+            OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
+            ovsdbRestService.deleteBridge(ipAddress, bridgeName);
+            return Response.status(200).build();
+        } catch (OvsdbRestException.BridgeNotFoundException ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
+        } catch (OvsdbRestException.OvsdbDeviceException ex) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build();
+        }
     }
 }
