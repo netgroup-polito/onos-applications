@@ -27,5 +27,6 @@ public interface OvsdbRestService {
      * @param portName port name
      * @param patchPeer patch peer
      */
-    void createPort(IpAddress ipAddress, String bridgeName, String portName, String patchPeer);
+    void createPort(IpAddress ipAddress, String bridgeName, String portName, String patchPeer)
+            throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException;
 }

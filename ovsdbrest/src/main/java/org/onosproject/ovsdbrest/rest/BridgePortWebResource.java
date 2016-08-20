@@ -42,8 +42,9 @@ public class BridgePortWebResource extends AbstractWebResource {
         try {
             ObjectNode requestBody = (ObjectNode) mapper().readTree(stream);
             log.info(requestBody.toString());
-            IpAddress ipAddress = IpAddress.valueOf(requestBody.path("ovsdbIp").textValue());
-            String bridgeName = requestBody.path("bridgeName").asText();
+            log.info("hello!!");
+            IpAddress ipAddress = IpAddress.valueOf(requestBody.path("ovsdb-ip").textValue());
+            String bridgeName = requestBody.path("bridge-name").asText();
             OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
             ovsdbRestService.createBridge(ipAddress, bridgeName);
             return Response.status(200).build();
@@ -67,6 +68,34 @@ public class BridgePortWebResource extends AbstractWebResource {
             OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
             ovsdbRestService.deleteBridge(ipAddress, bridgeName);
             return Response.status(200).build();
+        } catch (OvsdbRestException.BridgeNotFoundException ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
+        } catch (OvsdbRestException.OvsdbDeviceException ex) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build();
+        }
+    }
+
+    @POST
+    @Path("/port")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response addPort(InputStream stream) {
+        try {
+            ObjectNode requestBody = (ObjectNode) mapper().readTree(stream);
+            log.info(requestBody.toString());
+            IpAddress ipAddress = IpAddress.valueOf(requestBody.path("ovsdb-ip").textValue());
+            String bridgeName = requestBody.path("bridge-name").asText();
+            String portName = requestBody.path("port-name").asText();
+            String peerPatch = null;
+            if (requestBody.path("peer-patch") != null) {
+                peerPatch = requestBody.path("peer-patch").asText();
+            }
+            OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
+            ovsdbRestService.createPort(ipAddress, bridgeName, portName, peerPatch);
+            return Response.status(200).build();
+        } catch (IOException ioe) {
+            log.info("Json parse error: " + ioe.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).build();
         } catch (OvsdbRestException.BridgeNotFoundException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
         } catch (OvsdbRestException.OvsdbDeviceException ex) {
