@@ -22,11 +22,19 @@ public interface OvsdbRestService {
             OvsdbRestException.BridgeNotFoundException;
 
     /**
-     * Creates a port of hte bridge.
+     * Creates a port of the bridge.
      * @param bridgeName bridge identifier
      * @param portName port name
      * @param patchPeer patch peer
      */
     void createPort(IpAddress ipAddress, String bridgeName, String portName, String patchPeer)
+            throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException;
+
+    /**
+     * Delete a port of the bridge.
+     * @param bridgeName bridge identifier
+     * @param portName port name
+     */
+    void deletePort(IpAddress ipAddress, String bridgeName, String portName)
             throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException;
 }

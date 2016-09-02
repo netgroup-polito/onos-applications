@@ -16,12 +16,7 @@ import org.onosproject.core.CoreService;
 import org.onosproject.net.Device;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.Port;
-import org.onosproject.net.behaviour.BridgeConfig;
-import org.onosproject.net.behaviour.BridgeDescription;
-import org.onosproject.net.behaviour.BridgeName;
-import org.onosproject.net.behaviour.ControllerConfig;
-import org.onosproject.net.behaviour.ControllerInfo;
-import org.onosproject.net.behaviour.DefaultBridgeDescription;
+import org.onosproject.net.behaviour.*;
 import org.onosproject.net.config.NetworkConfigListener;
 import org.onosproject.net.config.ConfigFactory;
 import org.onosproject.net.config.NetworkConfigRegistry;
@@ -266,6 +261,90 @@ public class OvsdbRestComponent implements OvsdbRestService {
         try {
             // gets the target ovsdb node
             ovsdbNode = ovsdbNodes.stream().filter(node -> node.ovsdbIp().equals(ipAddress)).findFirst().get();
+
+        } catch (NoSuchElementException nsee) {
+            log.warn(nsee.getMessage());
+            throw new OvsdbRestException.OvsdbDeviceException(nsee.getMessage());
+        }
+
+        // get id for passed device
+        DeviceId deviceId = bridgeIds.get(bridgeName);
+        if (deviceId == null) {
+            log.warn("No bridge with this name, aborting.");
+            throw new OvsdbRestException.BridgeNotFoundException();
+        }
+        log.info("Device id is: " + deviceId.toString());
+
+        try {
+            Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
+            log.info("OvsdbNode.ovsdbId = " + ovsdbNode.ovsdbId());
+            if (device == null) {
+                log.warn("Ovsdb device not found, aborting.");
+                throw new OvsdbRestException.OvsdbDeviceException("Ovsdb device not found");
+            }
+            if (device.is(BridgeConfig.class)) {
+
+                // add port to bridge through ovsdb
+                BridgeConfig bridgeConfig = device.as(BridgeConfig.class);
+                bridgeConfig.addPort(BridgeName.bridgeName(bridgeName), portName);
+
+                log.info("Correctly added port {} to bridge {} at {}", portName, bridgeName, ipAddress);
+
+
+                if (peerPatch != null) {
+                    OvsdbNode controllerNode = ovsdbNodes.stream()
+                            .filter(node -> node.ovsdbIp().equals(IpAddress.valueOf("192.168.123.1")))
+                            .findFirst().get();
+                    Device srcDevice = deviceService.getDevice(controllerNode.ovsdbId());
+
+                    if (srcDevice.is(InterfaceConfig.class)) {
+                        InterfaceConfig interfaceConfig = srcDevice.as(InterfaceConfig.class);
+                        interfaceConfig.getInterfaces();
+                        log.info("SUCCESS!");
+
+                        /*
+                        PatchDescription.Builder builder = DefaultPatchDescription.builder();
+                        PatchDescription patchDescription = builder
+                                .deviceId(deviceId.toString())
+                                .ifaceName(portName)
+                                .peer(peerPatch)
+                                .build();
+                        interfaceConfig.addPatchMode(portName, patchDescription);
+                        log.info("Correctly set port {} as peer of port {} {}", portName, peerPatch);
+                        */
+
+                    } else {
+                        log.warn("The interface behaviour is not supported in device {}", srcDevice.id());
+                        throw new OvsdbRestException.OvsdbDeviceException(
+                                "The interface behaviour is not supported in device " + srcDevice.id()
+                        );
+                    }
+                }
+
+
+            } else {
+                log.warn("The bridging behaviour is not supported in device {}", device.id());
+                throw new OvsdbRestException.OvsdbDeviceException(
+                        "The bridging behaviour is not supported in device " + device.id()
+                );
+            }
+        } catch (ItemNotFoundException e) {
+            log.warn("Failed to delete bridge on {}", ovsdbNode.ovsdbIp());
+            throw new OvsdbRestException.OvsdbDeviceException("Error with ovsdb device: item not found");
+        }
+    }
+
+    @Override
+    public void deletePort(IpAddress ipAddress, String bridgeName, String portName)
+            throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException {
+
+        OvsdbNode ovsdbNode;
+        log.info("Deleting port {} to bridge {} at {}", portName, bridgeName, ipAddress);
+
+        try {
+            // gets the target ovsdb node
+            ovsdbNode = ovsdbNodes.stream().filter(node -> node.ovsdbIp().equals(ipAddress)).findFirst().get();
+
         } catch (NoSuchElementException nsee) {
             log.warn(nsee.getMessage());
             throw new OvsdbRestException.OvsdbDeviceException(nsee.getMessage());
@@ -287,36 +366,11 @@ public class OvsdbRestComponent implements OvsdbRestService {
             }
             if (device.is(BridgeConfig.class)) {
 
-                // add port to bridge through ovsdb
+                // delete port from bridge through ovsdb
                 BridgeConfig bridgeConfig = device.as(BridgeConfig.class);
-                bridgeConfig.addPort(BridgeName.bridgeName(bridgeName), portName);
+                bridgeConfig.deletePort(BridgeName.bridgeName(bridgeName), portName);
 
-                log.info("Correctly added port {} to bridge {} at {}", portName, bridgeName, ipAddress);
-
-                /*
-                if (peerPatch != null) {
-                    // apply peer patch configuration to interface
-                    DriverHandler h = driverService.createHandler(deviceId);
-                    if (h.hasBehaviour(InterfaceConfig.class)) {
-                        InterfaceConfig interfaceConfig = h.behaviour(InterfaceConfig.class);
-
-                        PatchDescription.Builder builder = DefaultPatchDescription.builder();
-                        PatchDescription patchDescription = builder
-                                .deviceId(deviceId.toString())
-                                .ifaceName(portName)
-                                .peer(peerPatch)
-                                .build();
-                        interfaceConfig.addPatchMode(portName, patchDescription);
-                        log.info("Correctly setted port {} as peer of port {} {}", portName, peerPatch);
-
-                    } else {
-                        log.warn("The interface behaviour is not supported in device {}", device.id());
-                        throw new OvsdbRestException.OvsdbDeviceException(
-                                "The interface behaviour is not supported in device " + device.id()
-                        );
-                    }
-                }
-                */
+                log.info("Correctly deleted port {} from bridge {} at {}", portName, bridgeName, ipAddress);
 
             } else {
                 log.warn("The bridging behaviour is not supported in device {}", device.id());

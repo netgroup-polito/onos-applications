@@ -42,7 +42,6 @@ public class BridgePortWebResource extends AbstractWebResource {
         try {
             ObjectNode requestBody = (ObjectNode) mapper().readTree(stream);
             log.info(requestBody.toString());
-            log.info("hello!!");
             IpAddress ipAddress = IpAddress.valueOf(requestBody.path("ovsdb-ip").textValue());
             String bridgeName = requestBody.path("bridge-name").asText();
             OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
@@ -50,7 +49,7 @@ public class BridgePortWebResource extends AbstractWebResource {
             return Response.status(200).build();
         } catch (IOException ioe) {
             log.info("Json parse error: " + ioe.getMessage());
-            return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+            return Response.status(Response.Status.BAD_REQUEST).build();
         } catch (OvsdbRestException.BridgeAlreadyExistsException ex) {
             return Response.status(Response.Status.CONFLICT).entity("A bridge with this name already exists").build();
         } catch (OvsdbRestException.OvsdbDeviceException ex) {
@@ -60,14 +59,18 @@ public class BridgePortWebResource extends AbstractWebResource {
 
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
-    public Response deleteBridge(InputStream stream,
-                                 @HeaderParam("ovsdb-ip") String ovsdbIp,
-                                 @HeaderParam("bridge-name") String bridgeName) {
+    public Response deleteBridge(InputStream stream) {
         try {
-            IpAddress ipAddress = IpAddress.valueOf(ovsdbIp);
+            ObjectNode requestBody = (ObjectNode) mapper().readTree(stream);
+            log.info(requestBody.toString());
+            IpAddress ipAddress = IpAddress.valueOf(requestBody.path("ovsdb-ip").textValue());
+            String bridgeName = requestBody.path("bridge-name").asText();
             OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
             ovsdbRestService.deleteBridge(ipAddress, bridgeName);
             return Response.status(200).build();
+        } catch (IOException ioe) {
+            log.info("Json parse error: " + ioe.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST).build();
         } catch (OvsdbRestException.BridgeNotFoundException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
         } catch (OvsdbRestException.OvsdbDeviceException ex) {
@@ -95,7 +98,29 @@ public class BridgePortWebResource extends AbstractWebResource {
             return Response.status(200).build();
         } catch (IOException ioe) {
             log.info("Json parse error: " + ioe.getMessage());
-            return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        } catch (OvsdbRestException.BridgeNotFoundException ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
+        } catch (OvsdbRestException.OvsdbDeviceException ex) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build();
+        }
+    }
+
+    @DELETE
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response deletePort(InputStream stream) {
+        try {
+            ObjectNode requestBody = (ObjectNode) mapper().readTree(stream);
+            log.info(requestBody.toString());
+            IpAddress ipAddress = IpAddress.valueOf(requestBody.path("ovsdb-ip").textValue());
+            String bridgeName = requestBody.path("bridge-name").asText();
+            String portName = requestBody.path("port-name").asText();
+            OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
+            ovsdbRestService.deletePort(ipAddress, bridgeName, portName);
+            return Response.status(200).build();
+        } catch (IOException ioe) {
+            log.info("Json parse error: " + ioe.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST).build();
         } catch (OvsdbRestException.BridgeNotFoundException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
         } catch (OvsdbRestException.OvsdbDeviceException ex) {
