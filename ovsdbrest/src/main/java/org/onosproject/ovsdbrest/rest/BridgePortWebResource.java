@@ -96,6 +96,7 @@ public class BridgePortWebResource extends AbstractWebResource {
             if (requestBody.path("peer-patch") != null) {
                 peerPatch = requestBody.path("peer-patch").asText();
             }
+            log.info("peerPatch = {}", peerPatch);
             OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
             ovsdbRestService.createPort(ovsdbAddress, bridgeName, portName, peerPatch);
             return Response.status(200).build();

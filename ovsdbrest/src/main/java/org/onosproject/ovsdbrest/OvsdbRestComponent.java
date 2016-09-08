@@ -22,8 +22,10 @@ import org.onosproject.net.behaviour.BridgeName;
 import org.onosproject.net.behaviour.ControllerConfig;
 import org.onosproject.net.behaviour.ControllerInfo;
 import org.onosproject.net.behaviour.DefaultBridgeDescription;
+import org.onosproject.net.behaviour.DefaultPatchDescription;
 import org.onosproject.net.behaviour.DefaultTunnelDescription;
 import org.onosproject.net.behaviour.InterfaceConfig;
+import org.onosproject.net.behaviour.PatchDescription;
 import org.onosproject.net.behaviour.TunnelDescription;
 import org.onosproject.net.behaviour.TunnelEndPoints;
 import org.onosproject.net.behaviour.TunnelKeys;
@@ -300,34 +302,29 @@ public class OvsdbRestComponent implements OvsdbRestService {
 
                 log.info("Correctly added port {} to bridge {} at {}", portName, bridgeName, ovsdbAddress);
 
-                if (peerPatch != null) {
-                    OvsdbNode controllerNode = ovsdbNodes.stream()
-                            .filter(node -> node.ovsdbIp().equals(IpAddress.valueOf("192.168.123.1")))
-                            .findFirst().get();
-                    Device srcDevice = deviceService.getDevice(controllerNode.ovsdbId());
+                if (peerPatch != null && !peerPatch.equals("")) {
 
                     // TODO i get false in this check, so i'm not able to configure the patch
-                    if (srcDevice.is(InterfaceConfig.class)) {
-                        InterfaceConfig interfaceConfig = srcDevice.as(InterfaceConfig.class);
+                    if (device.is(InterfaceConfig.class)) {
+                        InterfaceConfig interfaceConfig = device.as(InterfaceConfig.class);
 
                         //interfaceConfig.getInterfaces();
-                        //log.info("SUCCESS!");
+                        log.info("SUCCESS!");
 
-
-                        /* TODO if i use these two classes, the rest service doesn't boot!! Why?
+                        // TODO if i use these two classes, the rest service doesn't boot!! Why?
                         PatchDescription.Builder builder = DefaultPatchDescription.builder();
                         PatchDescription patchDescription = builder
-                                .deviceId(deviceId.toString())
+                                //.deviceId(deviceId.toString())
+                                .deviceId(bridgeName)
                                 .ifaceName(portName)
                                 .peer(peerPatch)
                                 .build();
                         interfaceConfig.addPatchMode(portName, patchDescription);
-                        */
-                        log.info("Correctly set port {} as peer of port {} {}", portName, peerPatch);
+                        log.info("Correctly set port {} as peer of port {}", portName, peerPatch);
                     } else {
-                        log.warn("The interface behaviour is not supported in device {}", srcDevice.id());
+                        log.warn("The interface behaviour is not supported in device {}", device.id());
                         throw new OvsdbRestException.OvsdbDeviceException(
-                                "The interface behaviour is not supported in device " + srcDevice.id()
+                                "The interface behaviour is not supported in device " + device.id()
                         );
                     }
                 }
