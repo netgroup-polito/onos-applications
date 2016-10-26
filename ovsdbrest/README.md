@@ -1,40 +1,42 @@
 # OVSDBREST ONOS APPLICATION
 
-#### Install
-To install the application on a running onos instance, firt of all you need to install the ovsdb driver provided by onos.
-On your onos root directory run:
+## Install
+To install the application on a running onos instance run the following steps.
 
-    cd drivers/ovsdb/
-    onos-app {onos-address} reinstall target/onos-drivers-ovsdb-1.7.0-SNAPSHOT.oar
+- first of all you need to install the ovsdb driver provided by onos. On your onos root directory run:
 
-then build the source code of the ovsdbrest application through maven:
+        cd drivers/ovsdb/
+        onos-app {onos-address} reinstall target/onos-drivers-ovsdb-1.7.0-SNAPSHOT.oar
 
+- then build the source code of the ovsdbrest application through maven:
 
-    git clone https://github.com/netgroup-polito/onos-applications
-    cd onos-applications/ovsdbrest
-    mvn clean install
+        git clone https://github.com/netgroup-polito/onos-applications
+        cd onos-applications/ovsdbrest
+        mvn clean install
 
-Finally you can install the application through the command:
+- Finally you can install the application through the command:
 
-    onos-app {onos-address} reinstall target/onos-app-ovsdbrest-1.7.0-SNAPSHOT.oar
+        onos-app {onos-address} reinstall target/onos-app-ovsdbrest-1.7.0-SNAPSHOT.oar
 
 (onos-address is the ip-address of onos server, for example 192.168.123.1)
 
 
-#### Activate
+## Activate
 After installing the application, you can activate it through the onos cli by typing:
 
-    app activate org.onosproject.ovsdbrest
+        app activate org.onosproject.ovsdbrest
 
 To check that the app has been activated type log:tail from the onos cli.
 
 
-#### Configure
+## Configure
 After activating the application you need to configure the ovsdb node IP. This is done by using the onos Network Configuration system.
-- You should send a REST request as follows:
+
+- Send a REST request as follows:
 
     **POST http://{onos-address}:8181/onos/v1/network/configuration/**
 
+    ```json
     {
     	"apps": {
     		"org.onosproject.ovsdbrest": {
@@ -49,6 +51,7 @@ After activating the application you need to configure the ovsdb node IP. This i
     		}
     	}
     }
+  ```
 
 Check your ovsdb configuration to get the correct ip and port for the ovsdb node.
 The request uses basic HTTP authentication, so you need to provide onos username and password.
@@ -56,38 +59,48 @@ To verify that the configuration has been correctly pushed you can type log:tail
 The app will start contacting the ovsdb nodes and you should see some related logs from the onos cli.
 
 
-#### API
+## API
 
 - Create/Delete bridge:
 
     **POST http://{onos-address}:8181/onos/ovsdb/config/bridge**
 
+    ```json
     { "ovsdb-ip" : "192.168.123.1", "bridge-name" : "br-test" }
+    ```
 
     **DELETE http://{onos-address}:8181/onos/ovsdb/config/bridge**
 
+    ```json
     { "ovsdb-ip" : "192.168.123.2", "bridge-name" : "br-test" }
-
+    ```
 
 - Add/Remove a port in a bridge:
 
     **POST http://{onos-address}:8181/onos/ovsdb/config/bridge/port**
 
+    ```json
     { "ovsdb-ip" : "192.168.123.2", "bridge-name" : "br-test", "port-name" : "port-test", "peer-patch" : "peer-port" }
+    ```
 
     peer-patch is an optional parameter, if specified the port added is automatically linked to an other interface of the network.
 
     **DELETE http://{onos-address}:8181/onos/ovsdb/config/bridge/port**
 
+    ```json
     { "ovsdb-ip" : "192.168.123.2", "bridge-mame" : "br-test", "port-name" : "port-test" }
+    ```
 
-
-- Create/Delete a GRE tunnel (PARTIALLY IMPLEMENTED):
+- Create/Delete a GRE tunnel (**WARNING: Partially implemented and not tested**):
 
     **POST http://{onos-address}:8181/onos/ovsdb/config/bridge/gre_tunnel**
 
+    ```json
     { "ovsdb-ip" : "192.168.123.2", "bridge-name" : "br-test", "port-name" : "port-test", "remote-ip" : "{remote-ip}" }
+    ```
 
     **DELETE http://{onos-address}:8181/onos/ovsdb/config/bridge/gre_tunnel**
 
+    ```json
     { "ovsdb-ip" : "192.168.123.2", "bridge-mame" : "br-test", "port-name" : "port-test" }
+    ```
