@@ -10,9 +10,9 @@ To install the application on a running onos instance run the following steps.
 
 - download and build the source code through maven:
 
-    git clone https://github.com/netgroup-polito/onos-applications
-    cd onos-applications/nat
-    mvn clean install
+        git clone https://github.com/netgroup-polito/onos-applications
+        cd onos-applications/nat
+        mvn clean install
 
 - then install the application:
 
@@ -38,11 +38,11 @@ After activating the application you need to configure functional ports that it 
 
     ```json
     {
-    	"apps": {
-    		"it.polito.onosapp.nat": {
-    			"nat": {
-    				"ports": [
-    					{
+      "apps": {
+        "it.polito.onosapp.nat": {
+          "nat": {
+            "ports": [
+              {
                 "USER:1": {
                   "device-id": "of:0000000000000002",
                   "port-number": 4,
@@ -53,11 +53,11 @@ After activating the application you need to configure functional ports that it 
                   "port-number": 4,
                   "flow-priority": 10
                 }
-    					}
-    				]
-    			}
-    		}
-    	}
+              }
+            ]
+          }
+        }
+      }
     }
     ```
 WAN:0 is the private port of the NAT, while USER:1 is the public one.
