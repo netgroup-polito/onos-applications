@@ -168,9 +168,10 @@ public class BridgePortWebResource extends AbstractWebResource {
             ObjectNode requestBody = (ObjectNode) mapper().readTree(stream);
             log.info(requestBody.toString());
             IpAddress ovsdbAddress = IpAddress.valueOf(requestBody.path("ovsdb-ip").textValue());
+            String bridgeName = requestBody.path("bridge-name").asText();
             String portName = requestBody.path("port-name").asText();
             OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.deleteGreTunnel(ovsdbAddress, portName);
+            ovsdbRestService.deleteGreTunnel(ovsdbAddress, bridgeName, portName);
             return Response.status(200).build();
         } catch (IOException ioe) {
             log.info("Json parse error: " + ioe.getMessage());

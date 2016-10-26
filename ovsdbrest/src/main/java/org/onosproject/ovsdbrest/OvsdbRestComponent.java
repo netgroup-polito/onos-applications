@@ -16,19 +16,7 @@ import org.onosproject.core.CoreService;
 import org.onosproject.net.Device;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.Port;
-import org.onosproject.net.behaviour.BridgeConfig;
-import org.onosproject.net.behaviour.BridgeDescription;
-import org.onosproject.net.behaviour.BridgeName;
-import org.onosproject.net.behaviour.ControllerConfig;
-import org.onosproject.net.behaviour.ControllerInfo;
-import org.onosproject.net.behaviour.DefaultBridgeDescription;
-import org.onosproject.net.behaviour.DefaultPatchDescription;
-import org.onosproject.net.behaviour.DefaultTunnelDescription;
-import org.onosproject.net.behaviour.InterfaceConfig;
-import org.onosproject.net.behaviour.PatchDescription;
-import org.onosproject.net.behaviour.TunnelDescription;
-import org.onosproject.net.behaviour.TunnelEndPoints;
-import org.onosproject.net.behaviour.TunnelKeys;
+import org.onosproject.net.behaviour.*;
 import org.onosproject.net.config.NetworkConfigListener;
 import org.onosproject.net.config.ConfigFactory;
 import org.onosproject.net.config.NetworkConfigRegistry;
@@ -424,13 +412,17 @@ public class OvsdbRestComponent implements OvsdbRestService {
 
             if (device.is(InterfaceConfig.class)) {
                 InterfaceConfig interfaceConfig = device.as(InterfaceConfig.class);
+
+                // TODO add key as parameter
+                String tunnelKey = "";
+
                 TunnelDescription tunnelDescription = DefaultTunnelDescription.builder()
                         .deviceId(deviceId.toString())
                         .ifaceName(portName)
                         .type(TunnelDescription.Type.GRE)
                         .local(TunnelEndPoints.flowTunnelEndpoint())    // TODO what should I pass here?
                         .remote(TunnelEndPoints.ipTunnelEndpoint(remoteIp))
-                        .key(TunnelKeys.flowTunnelKey())    // TODO what should I pass here?
+                        .key(new TunnelKey<>(tunnelKey))//TunnelKeys.flowTunnelKey())    // TODO what should I pass here?
                         .build();
                 interfaceConfig.addTunnelMode(portName, tunnelDescription);
                 log.info("Correctly added tunnel GRE from interface {} of bridge {} at {} to {}",
@@ -448,7 +440,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
     }
 
     @Override
-    public void deleteGreTunnel(IpAddress ovsdbAddress, String portName)
+    public void deleteGreTunnel(IpAddress ovsdbAddress, String bridgeName, String portName)
             throws OvsdbRestException.OvsdbDeviceException {
 
         OvsdbNode ovsdbNode;

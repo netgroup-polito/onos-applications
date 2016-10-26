@@ -49,8 +49,9 @@ public interface OvsdbRestService {
 
     /**
      * Delete a gre tunnel given the port name.
+     * @param bridgeName bridge identifier
      * @param portName port name
      */
-    void deleteGreTunnel(IpAddress ovsdbAddress, String portName)
+    void deleteGreTunnel(IpAddress ovsdbAddress, String bridgeName, String portName)
             throws OvsdbRestException.OvsdbDeviceException;
 }
