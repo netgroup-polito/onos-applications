@@ -41,7 +41,7 @@ After activating the application you need to configure functional ports that it 
       "apps": {
         "it.polito.onosapp.nat": {
           "nat": {
-            "ports": [
+            "ports":
               {
                 "USER:1": {
                   "device-id": "of:0000000000000002",
@@ -54,7 +54,6 @@ After activating the application you need to configure functional ports that it 
                   "flow-priority": 10
                 }
               }
-            ]
           }
         }
       }
