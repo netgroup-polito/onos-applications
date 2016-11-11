@@ -1,7 +1,6 @@
 package it.polito.onosapp.nat;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.onlab.packet.Ip4Address;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.PortNumber;
@@ -20,27 +19,37 @@ public class PortConfig extends Config<ApplicationId> {
 
     private static final String DEVICE_ID = "device-id";
     private static final String PORT_NUMBER = "port-number";
+    private static final String FLOW_PRIORITY = "flow-priority";
+
+    private static final int DEFAULT_PRIORITY = 10;
 
     public ApplicationPort getPort(String portId) {
 
+        log.info(object.toString());
         JsonNode ports = object.path(PORTS_KEY);
+        log.info(ports.toString());
         JsonNode port = ports.path(portId);
+        log.info(port.toString());
         String deviceId = port.path(DEVICE_ID).textValue();
         int portNumber = port.path(PORT_NUMBER).asInt();
+        int flowPriority = port.path(FLOW_PRIORITY).asInt(DEFAULT_PRIORITY);
+        log.info("deviceID = " + deviceId);
         return new ApplicationPort(
                 DeviceId.deviceId(deviceId),
-                PortNumber.portNumber(portNumber)
-        );
+                PortNumber.portNumber(portNumber),
+                flowPriority);
     }
 
     public static class ApplicationPort {
 
         private final DeviceId deviceId;
         private final PortNumber portNumber;
+        private final int flowPriority;
 
-        public ApplicationPort(DeviceId deviceId, PortNumber portNumber) {
+        public ApplicationPort(DeviceId deviceId, PortNumber portNumber, int flowPriority) {
             this.deviceId = deviceId;
             this.portNumber = portNumber;
+            this.flowPriority = flowPriority;
         }
 
         public DeviceId getDeviceId() {
@@ -49,6 +58,10 @@ public class PortConfig extends Config<ApplicationId> {
 
         public PortNumber getPortNumber() {
             return portNumber;
+        }
+
+        public int getFlowPriority() {
+            return flowPriority;
         }
     }
 }
