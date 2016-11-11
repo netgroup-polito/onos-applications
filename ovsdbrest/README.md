@@ -66,7 +66,7 @@ The app will start contacting the ovsdb nodes and you should see some related lo
     **POST http://{onos-address}:8181/onos/ovsdb/config/bridge**
 
     ```json
-    { "ovsdb-ip" : "192.168.123.1", "bridge-name" : "br-test" }
+    { "ovsdb-ip" : "192.168.123.2", "bridge-name" : "br-test" }
     ```
 
     **DELETE http://{onos-address}:8181/onos/ovsdb/config/bridge**
