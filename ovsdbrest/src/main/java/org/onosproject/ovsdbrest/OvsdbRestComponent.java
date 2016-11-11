@@ -16,7 +16,19 @@ import org.onosproject.core.CoreService;
 import org.onosproject.net.Device;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.Port;
-import org.onosproject.net.behaviour.*;
+import org.onosproject.net.behaviour.BridgeConfig;
+import org.onosproject.net.behaviour.BridgeDescription;
+import org.onosproject.net.behaviour.BridgeName;
+import org.onosproject.net.behaviour.ControllerConfig;
+import org.onosproject.net.behaviour.ControllerInfo;
+import org.onosproject.net.behaviour.DefaultBridgeDescription;
+import org.onosproject.net.behaviour.DefaultPatchDescription;
+import org.onosproject.net.behaviour.DefaultTunnelDescription;
+import org.onosproject.net.behaviour.InterfaceConfig;
+import org.onosproject.net.behaviour.PatchDescription;
+import org.onosproject.net.behaviour.TunnelDescription;
+import org.onosproject.net.behaviour.TunnelEndPoints;
+import org.onosproject.net.behaviour.TunnelKey;
 import org.onosproject.net.config.NetworkConfigListener;
 import org.onosproject.net.config.ConfigFactory;
 import org.onosproject.net.config.NetworkConfigRegistry;
@@ -252,7 +264,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
     }
 
     @Override
-    public void createPort(IpAddress ovsdbAddress, String bridgeName, String portName, String peerPatch)
+    public void addPort(IpAddress ovsdbAddress, String bridgeName, String portName)
             throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException {
 
         OvsdbNode ovsdbNode;
@@ -261,19 +273,10 @@ public class OvsdbRestComponent implements OvsdbRestService {
         try {
             // gets the target ovsdb node
             ovsdbNode = ovsdbNodes.stream().filter(node -> node.ovsdbIp().equals(ovsdbAddress)).findFirst().get();
-
         } catch (NoSuchElementException nsee) {
             log.warn(nsee.getMessage());
             throw new OvsdbRestException.OvsdbDeviceException(nsee.getMessage());
         }
-
-        // get id for passed device
-        DeviceId deviceId = bridgeIds.get(bridgeName);
-        if (deviceId == null) {
-            log.warn("No bridge with this name, aborting.");
-            throw new OvsdbRestException.BridgeNotFoundException();
-        }
-        log.info("Device id is: " + deviceId.toString());
 
         try {
             Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
@@ -283,39 +286,10 @@ public class OvsdbRestComponent implements OvsdbRestService {
                 throw new OvsdbRestException.OvsdbDeviceException("Ovsdb device not found");
             }
             if (device.is(BridgeConfig.class)) {
-
                 // add port to bridge through ovsdb
                 BridgeConfig bridgeConfig = device.as(BridgeConfig.class);
                 bridgeConfig.addPort(BridgeName.bridgeName(bridgeName), portName);
-
                 log.info("Correctly added port {} to bridge {} at {}", portName, bridgeName, ovsdbAddress);
-
-                if (peerPatch != null && !peerPatch.equals("")) {
-
-                    // TODO i get false in this check, so i'm not able to configure the patch
-                    if (device.is(InterfaceConfig.class)) {
-                        InterfaceConfig interfaceConfig = device.as(InterfaceConfig.class);
-
-                        //interfaceConfig.getInterfaces();
-                        log.info("SUCCESS!");
-
-                        // TODO if i use these two classes, the rest service doesn't boot!! Why?
-                        PatchDescription.Builder builder = DefaultPatchDescription.builder();
-                        PatchDescription patchDescription = builder
-                                //.deviceId(deviceId.toString())
-                                .deviceId(bridgeName)
-                                .ifaceName(portName)
-                                .peer(peerPatch)
-                                .build();
-                        interfaceConfig.addPatchMode(portName, patchDescription);
-                        log.info("Correctly set port {} as peer of port {}", portName, peerPatch);
-                    } else {
-                        log.warn("The interface behaviour is not supported in device {}", device.id());
-                        throw new OvsdbRestException.OvsdbDeviceException(
-                                "The interface behaviour is not supported in device " + device.id()
-                        );
-                    }
-                }
             } else {
                 log.warn("The bridging behaviour is not supported in device {}", device.id());
                 throw new OvsdbRestException.OvsdbDeviceException(
@@ -329,7 +303,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
     }
 
     @Override
-    public void deletePort(IpAddress ovsdbAddress, String bridgeName, String portName)
+    public void removePort(IpAddress ovsdbAddress, String bridgeName, String portName)
             throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException {
 
         OvsdbNode ovsdbNode;
@@ -343,14 +317,6 @@ public class OvsdbRestComponent implements OvsdbRestService {
             log.warn(nsee.getMessage());
             throw new OvsdbRestException.OvsdbDeviceException(nsee.getMessage());
         }
-
-        // get id for passed device
-        DeviceId deviceId = bridgeIds.get(bridgeName);
-        if (deviceId == null) {
-            log.warn("No bridge with this name, aborting.");
-            throw new OvsdbRestException.BridgeNotFoundException();
-        }
-        log.info("Device id is: " + deviceId.toString());
 
         try {
             Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
@@ -375,6 +341,53 @@ public class OvsdbRestComponent implements OvsdbRestService {
         } catch (ItemNotFoundException e) {
             log.warn("Failed to delete bridge on {}", ovsdbNode.ovsdbIp());
             throw new OvsdbRestException.OvsdbDeviceException("Error with ovsdb device: item not found");
+        }
+    }
+
+    @Override
+    public void setPatchPeer(IpAddress ovsdbAddress, String bridgeName, String portName, String patchPeer)
+            throws OvsdbRestException.OvsdbDeviceException {
+
+        OvsdbNode ovsdbNode;
+        log.info("Setting port {} as peer of port {}", portName, patchPeer);
+
+        try {
+            // gets the target ovsdb node
+            ovsdbNode = ovsdbNodes.stream().filter(node -> node.ovsdbIp().equals(ovsdbAddress)).findFirst().get();
+        } catch (NoSuchElementException nsee) {
+            log.warn(nsee.getMessage());
+            throw new OvsdbRestException.OvsdbDeviceException(nsee.getMessage());
+        }
+
+        Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
+        log.info("OvsdbNode.ovsdbId = " + ovsdbNode.ovsdbId());
+        if (device == null) {
+            log.warn("Ovsdb device not found, aborting.");
+            throw new OvsdbRestException.OvsdbDeviceException("Ovsdb device not found");
+        }
+
+        // TODO i get false in this check, so i'm not able to configure the patch
+        if (device.is(InterfaceConfig.class)) {
+            InterfaceConfig interfaceConfig = device.as(InterfaceConfig.class);
+
+            //interfaceConfig.getInterfaces();
+            log.info("SUCCESS!");
+
+            // TODO if i use these two classes, the rest service doesn't boot!! Why?
+            PatchDescription.Builder builder = DefaultPatchDescription.builder();
+            PatchDescription patchDescription = builder
+                    //.deviceId(deviceId.toString())
+                    .deviceId(bridgeName)
+                    .ifaceName(portName)
+                    .peer(patchPeer)
+                    .build();
+            interfaceConfig.addPatchMode(portName, patchDescription);
+            log.info("Correctly set port {} as peer of port {}", portName, patchPeer);
+        } else {
+            log.warn("The interface behaviour is not supported in device {}", device.id());
+            throw new OvsdbRestException.OvsdbDeviceException(
+                    "The interface behaviour is not supported in device " + device.id()
+            );
         }
     }
 
@@ -422,7 +435,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
                         .type(TunnelDescription.Type.GRE)
                         .local(TunnelEndPoints.flowTunnelEndpoint())    // TODO what should I pass here?
                         .remote(TunnelEndPoints.ipTunnelEndpoint(remoteIp))
-                        .key(new TunnelKey<>(tunnelKey))//TunnelKeys.flowTunnelKey())    // TODO what should I pass here?
+                        .key(new TunnelKey<>(tunnelKey))//TunnelKeys.flowTunnelKey())  // TODO what should I pass here?
                         .build();
                 interfaceConfig.addTunnelMode(portName, tunnelDescription);
                 log.info("Correctly added tunnel GRE from interface {} of bridge {} at {} to {}",
