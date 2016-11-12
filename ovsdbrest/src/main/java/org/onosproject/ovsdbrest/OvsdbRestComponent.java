@@ -345,7 +345,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
     }
 
     @Override
-    public void setPatchPeer(IpAddress ovsdbAddress, String bridgeName, String portName, String patchPeer)
+    public void createPatchPeerPort(IpAddress ovsdbAddress, String bridgeName, String portName, String patchPeer)
             throws OvsdbRestException.OvsdbDeviceException {
 
         OvsdbNode ovsdbNode;
@@ -366,23 +366,17 @@ public class OvsdbRestComponent implements OvsdbRestService {
             throw new OvsdbRestException.OvsdbDeviceException("Ovsdb device not found");
         }
 
-        // TODO i get false in this check, so i'm not able to configure the patch
         if (device.is(InterfaceConfig.class)) {
             InterfaceConfig interfaceConfig = device.as(InterfaceConfig.class);
 
-            //interfaceConfig.getInterfaces();
-            log.info("SUCCESS!");
-
-            // TODO if i use these two classes, the rest service doesn't boot!! Why?
             PatchDescription.Builder builder = DefaultPatchDescription.builder();
             PatchDescription patchDescription = builder
-                    //.deviceId(deviceId.toString())
                     .deviceId(bridgeName)
                     .ifaceName(portName)
                     .peer(patchPeer)
                     .build();
             interfaceConfig.addPatchMode(portName, patchDescription);
-            log.info("Correctly set port {} as peer of port {}", portName, patchPeer);
+            log.info("Correctly created port {} on device {} as peer of port {}", portName, bridgeName, patchPeer);
         } else {
             log.warn("The interface behaviour is not supported in device {}", device.id());
             throw new OvsdbRestException.OvsdbDeviceException(
@@ -392,12 +386,13 @@ public class OvsdbRestComponent implements OvsdbRestService {
     }
 
     @Override
-    public void createGreTunnel(IpAddress ovsdbAddress, String bridgeName, String portName, IpAddress remoteIp)
+    public void createGreTunnel(IpAddress ovsdbAddress, String bridgeName, String portName, IpAddress remoteIp,
+                                String key)
             throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException {
 
         OvsdbNode ovsdbNode;
-        log.info("Setting up tunnel GRE from interface {} of bridge {} at {} to {}",
-                portName, bridgeName, ovsdbAddress, remoteIp);
+        log.info("Setting up tunnel GRE from interface {} of bridge {} at {} to {} with key {}",
+                portName, bridgeName, ovsdbAddress, remoteIp, key);
 
         try {
             // gets the target ovsdb node
@@ -406,14 +401,6 @@ public class OvsdbRestComponent implements OvsdbRestService {
             log.warn(nsee.getMessage());
             throw new OvsdbRestException.OvsdbDeviceException(nsee.getMessage());
         }
-
-        // get id for passed device
-        DeviceId deviceId = bridgeIds.get(bridgeName);
-        if (deviceId == null) {
-            log.warn("No bridge with this name, aborting.");
-            throw new OvsdbRestException.BridgeNotFoundException();
-        }
-        log.info("Device id is: " + deviceId.toString());
 
         try {
             Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
@@ -426,20 +413,17 @@ public class OvsdbRestComponent implements OvsdbRestService {
             if (device.is(InterfaceConfig.class)) {
                 InterfaceConfig interfaceConfig = device.as(InterfaceConfig.class);
 
-                // TODO add key as parameter
-                String tunnelKey = "";
-
                 TunnelDescription tunnelDescription = DefaultTunnelDescription.builder()
-                        .deviceId(deviceId.toString())
+                        .deviceId(bridgeName)
                         .ifaceName(portName)
                         .type(TunnelDescription.Type.GRE)
                         .local(TunnelEndPoints.flowTunnelEndpoint())    // TODO what should I pass here?
                         .remote(TunnelEndPoints.ipTunnelEndpoint(remoteIp))
-                        .key(new TunnelKey<>(tunnelKey))//TunnelKeys.flowTunnelKey())  // TODO what should I pass here?
+                        .key(new TunnelKey<>(key))//TunnelKeys.flowTunnelKey())  // TODO what should I pass here?
                         .build();
                 interfaceConfig.addTunnelMode(portName, tunnelDescription);
-                log.info("Correctly added tunnel GRE from interface {} of bridge {} at {} to {}",
-                        portName, bridgeName, ovsdbAddress, remoteIp);
+                log.info("Correctly added tunnel GRE from interface {} of bridge {} at {} to {} with key {}",
+                        portName, bridgeName, ovsdbAddress, remoteIp, key);
             } else {
                 log.warn("The interface behaviour is not supported in device {}", device.id());
                 throw new OvsdbRestException.OvsdbDeviceException(

@@ -22,7 +22,7 @@ public interface OvsdbRestService {
             OvsdbRestException.BridgeNotFoundException;
 
     /**
-     * Add a port of the bridge.
+     * Add a port to a bridge.
      * @param bridgeName bridge identifier
      * @param portName port name
      */
@@ -30,7 +30,7 @@ public interface OvsdbRestService {
             throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException;
 
     /**
-     * Remove a port from the bridge.
+     * Remove a port from a bridge.
      * @param bridgeName bridge identifier
      * @param portName port name
      */
@@ -38,12 +38,12 @@ public interface OvsdbRestService {
             throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException;
 
     /**
-     * Set a port as a peer of an other port through a patch.
+     * Add a patch port to a bridge setting it as peer of an other port.
      * @param bridgeName bridge identifier
      * @param portName port name
      * @param patchPeer peer port name
      */
-    void setPatchPeer(IpAddress ovsdbAddress, String bridgeName, String portName, String patchPeer)
+    void createPatchPeerPort(IpAddress ovsdbAddress, String bridgeName, String portName, String patchPeer)
             throws OvsdbRestException.OvsdbDeviceException;
 
     /**
@@ -51,8 +51,9 @@ public interface OvsdbRestService {
      * @param bridgeName bridge identifier
      * @param portName port name
      * @param remoteIp remote end point of gre tunnel
+     * @param key the tunnel key
      */
-    void createGreTunnel(IpAddress ovsdbAddress, String bridgeName, String portName, IpAddress remoteIp)
+    void createGreTunnel(IpAddress ovsdbAddress, String bridgeName, String portName, IpAddress remoteIp, String key)
             throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException;
 
     /**

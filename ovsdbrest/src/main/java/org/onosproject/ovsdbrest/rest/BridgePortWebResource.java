@@ -119,15 +119,15 @@ public class BridgePortWebResource extends AbstractWebResource {
     @Path("/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/patch_peer/{patch-peer}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response setPatchPeer(InputStream stream,
-                                 @PathParam("ovsdb-ip") String ovsdbIp,
-                                 @PathParam("bridge-name") String bridgeName,
-                                 @PathParam("port-name") String portName,
-                                 @PathParam("patch-peer") String patchPeer) {
+    public Response createPatchPeerPort(InputStream stream,
+                                        @PathParam("ovsdb-ip") String ovsdbIp,
+                                        @PathParam("bridge-name") String bridgeName,
+                                        @PathParam("port-name") String portName,
+                                        @PathParam("patch-peer") String patchPeer) {
         try {
             IpAddress ovsdbAddress = IpAddress.valueOf(ovsdbIp);
             OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.setPatchPeer(ovsdbAddress, bridgeName, portName, patchPeer);
+            ovsdbRestService.createPatchPeerPort(ovsdbAddress, bridgeName, portName, patchPeer);
             return Response.status(200).build();
         } catch (OvsdbRestException.OvsdbDeviceException ex) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build();
@@ -135,19 +135,20 @@ public class BridgePortWebResource extends AbstractWebResource {
     }
 
     @POST
-    @Path("/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre/{remote-ip}")
+    @Path("/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre/{remote-ip}/{key}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response addGreTunnel(InputStream stream,
                                  @PathParam("ovsdb-ip") String ovsdbIp,
                                  @PathParam("bridge-name") String bridgeName,
                                  @PathParam("port-name") String portName,
-                                 @PathParam("remote-ip") String remoteIp) {
+                                 @PathParam("remote-ip") String remoteIp,
+                                 @PathParam("key") String key) {
         try {
             IpAddress ovsdbAddress = IpAddress.valueOf(ovsdbIp);
             IpAddress tunnelRemoteIp = IpAddress.valueOf(remoteIp);
             OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.createGreTunnel(ovsdbAddress, bridgeName, portName, tunnelRemoteIp);
+            ovsdbRestService.createGreTunnel(ovsdbAddress, bridgeName, portName, tunnelRemoteIp, key);
             return Response.status(200).build();
         } catch (OvsdbRestException.BridgeNotFoundException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
