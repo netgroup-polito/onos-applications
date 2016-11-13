@@ -3,7 +3,7 @@
 ## Install
 To install the application on a running onos instance run the following steps.
 
-- first of all you need to install the ovsdb driver provided by onos. On your onos root directory run:
+- first of all, if it is not ready installed, you need to install the ovsdb driver provided by onos. On your onos root directory run:
 
         cd drivers/ovsdb/
         onos-app {onos-address} reinstall target/onos-drivers-ovsdb-1.7.0-SNAPSHOT.oar
@@ -63,44 +63,18 @@ The app will start contacting the ovsdb nodes and you should see some related lo
 
 - Create/Delete bridge:
 
-    **POST http://{onos-address}:8181/onos/ovsdb/config/bridge**
+    **POST http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}**
 
-    ```json
-    { "ovsdb-ip" : "192.168.123.2", "bridge-name" : "br-test" }
-    ```
-
-    **DELETE http://{onos-address}:8181/onos/ovsdb/config/bridge**
-
-    ```json
-    { "ovsdb-ip" : "192.168.123.2", "bridge-name" : "br-test" }
-    ```
+    **DELETE http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}**
 
 - Add/Remove a port in a bridge:
 
-    **POST http://{onos-address}:8181/onos/ovsdb/config/bridge/port**
+    **POST http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}**
 
-    ```json
-    { "ovsdb-ip" : "192.168.123.2", "bridge-name" : "br-test", "port-name" : "port-test", "peer-patch" : "peer-port" }
-    ```
+    **DELETE http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}**
 
-    peer-patch is an optional parameter, if specified the port added is automatically linked to an other interface of the network.
+- Create/Delete a GRE tunnel (**WARNING: not tested**):
 
-    **DELETE http://{onos-address}:8181/onos/ovsdb/config/bridge/port**
+    **POST http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre/{remote-ip}/{key}**
 
-    ```json
-    { "ovsdb-ip" : "192.168.123.2", "bridge-mame" : "br-test", "port-name" : "port-test" }
-    ```
-
-- Create/Delete a GRE tunnel (**WARNING: Partially implemented and not tested**):
-
-    **POST http://{onos-address}:8181/onos/ovsdb/config/bridge/gre_tunnel**
-
-    ```json
-    { "ovsdb-ip" : "192.168.123.2", "bridge-name" : "br-test", "port-name" : "port-test", "remote-ip" : "{remote-ip}" }
-    ```
-
-    **DELETE http://{onos-address}:8181/onos/ovsdb/config/bridge/gre_tunnel**
-
-    ```json
-    { "ovsdb-ip" : "192.168.123.2", "bridge-mame" : "br-test", "port-name" : "port-test" }
-    ```
+    **DELETE http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre**
