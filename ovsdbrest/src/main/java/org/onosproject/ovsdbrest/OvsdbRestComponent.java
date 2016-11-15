@@ -132,7 +132,6 @@ public class OvsdbRestComponent implements OvsdbRestService {
 
     @Deactivate
     protected void deactivate() {
-        // TODO for some reasons when this app is deactivated, the device driver doesn't work anymore
         configService.removeListener(configListener);
         deviceService.removeListener(deviceListener);
         configRegistry.unregisterConfigFactory(configFactory);
@@ -240,7 +239,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
                 deviceId = DeviceId.deviceId(deviceId.uri());
                 DriverHandler h = driverService.createHandler(deviceId);
                 ControllerConfig controllerConfig = h.behaviour(ControllerConfig.class);
-                controllerConfig.setControllers(new ArrayList<ControllerInfo>());
+                controllerConfig.setControllers(new ArrayList<>());
 
                 // remove bridge from ovsdb
                 BridgeConfig bridgeConfig = device.as(BridgeConfig.class);
@@ -386,13 +385,13 @@ public class OvsdbRestComponent implements OvsdbRestService {
     }
 
     @Override
-    public void createGreTunnel(IpAddress ovsdbAddress, String bridgeName, String portName, IpAddress remoteIp,
-                                String key)
+    public void createGreTunnel(IpAddress ovsdbAddress, String bridgeName, String portName, IpAddress localIp,
+                                IpAddress remoteIp, String key)
             throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException {
 
         OvsdbNode ovsdbNode;
-        log.info("Setting up tunnel GRE from interface {} of bridge {} at {} to {} with key {}",
-                portName, bridgeName, ovsdbAddress, remoteIp, key);
+        log.info("Setting up tunnel GRE from {} to {} with key {}",
+                localIp, remoteIp, key);
 
         try {
             // gets the target ovsdb node
@@ -417,13 +416,13 @@ public class OvsdbRestComponent implements OvsdbRestService {
                         .deviceId(bridgeName)
                         .ifaceName(portName)
                         .type(TunnelDescription.Type.GRE)
-                        .local(TunnelEndPoints.flowTunnelEndpoint())    // TODO what should I pass here?
+                        .local(TunnelEndPoints.ipTunnelEndpoint(localIp))
                         .remote(TunnelEndPoints.ipTunnelEndpoint(remoteIp))
-                        .key(new TunnelKey<>(key))//TunnelKeys.flowTunnelKey())  // TODO what should I pass here?
+                        .key(new TunnelKey<>(key))
                         .build();
                 interfaceConfig.addTunnelMode(portName, tunnelDescription);
-                log.info("Correctly added tunnel GRE from interface {} of bridge {} at {} to {} with key {}",
-                        portName, bridgeName, ovsdbAddress, remoteIp, key);
+                log.info("Correctly added tunnel GRE from {} to {} with key {}",
+                        localIp, remoteIp, key);
             } else {
                 log.warn("The interface behaviour is not supported in device {}", device.id());
                 throw new OvsdbRestException.OvsdbDeviceException(

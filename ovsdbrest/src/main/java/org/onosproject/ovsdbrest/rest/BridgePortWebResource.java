@@ -26,7 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * REST APIs for create/delete a bridge and create a port.
  */
 
-@Path("/ovsdb")
+@Path("/")
 public class BridgePortWebResource extends AbstractWebResource {
     private final Logger log = getLogger(getClass());
 
@@ -135,20 +135,22 @@ public class BridgePortWebResource extends AbstractWebResource {
     }
 
     @POST
-    @Path("/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre/{remote-ip}/{key}")
+    @Path("/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre/{local-ip}/{remote-ip}/{key}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response addGreTunnel(InputStream stream,
                                  @PathParam("ovsdb-ip") String ovsdbIp,
                                  @PathParam("bridge-name") String bridgeName,
                                  @PathParam("port-name") String portName,
+                                 @PathParam("local-ip") String localIp,
                                  @PathParam("remote-ip") String remoteIp,
                                  @PathParam("key") String key) {
         try {
             IpAddress ovsdbAddress = IpAddress.valueOf(ovsdbIp);
+            IpAddress tunnelLocalIp = IpAddress.valueOf(localIp);
             IpAddress tunnelRemoteIp = IpAddress.valueOf(remoteIp);
             OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.createGreTunnel(ovsdbAddress, bridgeName, portName, tunnelRemoteIp, key);
+            ovsdbRestService.createGreTunnel(ovsdbAddress, bridgeName, portName, tunnelLocalIp, tunnelRemoteIp, key);
             return Response.status(200).build();
         } catch (OvsdbRestException.BridgeNotFoundException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();

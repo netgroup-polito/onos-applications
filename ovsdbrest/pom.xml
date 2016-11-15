@@ -18,7 +18,7 @@
 
     <properties>
         <onos.app.name>org.onosproject.ovsdbrest</onos.app.name>
-        <web.context>/onos/ovsdb/config</web.context>
+        <web.context>/onos/ovsdb</web.context>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <onos.app.url>http://onosproject.org</onos.app.url>
         <onos.app.title>REST apis for bridge and GRE port setup in ovs</onos.app.title>

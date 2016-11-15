@@ -53,7 +53,8 @@ public interface OvsdbRestService {
      * @param remoteIp remote end point of gre tunnel
      * @param key the tunnel key
      */
-    void createGreTunnel(IpAddress ovsdbAddress, String bridgeName, String portName, IpAddress remoteIp, String key)
+    void createGreTunnel(IpAddress ovsdbAddress, String bridgeName, String portName, IpAddress localIp,
+                         IpAddress remoteIp, String key)
             throws OvsdbRestException.OvsdbDeviceException, OvsdbRestException.BridgeNotFoundException;
 
     /**

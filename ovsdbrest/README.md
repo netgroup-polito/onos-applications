@@ -73,8 +73,12 @@ The app will start contacting the ovsdb nodes and you should see some related lo
 
     **DELETE http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}**
 
-- Create/Delete a GRE tunnel (**WARNING: not tested**):
+- Create patch port:
 
-    **POST http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre/{remote-ip}/{key}**
+    **POST http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/patch_peer/{peer-port}**
+
+- Create/Delete a GRE tunnel:
+
+    **POST http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre/{local-ip}/{remote-ip}/{key}**
 
     **DELETE http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre**
