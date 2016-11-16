@@ -1,11 +1,16 @@
 # APPS-CAPABILITIES ONOS APPLICATION
 
 This onos application is in charge to listen the life cycle of other apps to keep an updated structure containing the functional capabilities currently available on the onos domain.
+
 Any application that want to provide a funcional capability should maintain a json file describing it, that have to follow the relative portion of [this data model](https://github.com/netgroup-polito/frog4-domain-data-model).
+The json **must be the content of the 'readme' field of the onos application**, with single quotation marks, like this:
+
+    <![CDATA[ {'type':'function-type', ....} ]]>
+
 This onos module performs following operations basing on other applications state:
 - When a new application that provides a FC is installed it is added to the data structure.
 - When the application becames **ACTIVE**, the FC is marked as **not-ready** becouse is not possible to have multiple instances of the same opp.
-- When the state becomes **DEACTIVE** it is maked as **ready**. 
+- When the state becomes **DEACTIVE** it is maked as **ready**.
 - When the app is uninstalled from the system, it is also removed from the structure.
 The application provides a REST interface that allow the onos domain orchestrator to dynamically request the FC list.
 

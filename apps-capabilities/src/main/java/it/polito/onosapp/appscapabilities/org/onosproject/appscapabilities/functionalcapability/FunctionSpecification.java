@@ -17,6 +17,8 @@ public class FunctionSpecification {
         this.mean = mean;
     }
 
+    public FunctionSpecification() { }
+
     public String getName() {
         return name;
     }

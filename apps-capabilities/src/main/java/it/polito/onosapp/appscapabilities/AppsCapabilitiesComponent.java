@@ -1,6 +1,8 @@
 package it.polito.onosapp.appscapabilities;
 
-import it.polito.onosapp.appscapabilities.org.onosproject.appscapabilities.functionalcapability.FunctionSpecification;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.scr.annotations.Activate;
@@ -15,21 +17,16 @@ import it.polito.onosapp.appscapabilities.org.onosproject.appscapabilities.funct
 import org.onosproject.core.Application;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
-import org.onosproject.net.config.ConfigFactory;
 import org.onosproject.net.config.NetworkConfigRegistry;
-import org.onosproject.net.config.basics.SubjectFactories;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.concurrent.ExecutorService;
-
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
-import static org.onlab.util.Tools.groupedThreads;
 
 /**
  * Bridge and port controller.
@@ -84,7 +81,7 @@ public class AppsCapabilitiesComponent implements AppsCapabilitiesRestService {
         Set<FunctionalCapability> capabilities = new HashSet<>();
 
         for (Application app : applicationAdminService.getApplications()) {
-            FunctionalCapability fc = fetchFunctionalCapabilityByAppName(app.id().name());
+            FunctionalCapability fc = fetchFunctionalCapabilityByAppName(app.id());
             if (fc != null) {
                 if (applicationAdminService.getState(app.id()).equals(ApplicationState.ACTIVE)) {
                     fc.setReady(false);
@@ -111,7 +108,7 @@ public class AppsCapabilitiesComponent implements AppsCapabilitiesRestService {
 
             switch (applicationEvent.type()) {
                 case APP_INSTALLED:
-                    FunctionalCapability fc = fetchFunctionalCapabilityByAppName(appName);
+                    FunctionalCapability fc = fetchFunctionalCapabilityByAppName(appId);
                     if (fc != null) {
                         if (applicationAdminService.getState(appId).equals(ApplicationState.ACTIVE)) {
                             fc.setReady(false);
@@ -160,14 +157,29 @@ public class AppsCapabilitiesComponent implements AppsCapabilitiesRestService {
 
     /**
      *  Should discover in some way the application capability (the app could be deactivated).
-     *  TODO For now it returns static entries for known apps
      *  @return functional capability of the app if it has one, null elsewhere
      */
-    FunctionalCapability fetchFunctionalCapabilityByAppName(String appName) {
+    FunctionalCapability fetchFunctionalCapabilityByAppName(ApplicationId appId) {
 
-        switch (appName) {
+        Application application = applicationAdminService.getApplication(appId);
+
+        try {
+            // TODO implement something better then fetching functional info from readme
+            String jsonFunctionalCapability = application.readme().replace("'", "\"");
+            ObjectMapper mapper = new ObjectMapper();
+            FunctionalCapability fc = mapper.readValue(jsonFunctionalCapability, FunctionalCapability.class);
+            log.info("Application {} has a functional capability of type: {}.", application.id().name(), fc.getType());
+            return fc;
+        } catch (IOException e) {
+            log.debug(e.getMessage());
+            log.info("Application {} does not have any functional capability.", application.id().name());
+            e.printStackTrace();
+            return null;
+        }
+        /*
+        switch (appId.name()) {
             case "it.polito.onosapp.nat":
-                FunctionalCapability fc = new FunctionalCapability(appName, "NAT");
+                FunctionalCapability fc = new FunctionalCapability(appId.name(), "NAT");
                 fc.setReady(true);
                 try {
                     fc.setTemplate(new URI("http://netgroup.polito.it/templates/nat.json"));
@@ -183,12 +195,20 @@ public class AppsCapabilitiesComponent implements AppsCapabilitiesRestService {
                         "port-range",
                         "30000",
                         "-",
-                        "lower_bound"
+                        "upper_bound"
                 ));
                 return fc;
             default:
                 return null;
         }
+        */
+    }
+
+    private JsonNode jacksonObjectToJson(Object o) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String json = mapper.writeValueAsString(o);
+        return mapper.readTree(json);
     }
 
     /* REST SERVICE */

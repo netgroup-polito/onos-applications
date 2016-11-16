@@ -21,6 +21,8 @@ public class FunctionalCapability {
     @JsonProperty("function-specifications")
     private FunctionSpecifications functionSpecifications = new FunctionSpecifications();
 
+    public FunctionalCapability() { }
+
     public FunctionalCapability(String name, String type) {
         this.name = name;
         this.type = type;
