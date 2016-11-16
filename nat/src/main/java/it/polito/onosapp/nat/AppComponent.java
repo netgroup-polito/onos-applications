@@ -126,13 +126,13 @@ public class AppComponent {
     private final ExecutorService eventExecutor =
             newSingleThreadExecutor(groupedThreads("onos/nat-ctl", "event-handler", log));
 
-    private final ConfigFactory configFactory =
+    private final ConfigFactory configFactory = null;/* =
             new ConfigFactory(SubjectFactories.APP_SUBJECT_FACTORY, PortConfig.class, "nat") {
                 @Override
                 public PortConfig createConfig() {
                     return new PortConfig();
                 }
-            };
+            };*/
 
     private final NetworkConfigListener configListener = new InternalConfigListener();
 
