@@ -95,6 +95,8 @@ public class AppComponent {
     private DeviceId outputDeviceId;
     private PortNumber inputInterface;
     private PortNumber outputInterface;
+    private int inputPortFlowPriority;
+    private int outputPortFlowPriority;
     private Ip4Address privateAddress;
     private Ip4Address publicAddress;
     private int flowTimeout = DEFAULT_TIMEOUT;
@@ -209,6 +211,7 @@ public class AppComponent {
                 inputDeviceId = privatePort.getDeviceId();
             if (privatePort.getPortNumber() != null)
                 inputInterface = privatePort.getPortNumber();
+            inputPortFlowPriority = privatePort.getFlowPriority();
         }
         PortConfig.ApplicationPort publicPort = config.getPort(PUBLIC_PORT_ID);
         if (publicPort != null) {
@@ -216,6 +219,7 @@ public class AppComponent {
                 outputDeviceId = publicPort.getDeviceId();
             if (publicPort.getPortNumber() != null)
                 outputInterface = publicPort.getPortNumber();
+            outputPortFlowPriority = publicPort.getFlowPriority();
         }
 
         log.info("Updated configuration");
@@ -679,7 +683,6 @@ public class AppComponent {
                     break;
                 default:
                     break;
-
             }
         }
     }
