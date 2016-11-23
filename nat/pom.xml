@@ -33,7 +33,7 @@
         <onos.app.origin>Netgroup, Polito</onos.app.origin>
         <onos.app.category>Utility</onos.app.category>
         <onos.app.url>http://onosproject.org</onos.app.url>
-        <onos.app.readme><![CDATA[ {'type':'NAT','name':'it.polito.onosapp.nat','ready':'true','template':'isp_nat.json','family':'Network','function-specifications':{'function-specification':[{'name':'ip','value':'10.0.0.254','unit':'ip-address','mean':'equal'},{'name':'port-range','value':'10000','unit':'-','mean':'lower_bound'},{'name':'port-range','value':'30000','unit':'-','mean':'upper_bound'}]}} ]]></onos.app.readme>
+        <onos.app.readme><![CDATA[ {'type':'nat','name':'it.polito.onosapp.nat','ready':'true','template':'isp_nat.json','family':'Network','function-specifications':{'function-specification':[{'name':'ip','value':'10.0.0.254','unit':'ip-address','mean':'equal'},{'name':'port-range','value':'10000','unit':'-','mean':'lower_bound'},{'name':'port-range','value':'30000','unit':'-','mean':'upper_bound'}]}} ]]></onos.app.readme>
     </properties>
 
     <dependencies>
