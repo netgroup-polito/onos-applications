@@ -1,5 +1,8 @@
 # OVSDBREST ONOS APPLICATION
 
+This application provides a ***minimal*** interface to an ovsdb device by exposing REST APIs.
+The API allows to create/delete a bridge, attach/remove ports from an existing bridge, create peer patch and setup GRE tunnels.
+
 ## Install
 To install the application on a running onos instance run the following steps.
 
