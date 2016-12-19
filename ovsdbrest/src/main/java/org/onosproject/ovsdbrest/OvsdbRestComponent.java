@@ -99,7 +99,8 @@ public class OvsdbRestComponent implements OvsdbRestService {
     protected DriverService driverService;
 
     private Set<OvsdbNode> ovsdbNodes;
-    // map<bridgeName - datapathId>
+
+    // {bridgeName: datapathId} structure to manage the creation/deletion of bridges
     private Map<String, DeviceId> bridgeIds = Maps.newConcurrentMap();
 
     private Map<OvsdbNode, Set<DeviceId>> ovsdbNodeDevIdsSetMap = Maps.newConcurrentMap();
@@ -368,12 +369,14 @@ public class OvsdbRestComponent implements OvsdbRestService {
         if (device.is(InterfaceConfig.class)) {
             InterfaceConfig interfaceConfig = device.as(InterfaceConfig.class);
 
+            // prepare patch
             PatchDescription.Builder builder = DefaultPatchDescription.builder();
             PatchDescription patchDescription = builder
                     .deviceId(bridgeName)
                     .ifaceName(portName)
                     .peer(patchPeer)
                     .build();
+            // add patch to port through ovsdb
             interfaceConfig.addPatchMode(portName, patchDescription);
             log.info("Correctly created port {} on device {} as peer of port {}", portName, bridgeName, patchPeer);
         } else {
@@ -412,6 +415,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
             if (device.is(InterfaceConfig.class)) {
                 InterfaceConfig interfaceConfig = device.as(InterfaceConfig.class);
 
+                // prepare tunnel
                 TunnelDescription tunnelDescription = DefaultTunnelDescription.builder()
                         .deviceId(bridgeName)
                         .ifaceName(portName)
@@ -420,6 +424,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
                         .remote(TunnelEndPoints.ipTunnelEndpoint(remoteIp))
                         .key(new TunnelKey<>(key))
                         .build();
+                // create tunnel to port through ovsdb
                 interfaceConfig.addTunnelMode(portName, tunnelDescription);
                 log.info("Correctly added tunnel GRE from {} to {} with key {}",
                         localIp, remoteIp, key);
@@ -460,6 +465,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
 
             if (device.is(InterfaceConfig.class)) {
                 InterfaceConfig interfaceConfig = device.as(InterfaceConfig.class);
+                // remove tunnel through ovsdb
                 interfaceConfig.removeTunnelMode(portName);
                 log.info("Correctly deleted tunnel GRE from interface {}", portName);
             } else {
@@ -475,6 +481,11 @@ public class OvsdbRestComponent implements OvsdbRestService {
 
     }
 
+    /**
+     * Performs the connection to ovsdb
+     *
+     * @param node the ovsdb node, with IP address and port
+     */
     private void connectOvsdb(OvsdbNode node) {
         if (!isOvsdbConnected(node)) {
             log.info("connecting ovsdb at {}:{}", node.ovsdbIp(), node.ovsdbPort());
@@ -485,6 +496,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
     /**
      * Gets an available datapath id for the new bridge.
      *
+     * @param datapathId the integer used to generate ids
      * @return the datapath id
      */
     private DeviceId getNextUniqueDatapathId(AtomicLong datapathId) {
@@ -498,7 +510,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
     }
 
     /**
-     * Checks if the bridge exists and available.
+     * Checks if the bridge exists and is available.
      *
      * @return true if the bridge is available, false otherwise
      */
@@ -535,6 +547,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
         }
         return ovsdbClient;
     }
+
     /**
      * Returns cordvtn node associated with a given OVSDB device.
      *
