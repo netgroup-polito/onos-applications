@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Set;
 
 /**
- * Configuration info to reach Ovsdb server.
+ * Configuration info to reach the OVSDB server.
  */
 public class OvsdbNodeConfig extends Config<ApplicationId> {
 
