@@ -11,6 +11,6 @@ public class OvsdbRestApp extends AbstractWebApplication {
 
     @Override
     public Set<Class<?>> getClasses() {
-        return getClasses(BridgePortWebResource.class);
+        return getClasses(OvsdbBridgeWebResource.class);
     }
 }

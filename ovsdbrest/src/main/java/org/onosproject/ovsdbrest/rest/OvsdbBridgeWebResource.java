@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.onlab.packet.IpAddress;
 import org.onosproject.ovsdbrest.OvsdbRestException;
-import org.onosproject.ovsdbrest.OvsdbRestService;
+import org.onosproject.ovsdbrest.OvsdbBridgeService;
 import org.onosproject.rest.AbstractWebResource;
 import org.slf4j.Logger;
 
@@ -27,7 +27,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 
 @Path("/")
-public class BridgePortWebResource extends AbstractWebResource {
+public class OvsdbBridgeWebResource extends AbstractWebResource {
     private final Logger log = getLogger(getClass());
 
     @GET
@@ -46,8 +46,8 @@ public class BridgePortWebResource extends AbstractWebResource {
                               @PathParam("bridge-name") String bridgeName) {
         try {
             IpAddress ovsdbAddress = IpAddress.valueOf(ovsdbIp);
-            OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.createBridge(ovsdbAddress, bridgeName);
+            OvsdbBridgeService ovsdbBridgeService = get(OvsdbBridgeService.class);
+            ovsdbBridgeService.createBridge(ovsdbAddress, bridgeName);
             return Response.status(200).build();
         } catch (OvsdbRestException.BridgeAlreadyExistsException ex) {
             return Response.status(Response.Status.CONFLICT).entity("A bridge with this name already exists").build();
@@ -65,8 +65,8 @@ public class BridgePortWebResource extends AbstractWebResource {
         try {
 
             IpAddress ovsdbAddress = IpAddress.valueOf(ovsdbIp);
-            OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.deleteBridge(ovsdbAddress, bridgeName);
+            OvsdbBridgeService ovsdbBridgeService = get(OvsdbBridgeService.class);
+            ovsdbBridgeService.deleteBridge(ovsdbAddress, bridgeName);
             return Response.status(200).build();
         } catch (OvsdbRestException.BridgeNotFoundException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
@@ -85,8 +85,8 @@ public class BridgePortWebResource extends AbstractWebResource {
                             @PathParam("port-name") String portName) {
         try {
             IpAddress ovsdbAddress = IpAddress.valueOf(ovsdbIp);
-            OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.addPort(ovsdbAddress, bridgeName, portName);
+            OvsdbBridgeService ovsdbBridgeService = get(OvsdbBridgeService.class);
+            ovsdbBridgeService.addPort(ovsdbAddress, bridgeName, portName);
             return Response.status(200).build();
         } catch (OvsdbRestException.BridgeNotFoundException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
@@ -105,8 +105,8 @@ public class BridgePortWebResource extends AbstractWebResource {
                                @PathParam("port-name") String portName) {
         try {
             IpAddress ovsdbAddress = IpAddress.valueOf(ovsdbIp);
-            OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.removePort(ovsdbAddress, bridgeName, portName);
+            OvsdbBridgeService ovsdbBridgeService = get(OvsdbBridgeService.class);
+            ovsdbBridgeService.removePort(ovsdbAddress, bridgeName, portName);
             return Response.status(200).build();
         } catch (OvsdbRestException.BridgeNotFoundException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
@@ -126,8 +126,8 @@ public class BridgePortWebResource extends AbstractWebResource {
                                         @PathParam("patch-peer") String patchPeer) {
         try {
             IpAddress ovsdbAddress = IpAddress.valueOf(ovsdbIp);
-            OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.createPatchPeerPort(ovsdbAddress, bridgeName, portName, patchPeer);
+            OvsdbBridgeService ovsdbBridgeService = get(OvsdbBridgeService.class);
+            ovsdbBridgeService.createPatchPeerPort(ovsdbAddress, bridgeName, portName, patchPeer);
             return Response.status(200).build();
         } catch (OvsdbRestException.OvsdbDeviceException ex) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build();
@@ -149,8 +149,8 @@ public class BridgePortWebResource extends AbstractWebResource {
             IpAddress ovsdbAddress = IpAddress.valueOf(ovsdbIp);
             IpAddress tunnelLocalIp = IpAddress.valueOf(localIp);
             IpAddress tunnelRemoteIp = IpAddress.valueOf(remoteIp);
-            OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.createGreTunnel(ovsdbAddress, bridgeName, portName, tunnelLocalIp, tunnelRemoteIp, key);
+            OvsdbBridgeService ovsdbBridgeService = get(OvsdbBridgeService.class);
+            ovsdbBridgeService.createGreTunnel(ovsdbAddress, bridgeName, portName, tunnelLocalIp, tunnelRemoteIp, key);
             return Response.status(200).build();
         } catch (OvsdbRestException.BridgeNotFoundException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity("No bridge found with the specified name").build();
@@ -169,8 +169,8 @@ public class BridgePortWebResource extends AbstractWebResource {
                                     @PathParam("port-name") String portName) {
         try {
             IpAddress ovsdbAddress = IpAddress.valueOf(ovsdbIp);
-            OvsdbRestService ovsdbRestService = get(OvsdbRestService.class);
-            ovsdbRestService.deleteGreTunnel(ovsdbAddress, bridgeName, portName);
+            OvsdbBridgeService ovsdbBridgeService = get(OvsdbBridgeService.class);
+            ovsdbBridgeService.deleteGreTunnel(ovsdbAddress, bridgeName, portName);
             return Response.status(200).build();
         } catch (OvsdbRestException.OvsdbDeviceException ex) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build();

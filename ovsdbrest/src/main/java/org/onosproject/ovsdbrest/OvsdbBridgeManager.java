@@ -35,7 +35,6 @@ import org.onosproject.net.config.NetworkConfigService;
 import org.onosproject.net.config.NetworkConfigEvent;
 import org.onosproject.net.config.basics.SubjectFactories;
 import org.onosproject.net.device.DeviceAdminService;
-import org.onosproject.net.device.DeviceListener;
 import org.onosproject.net.device.DeviceService;
 import org.onosproject.net.driver.DriverHandler;
 import org.onosproject.net.driver.DriverService;
@@ -67,7 +66,7 @@ import static org.onosproject.ovsdbrest.OvsdbRestException.OvsdbDeviceException;
  */
 @Component(immediate = true)
 @Service
-public class OvsdbRestComponent implements OvsdbRestService {
+public class OvsdbBridgeManager implements OvsdbBridgeService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     private ApplicationId appId;
@@ -108,11 +107,8 @@ public class OvsdbRestComponent implements OvsdbRestService {
     private final ExecutorService eventExecutor =
             newSingleThreadExecutor(groupedThreads("onos/ovsdb-rest-ctl", "event-handler", log));
     private final NetworkConfigListener configListener = new InternalConfigListener();
-    private final DeviceListener deviceListener = new InternalDeviceListener();
     private final AtomicLong datapathId = new AtomicLong(DPID_BEGIN);
 
-    private final OvsdbHandler ovsdbHandler = new OvsdbHandler();
-    private final BridgeHandler bridgeHandler = new BridgeHandler();
 
     private final ConfigFactory configFactory =
             new ConfigFactory(SubjectFactories.APP_SUBJECT_FACTORY, OvsdbNodeConfig.class, "ovsdbrest") {
@@ -125,7 +121,6 @@ public class OvsdbRestComponent implements OvsdbRestService {
     @Activate
     protected void activate() {
         appId = coreService.getAppId("org.onosproject.ovsdbrest");
-        deviceService.addListener(deviceListener);
         configService.addListener(configListener);
         configRegistry.registerConfigFactory(configFactory);
         log.info("Started");
@@ -134,7 +129,6 @@ public class OvsdbRestComponent implements OvsdbRestService {
     @Deactivate
     protected void deactivate() {
         configService.removeListener(configListener);
-        deviceService.removeListener(deviceListener);
         configRegistry.unregisterConfigFactory(configFactory);
         eventExecutor.shutdown();
         log.info("Stopped");
@@ -266,7 +260,7 @@ public class OvsdbRestComponent implements OvsdbRestService {
             ovsdbNode = ovsdbNodes.stream().filter(node -> node.ovsdbIp().equals(ovsdbAddress)).findFirst().get();
         } catch (NoSuchElementException nsee) {
             log.warn(nsee.getMessage());
-            throw new .OvsdbDeviceException(nsee.getMessage());
+            throw new OvsdbDeviceException(nsee.getMessage());
         }
 
         try {
@@ -592,11 +586,10 @@ public class OvsdbRestComponent implements OvsdbRestService {
             switch (event.type()) {
                 case CONFIG_ADDED:
                 case CONFIG_UPDATED:
-                    eventExecutor.execute(OvsdbRestComponent.this::readConfiguration);
+                    eventExecutor.execute(OvsdbBridgeManager.this::readConfiguration);
                     break;
                 default:
                     break;
-
             }
         }
     }

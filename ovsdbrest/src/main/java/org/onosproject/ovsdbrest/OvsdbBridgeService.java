@@ -5,7 +5,7 @@ import org.onlab.packet.IpAddress;
 /**
  * APIs for ovsdb driver access.
  */
-public interface OvsdbRestService {
+public interface OvsdbBridgeService {
 
     /**
      * Creates a new bridge.
