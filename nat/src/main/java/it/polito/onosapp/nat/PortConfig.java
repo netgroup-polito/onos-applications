@@ -20,6 +20,7 @@ public class PortConfig extends Config<ApplicationId> {
     private static final String DEVICE_ID = "device-id";
     private static final String PORT_NUMBER = "port-number";
     private static final String FLOW_PRIORITY = "flow-priority";
+    private static final String EXTERNAL_VLAN = "external-vlan";
 
     private static final int DEFAULT_PRIORITY = 10;
 
@@ -33,11 +34,14 @@ public class PortConfig extends Config<ApplicationId> {
         String deviceId = port.path(DEVICE_ID).textValue();
         int portNumber = port.path(PORT_NUMBER).asInt();
         int flowPriority = port.path(FLOW_PRIORITY).asInt(DEFAULT_PRIORITY);
+        int externalVlan = port.path(EXTERNAL_VLAN).asInt(0);
+        log.info("externalVlan = " + externalVlan);
         log.info("deviceID = " + deviceId);
         return new ApplicationPort(
                 DeviceId.deviceId(deviceId),
                 PortNumber.portNumber(portNumber),
-                flowPriority);
+                flowPriority,
+                externalVlan);
     }
 
     public static class ApplicationPort {
@@ -45,11 +49,13 @@ public class PortConfig extends Config<ApplicationId> {
         private final DeviceId deviceId;
         private final PortNumber portNumber;
         private final int flowPriority;
+        private final int externalVlan;
 
-        public ApplicationPort(DeviceId deviceId, PortNumber portNumber, int flowPriority) {
+        public ApplicationPort(DeviceId deviceId, PortNumber portNumber, int flowPriority, int externalVlan) {
             this.deviceId = deviceId;
             this.portNumber = portNumber;
             this.flowPriority = flowPriority;
+            this.externalVlan = externalVlan;
         }
 
         public DeviceId getDeviceId() {
@@ -62,6 +68,10 @@ public class PortConfig extends Config<ApplicationId> {
 
         public int getFlowPriority() {
             return flowPriority;
+        }
+
+        public int getExternalVlan() {
+            return externalVlan;
         }
     }
 }

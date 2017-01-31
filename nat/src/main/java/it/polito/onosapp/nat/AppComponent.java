@@ -50,14 +50,14 @@ import static org.onlab.util.Tools.groupedThreads;
 public class AppComponent {
 
     private static final int DEFAULT_TIMEOUT = 1000;
-    private static final int DEFAULT_PRIORITY = 10;
+    private static final int DEFAULT_PRIORITY = 40001;
 
     private static final MacAddress PRIVATE_MAC = valueOf("4f:4f:4f:4f:4f:4f");
     private static final MacAddress PUBLIC_MAC = valueOf("3f:3f:3f:3f:3f:3f");
     private static final short FIRST_PORT = 10000;
     private static final short LAST_PORT = 12000;
 
-    private static final String PRIVATE_PORT_ID = "USER:1";
+    private static final String PRIVATE_PORT_ID = "USER:0";
     private static final String PUBLIC_PORT_ID = "WAN:0";
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -97,6 +97,9 @@ public class AppComponent {
     private PortNumber outputInterface;
     private int inputPortFlowPriority;
     private int outputPortFlowPriority;
+    private VlanId externalInputVlan = VlanId.vlanId((short) 0);
+    private VlanId externalOutputVlan = VlanId.vlanId((short) 0);
+
     private Ip4Address privateAddress;
     private Ip4Address publicAddress;
     private int flowTimeout = DEFAULT_TIMEOUT;
@@ -212,6 +215,8 @@ public class AppComponent {
             if (privatePort.getPortNumber() != null)
                 inputInterface = privatePort.getPortNumber();
             inputPortFlowPriority = privatePort.getFlowPriority();
+            externalInputVlan = VlanId.vlanId((short) privatePort.getExternalVlan());
+
         }
         PortConfig.ApplicationPort publicPort = config.getPort(PUBLIC_PORT_ID);
         if (publicPort != null) {
@@ -220,6 +225,7 @@ public class AppComponent {
             if (publicPort.getPortNumber() != null)
                 outputInterface = publicPort.getPortNumber();
             outputPortFlowPriority = publicPort.getFlowPriority();
+            externalOutputVlan = VlanId.vlanId((short) publicPort.getExternalVlan());
         }
 
         log.info("Updated configuration");
@@ -235,34 +241,46 @@ public class AppComponent {
     private void requestIntercepts() {
         TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_IPV4);
-        selector.matchInPhyPort(inputInterface);
+        selector.matchInPort(inputInterface);
+        if (externalInputVlan.toShort() != 0)
+            selector.matchVlanId(externalInputVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputDeviceId));
 
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
-        selector.matchInPhyPort(inputInterface);
+        selector.matchInPort(inputInterface);
+        if (externalInputVlan.toShort() != 0)
+            selector.matchVlanId(externalInputVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputDeviceId));
 
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
-        selector.matchInPhyPort(outputInterface);
+        selector.matchInPort(outputInterface);
+        if (externalOutputVlan.toShort() != 0)
+            selector.matchVlanId(externalOutputVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputDeviceId));
     }
 
     private void withdrawIntercepts() {
         TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_IPV4);
-        selector.matchInPhyPort(inputInterface);
+        selector.matchInPort(inputInterface);
+        if (externalInputVlan.toShort() != 0)
+            selector.matchVlanId(externalInputVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputDeviceId));
 
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
-        selector.matchInPhyPort(inputInterface);
+        selector.matchInPort(inputInterface);
+        if (externalInputVlan.toShort() != 0)
+            selector.matchVlanId(externalInputVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputDeviceId));
 
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
-        selector.matchInPhyPort(outputInterface);
+        selector.matchInPort(outputInterface);
+        if (externalOutputVlan.toShort() != 0)
+            selector.matchVlanId(externalOutputVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputDeviceId));
     }
 
@@ -451,6 +469,8 @@ public class AppComponent {
                     .setDestinationMACAddress(MacAddress.BROADCAST)
                     .setSourceMACAddress(PUBLIC_MAC)
                     .setEtherType(Ethernet.TYPE_ARP);
+            if (externalOutputVlan.toShort() != 0)
+                ethRequest.setVlanID(externalOutputVlan.toShort());
             ethRequest.setPayload(arpRequest);
 
             TrafficTreatment.Builder builder = DefaultTrafficTreatment.builder();
@@ -504,7 +524,10 @@ public class AppComponent {
                 .setEthDst(dstMac)
                 .setEthSrc(PUBLIC_MAC)
                 .setOutput(portNumber);
+        if (externalOutputVlan.toShort() != 0)
+            treatmentBuilder.popVlan();
 
+        // TODO TCP port change does not work
         //if (protocol == IPv4.PROTOCOL_TCP)
         //    treatmentBuilder.setTcpDst(TpPort.tpPort(newDstPort));
 
@@ -552,6 +575,8 @@ public class AppComponent {
                 .matchIPSrc(srcAddress.toIpPrefix())
                 .matchIPProtocol(protocol)
                 .matchIPDst(dstAddress.toIpPrefix());
+        if (externalInputVlan.toShort() != 0)
+            selectorBuilder.matchVlanId(externalInputVlan);
         switch (protocol) {
             case IPv4.PROTOCOL_TCP:
                 //selectorBuilder.matchTcpSrc(TpPort.tpPort(srcPort));
@@ -565,7 +590,10 @@ public class AppComponent {
                 .setEthSrc(PUBLIC_MAC)
                 .setEthDst(dstMac)
                 .setOutput(portNumber);
+        if (externalInputVlan.toShort() != 0)
+            treatmentBuilder.popVlan();
 
+        // TODO TCP port change does not work
         //if (protocol == IPv4.PROTOCOL_TCP)
         //    treatmentBuilder.setTcpSrc(TpPort.tpPort(newSrcPort));
 
@@ -599,7 +627,7 @@ public class AppComponent {
         flowObjectiveService.forward(inputDeviceId, forwardingObjective);
     }
 
-    // install rules to steer traffic versus the final port
+    // install rules to steer traffic towards the final port
     private void installForwardingRule(DeviceId deviceId, PortNumber outputPort, Ip4Address srcAddress, Ip4Address dstAddress) {
 
         log.info(" - Install forwarding Rule");
@@ -613,6 +641,13 @@ public class AppComponent {
 
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
                 .setOutput(outputPort);
+        if (deviceId == inputDeviceId && externalInputVlan.toShort() != 0) {
+            treatmentBuilder.pushVlan();
+            treatmentBuilder.setVlanId(externalInputVlan);
+        } else if (deviceId == outputDeviceId && externalOutputVlan.toShort() != 0) {
+            treatmentBuilder.pushVlan();
+            treatmentBuilder.setVlanId(externalOutputVlan);
+        }
 
         ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
                 .withSelector(selectorBuilder.build())
