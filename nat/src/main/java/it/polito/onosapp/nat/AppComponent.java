@@ -510,6 +510,8 @@ public class AppComponent {
                 .matchIPSrc(srcAddress.toIpPrefix())
                 .matchIPProtocol(protocol)
                 .matchIPDst(publicAddress.toIpPrefix());
+        if (externalOutputVlan.toShort() != 0)
+            selectorBuilder.matchVlanId(externalOutputVlan);
 
         switch (protocol) {
             case IPv4.PROTOCOL_TCP:
