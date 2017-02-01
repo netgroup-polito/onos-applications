@@ -8,7 +8,7 @@ import java.io.*;
 
 public class NatConfiguration {
 
-    private static final String CONFIGURATION_FILE = "orch-config.ini";
+    private static final String CONFIGURATION_FILE = "configuration/orch-config.ini";
 
     private static final String INTERFACES = "interfaces";
     private static final String ADDRESSES = "addresses";
@@ -61,7 +61,7 @@ public class NatConfiguration {
     private String iniLoad(String section, String key) throws IOException {
 
         ClassLoader classLoader = AppComponent.class.getClassLoader();
-        InputStream is = classLoader.getResourceAsStream("configuration/orch-config.ini");
+        InputStream is = classLoader.getResourceAsStream(CONFIGURATION_FILE);
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         //File file = new File(classLoader.getResource("configuration/orch-config.ini").getFile());
         //BufferedReader br = new BufferedReader(new FileReader(file));

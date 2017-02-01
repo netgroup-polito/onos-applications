@@ -52,8 +52,6 @@ public class AppComponent {
     private static final int DEFAULT_TIMEOUT = 1000;
     private static final int DEFAULT_PRIORITY = 40001;
 
-    private static final MacAddress PRIVATE_MAC = valueOf("4f:4f:4f:4f:4f:4f");
-    private static final MacAddress PUBLIC_MAC = valueOf("3f:3f:3f:3f:3f:3f");
     private static final short FIRST_PORT = 10000;
     private static final short LAST_PORT = 12000;
 
@@ -102,6 +100,8 @@ public class AppComponent {
 
     private Ip4Address privateAddress;
     private Ip4Address publicAddress;
+    private MacAddress privateMac = valueOf(randomMACAddress());
+    private MacAddress publicMac = valueOf(randomMACAddress());
     private int flowTimeout = DEFAULT_TIMEOUT;
     private int flowPriority = DEFAULT_PRIORITY;
 
@@ -309,10 +309,10 @@ public class AppComponent {
                     log.info(" -- ARP request: who has {}", Ip4Address.valueOf(arpPacket.getTargetProtocolAddress()));
                     if (Objects.equals(privateAddress, Ip4Address.valueOf(arpPacket.getTargetProtocolAddress()))) {
                         log.info(" -- ARP request for nat interface");
-                        processArpRequest(packetContext, ethPkt, PRIVATE_MAC);
+                        processArpRequest(packetContext, ethPkt, privateMac);
                     } else if (Objects.equals(publicAddress, Ip4Address.valueOf(arpPacket.getTargetProtocolAddress()))) {
                         log.info(" -- ARP request for public interface");
-                        processArpRequest(packetContext, ethPkt, PUBLIC_MAC);
+                        processArpRequest(packetContext, ethPkt, publicMac);
                     }
                 }
                 if ((arpPacket.getOpCode() == ARP.OP_REPLY)) {
@@ -458,7 +458,7 @@ public class AppComponent {
                     .setOpCode(ARP.OP_REQUEST)
                     .setHardwareAddressLength((byte)6)
                     .setProtocolAddressLength((byte)4)
-                    .setSenderHardwareAddress(PUBLIC_MAC.toBytes())
+                    .setSenderHardwareAddress(publicMac.toBytes())
                     .setSenderProtocolAddress(publicAddress.toInt())
                     .setTargetHardwareAddress(MacAddress.ZERO.toBytes())
                     .setTargetProtocolAddress(dstAddress.getIp4Address().toInt());
@@ -467,7 +467,7 @@ public class AppComponent {
             // Build Ethernet frame
             Ethernet ethRequest = new Ethernet()
                     .setDestinationMACAddress(MacAddress.BROADCAST)
-                    .setSourceMACAddress(PUBLIC_MAC)
+                    .setSourceMACAddress(publicMac)
                     .setEtherType(Ethernet.TYPE_ARP);
             if (externalOutputVlan.toShort() != 0)
                 ethRequest.setVlanID(externalOutputVlan.toShort());
@@ -522,7 +522,7 @@ public class AppComponent {
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
                 .setIpDst(dstAddress.getIp4Address())
                 .setEthDst(dstMac)
-                .setEthSrc(PUBLIC_MAC)
+                .setEthSrc(publicMac)
                 .setOutput(portNumber);
         if (externalOutputVlan.toShort() != 0)
             treatmentBuilder.popVlan();
@@ -553,7 +553,7 @@ public class AppComponent {
         log.info("Action: " +
                 "setIpDst " + dstAddress.getIp4Address().toString() + " | " +
                 "setEthDst " + dstMac.toString() + " | " +
-                "setEthSrc " + PUBLIC_MAC.toString() + " | " +
+                "setEthSrc " + publicMac.toString() + " | " +
                 tcpLogString +
                 "outputPort " + portNumber.toString());
 
@@ -587,7 +587,7 @@ public class AppComponent {
 
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
                 .setIpSrc(publicAddress)
-                .setEthSrc(PUBLIC_MAC)
+                .setEthSrc(publicMac)
                 .setEthDst(dstMac)
                 .setOutput(portNumber);
         if (externalInputVlan.toShort() != 0)
@@ -619,7 +619,7 @@ public class AppComponent {
         log.info("Action: " +
                 "setIpSrc " + publicAddress.toString() + " | " +
                 "setEthDst " + dstMac.toString() + " | " +
-                "setEthSrc " + PUBLIC_MAC.toString() + " | " +
+                "setEthSrc " + publicMac.toString() + " | " +
                 tcpLogString +
                 "outputPort " + portNumber.toString());
 
@@ -720,5 +720,24 @@ public class AppComponent {
                     break;
             }
         }
+    }
+
+    private String randomMACAddress() {
+        Random rand = new Random();
+        byte[] macAddr = new byte[6];
+        rand.nextBytes(macAddr);
+
+        macAddr[0] = (byte)(macAddr[0] & (byte)254);  //zeroing last 2 bytes to make it unicast and locally adminstrated
+
+        StringBuilder sb = new StringBuilder(18);
+        for(byte b : macAddr){
+
+            if(sb.length() > 0)
+                sb.append(":");
+
+            sb.append(String.format("%02x", b));
+        }
+
+        return sb.toString();
     }
 }
