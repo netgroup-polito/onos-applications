@@ -524,8 +524,13 @@ public class AppComponent {
                 .setEthDst(dstMac)
                 .setEthSrc(publicMac)
                 .setOutput(portNumber);
-        if (externalOutputVlan.toShort() != 0)
-            treatmentBuilder.popVlan();
+        // VLAN endpoint
+        if (externalOutputVlan.toShort() != 0) {
+            if (externalInputVlan.toShort() != 0)
+                treatmentBuilder.setVlanId(externalInputVlan);
+            else
+                treatmentBuilder.popVlan();
+        }
 
         // TODO TCP port change does not work
         //if (protocol == IPv4.PROTOCOL_TCP)
@@ -590,8 +595,13 @@ public class AppComponent {
                 .setEthSrc(publicMac)
                 .setEthDst(dstMac)
                 .setOutput(portNumber);
-        if (externalInputVlan.toShort() != 0)
-            treatmentBuilder.popVlan();
+        // VLAN endpoint
+        if (externalInputVlan.toShort() != 0) {
+            if (externalOutputVlan.toShort() != 0)
+                treatmentBuilder.setVlanId(externalOutputVlan);
+            else
+                treatmentBuilder.popVlan();
+        }
 
         // TODO TCP port change does not work
         //if (protocol == IPv4.PROTOCOL_TCP)
@@ -641,12 +651,17 @@ public class AppComponent {
 
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
                 .setOutput(outputPort);
+        // VLAN endpoint
         if (deviceId == inputDeviceId && externalInputVlan.toShort() != 0) {
-            treatmentBuilder.pushVlan();
-            treatmentBuilder.setVlanId(externalInputVlan);
+            if (externalOutputVlan.toShort() != 0) {
+                treatmentBuilder.pushVlan();
+                treatmentBuilder.setVlanId(externalInputVlan);
+            }
         } else if (deviceId == outputDeviceId && externalOutputVlan.toShort() != 0) {
-            treatmentBuilder.pushVlan();
-            treatmentBuilder.setVlanId(externalOutputVlan);
+            if (externalInputVlan.toShort() != 0) {
+                treatmentBuilder.pushVlan();
+                treatmentBuilder.setVlanId(externalOutputVlan);
+            }
         }
 
         ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
