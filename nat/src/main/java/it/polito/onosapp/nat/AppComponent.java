@@ -515,10 +515,10 @@ public class AppComponent {
 
         switch (protocol) {
             case IPv4.PROTOCOL_TCP:
-            //    selectorBuilder.matchTcpDst(TpPort.tpPort(dstPort));
+                // selectorBuilder.matchTcpDst(TpPort.tpPort(dstPort));
                 break;
             case IPv4.PROTOCOL_ICMP:
-                selectorBuilder.matchIcmpCode((byte) dstPort);
+                // selectorBuilder.matchIcmpCode((byte) dstPort);
         }
 
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
