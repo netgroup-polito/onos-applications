@@ -381,7 +381,7 @@ public class AppComponent {
                     ICMP icmpHeader = (ICMP) ipHeader.getPayload();
                     if (icmpHeader == null)
                         return;
-                    srcPortNumber = icmpHeader.getIcmpCode();
+                    srcPortNumber = icmpHeader.getIcmpCode();   // icmp query id?
 
                     log.info(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
                     log.info(" - - Src IP: " + srcAddress.toString());
@@ -589,7 +589,7 @@ public class AppComponent {
                 //selectorBuilder.matchTcpSrc(TpPort.tpPort(srcPort));
                 break;
             case IPv4.PROTOCOL_ICMP:
-                selectorBuilder.matchIcmpCode((byte) srcPort);
+                //selectorBuilder.matchIcmpCode((byte) srcPort);
         }
 
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
