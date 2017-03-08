@@ -1,0 +1,5 @@
+x : root;
+x.privateAddress : root.privateMac;
+x.publicAddress  : root.publicMac;
+x.mappaNat : root.natPortMap
+x.mappaNat[] : root.natPortMap[key]
