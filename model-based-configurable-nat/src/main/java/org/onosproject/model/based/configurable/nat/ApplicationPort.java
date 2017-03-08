@@ -15,6 +15,8 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
+import org.onlab.packet.Ip4Address;
+import org.onlab.packet.VlanId;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.PortNumber;
 
@@ -24,12 +26,17 @@ import org.onosproject.net.PortNumber;
  */
 public class ApplicationPort {
 
-    private final DeviceId deviceId;
-    private final PortNumber portNumber;
-    private final int flowPriority;
-    private final int externalVlan;
+    public DeviceId deviceId;
+    public PortNumber portNumber;
+    public int flowPriority;
+    public VlanId externalVlan;
+    public Ip4Address ipAddress;
 
-    public ApplicationPort(DeviceId deviceId, PortNumber portNumber, int flowPriority, int externalVlan) {
+    public ApplicationPort(){
+        
+    }
+    
+    public ApplicationPort(DeviceId deviceId, PortNumber portNumber, int flowPriority, VlanId externalVlan) {
         this.deviceId = deviceId;
         this.portNumber = portNumber;
         this.flowPriority = flowPriority;
@@ -48,7 +55,11 @@ public class ApplicationPort {
         return flowPriority;
     }
 
-    public int getExternalVlan() {
+    public VlanId getExternalVlan() {
         return externalVlan;
+    }
+    
+    public Ip4Address getIpAddress(){
+        return ipAddress;
     }
 }

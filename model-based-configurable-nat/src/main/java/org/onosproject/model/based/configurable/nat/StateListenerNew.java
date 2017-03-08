@@ -93,7 +93,7 @@ public class StateListenerNew extends Thread{
         Collection<String> all = YangToJava.keySet();
         List<String> sorted = new ArrayList<String>(all);
         Collections.sort(sorted);
-        System.out.println(sorted);
+        //System.out.println(sorted);
         List<String> leafs = new ArrayList<>();
         for(int i=0; i<sorted.size()-1; i++){
             String id0 = sorted.get(i);
@@ -117,7 +117,7 @@ public class StateListenerNew extends Thread{
         for(String l:leafs)
             createTree(rootJson, YangToJava.get(l));
         
-        System.out.println(leafs);
+        //System.out.println(leafs);
         for(String s:leafs){
             String s1 = s.substring(5);
             toListen.add(s1);
@@ -131,7 +131,7 @@ public class StateListenerNew extends Thread{
     public void run(){
         while(!stopCondition){
             try {
-                System.out.println("Parte il ciclo");
+                //System.out.println("Parte il ciclo");
                 //checkValue();
                 saveNewValues();
                 sleep(5000);
@@ -250,8 +250,8 @@ public class StateListenerNew extends Thread{
                 happenings.add(e);
                 insertInNode(rootJ, k, generalIndexes(k), e.obj);
             }
-            System.out.println("REM --");
-            System.out.println(rootJ);
+            //System.out.println("REM --");
+            //System.out.println(rootJ);
 
             //copyNewState contains the added
             rootJ = mapper.createObjectNode();
@@ -263,14 +263,14 @@ public class StateListenerNew extends Thread{
                 happenings.add(e);
                 insertInNode(rootJ, k, generalIndexes(k), e.obj);
             }
-            System.out.println("ADD--");
-            System.out.println(rootJ);
+            //System.out.println("ADD--");
+            //System.out.println(rootJ);
             
             rootJ = mapper.createObjectNode();
             for(String s:ancoraPresenti)
                 insertInNode(rootJ, s, generalIndexes(s), "presente");
-            System.out.println("--Presenti--");
-            System.out.println(rootJ);
+            //System.out.println("--Presenti--");
+            //System.out.println(rootJ);
         }
         
         for(events e:happenings){
@@ -534,7 +534,7 @@ public class StateListenerNew extends Thread{
                 continue;
             }
         }
-        System.out.println(ref);
+        //System.out.println(ref);
         if(ref.isValueNode()){
             //is a leaf, but it is not present in state: doesn't exist
             return null;
@@ -542,7 +542,7 @@ public class StateListenerNew extends Thread{
         JsonNode res = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
         var=(res.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
         res = fillResult(ref, var);
-        System.out.println(res);
+        //System.out.println(res);
         return res;
     }
 
@@ -678,7 +678,7 @@ public class StateListenerNew extends Thread{
     private void setComplexObject(String var, String newVal) {
         try {
             JsonNode toSet = mapper.readTree(newVal);
-            System.out.println(toSet);
+            //System.out.println(toSet);
             
             fillVariables(toSet, var);
         } catch (IOException ex) {
@@ -815,7 +815,7 @@ public class StateListenerNew extends Thread{
         String var = fromYangToJava(msg.var);
         switch(msg.act){
             case GET:
-                System.out.println("devo passare "+var);
+                System.out.println("asked for variable "+msg.var+", its name in java is "+var);
                 if(var==null)
                     msg.obj=null;
                 else if(!var.equals("root") && state.containsKey(var.substring(5))){
@@ -823,7 +823,7 @@ public class StateListenerNew extends Thread{
                     String field = (msg.var.contains("."))?msg.var.substring(msg.var.lastIndexOf(".")+1):msg.var;
                     on.put(field, getLeafValue(var.substring(5)).toString());
                    msg.objret = mapper.writeValueAsString(on);
-                   System.out.println("E' una foglia "+msg.objret);
+                   //System.out.println("E' una foglia "+msg.objret);
                 }
                 else{
             
