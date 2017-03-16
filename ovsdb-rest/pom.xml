@@ -11,7 +11,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>onos-app-ovsdbrest</artifactId>
+    <artifactId>ovsdb-rest</artifactId>
+    <version>1.9.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <description>REST apis for bridge and GRE port setup in ovs</description>
@@ -64,8 +65,14 @@
 
         <dependency>
             <groupId>org.onosproject</groupId>
+            <artifactId>onos-ovsdb-rfc</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.onosproject</groupId>
             <artifactId>onos-ovsdb-api</artifactId>
-            <version>1.8.0-SNAPSHOT</version>
+            <version>1.6.0</version>
         </dependency>
 
         <dependency>
@@ -117,5 +124,14 @@
             </plugin>
         </plugins>
     </build>
-
+    <repositories>
+        <repository>
+            <id>ovsdb-api</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/org/onosproject/onos-ovsdb-api/1.8.0-SNAPSHOT/</url>
+        </repository>
+        <repository>
+            <id>ovsdb-rfc</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/org/onosproject/onos-ovsdb-rfc/1.8.0-SNAPSHOT/</url>
+        </repository>
+    </repositories>
 </project>

@@ -467,7 +467,7 @@ public class OvsdbBridgeManager implements OvsdbBridgeService {
     }
 
     /**
-     * Performs the connection to ovsdb
+     * Performs the connection to ovsdb.
      *
      * @param node the ovsdb node, with IP address and port
      */
