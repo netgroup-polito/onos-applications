@@ -1,0 +1,13 @@
+x : root;
+x.privateAddress : root.inputApp.ipAddress;
+x.publicAddress  : root.outputApp.ipAddress;
+x.DeviceIn : root.inputApp.deviceId;
+x.DeviceOut : root.outputApp.deviceId;
+x.InterfIn : root.inputApp.portNumber;
+x.InterfOut : root.outputApp.portNumber;
+x.PriorityIn : root.inputApp.flowPriority;
+x.PriorityOut : root.outputApp.flowPriority;
+x.VlanIn : root.inputApp.externalVlan;
+x.VlanOut : root.outputApp.externalVlan;
+x.mappaNat : root.natPortMap
+x.mappaNat[] : root.natPortMap[key]
