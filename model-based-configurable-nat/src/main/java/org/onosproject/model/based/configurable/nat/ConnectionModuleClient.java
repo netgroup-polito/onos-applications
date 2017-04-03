@@ -5,7 +5,6 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
-import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

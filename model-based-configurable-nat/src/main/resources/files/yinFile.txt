@@ -1,0 +1,266 @@
+{
+  "@xmlns": "urn:ietf:params:xml:ns:yang:yin:1",
+  "@name": "nat",
+  "extension": [
+    {
+      "@name": "advertise",
+      "argument": {
+        "yin-element": {
+          "@value": "false"
+        },
+        "@name": "advertise"
+      }
+    },
+    {
+      "@name": "period",
+      "argument": {
+        "yin-element": {
+          "@value": "false"
+        },
+        "@name": "period"
+      }
+    },
+    {
+      "@name": "minthreshold",
+      "argument": {
+        "yin-element": {
+          "@value": "false"
+        },
+        "@name": "minthreshold"
+      }
+    },
+    {
+      "@name": "maxthreshold",
+      "argument": {
+        "yin-element": {
+          "@value": "false"
+        },
+        "@name": "maxthreshold"
+      }
+    }
+  ],
+  "@xmlns:inet": "urn:ietf:params:xml:ns:yang:ietf-inet-types",
+  "namespace": {
+    "@uri": "polito.lab9.configurableNat"
+  },
+  "list": [
+    {
+      "leaf": [
+        {
+          "type": {
+            "@name": "uint16"
+          },
+          "confnat:period": {
+            "@period": "5000"
+          },
+          "config": {
+            "@value": "false"
+          },
+          "@name": "port",
+          "confnat:advertise": {
+            "@advertise": "periodic"
+          }
+        },
+        {
+          "type": {
+            "@name": "string"
+          },
+          "confnat:period": {
+            "@period": "5000"
+          },
+          "config": {
+            "@value": "false"
+          },
+          "@name": "add-port",
+          "confnat:advertise": {
+            "@advertise": "periodic"
+          }
+        }
+      ],
+      "config": {
+        "@value": "false"
+      },
+      "@name": "natTable",
+      "key": {
+        "@value": "port"
+      }
+    },
+    {
+      "leaf": [
+        {
+          "type": {
+            "@name": "inet:ipv4-address"
+          },
+          "confnat:period": {
+            "@period": "5000"
+          },
+          "config": {
+            "@value": "false"
+          },
+          "@name": "ip",
+          "confnat:advertise": {
+            "@advertise": "periodic"
+          }
+        },
+        {
+          "type": {
+            "@name": "mac-address"
+          },
+          "confnat:period": {
+            "@period": "5000"
+          },
+          "config": {
+            "@value": "false"
+          },
+          "@name": "mac",
+          "confnat:advertise": {
+            "@advertise": "periodic"
+          }
+        }
+      ],
+      "config": {
+        "@value": "false"
+      },
+      "@name": "arpTable",
+      "key": {
+        "@value": "ip"
+      }
+    }
+  ],
+  "prefix": {
+    "@value": "confnat"
+  },
+  "container": [
+    {
+      "leaf": [
+        {
+          "type": {
+            "@name": "inet:uri"
+          },
+          "config": {
+            "@value": "false"
+          },
+          "@name": "devId",
+          "confnat:advertise": {
+            "@advertise": "onchange"
+          }
+        },
+        {
+          "type": {
+            "@name": "inet:port-number"
+          },
+          "config": {
+            "@value": "true"
+          },
+          "@name": "port",
+          "confnat:advertise": {
+            "@advertise": "onchange"
+          }
+        },
+        {
+          "type": {
+            "@name": "int32"
+          },
+          "@name": "priority"
+        },
+        {
+          "type": {
+            "@name": "int32"
+          },
+          "@name": "externalVlan"
+        },
+        {
+          "type": {
+            "@name": "inet:ipv4-address"
+          },
+          "confnat:period": {
+            "@period": "10000"
+          },
+          "confnat:advertise": {
+            "@advertise": "periodic"
+          },
+          "@name": "ipAddress"
+        },
+        {
+          "type": {
+            "@name": "mac-address"
+          },
+          "config": {
+            "@value": "false"
+          },
+          "@name": "macAddress"
+        }
+      ],
+      "@name": "inputInfo"
+    },
+    {
+      "leaf": [
+        {
+          "type": {
+            "@name": "inet:uri"
+          },
+          "config": {
+            "@value": "false"
+          },
+          "@name": "devId",
+          "confnat:advertise": {
+            "@advertise": "onchange"
+          }
+        },
+        {
+          "type": {
+            "@name": "inet:port-number"
+          },
+          "config": {
+            "@value": "true"
+          },
+          "@name": "port",
+          "confnat:advertise": {
+            "@advertise": "onchange"
+          }
+        },
+        {
+          "type": {
+            "@name": "int32"
+          },
+          "@name": "priority"
+        },
+        {
+          "type": {
+            "@name": "int32"
+          },
+          "@name": "externalVlan"
+        },
+        {
+          "type": {
+            "@name": "inet:ipv4-address"
+          },
+          "confnat:period": {
+            "@period": "10000"
+          },
+          "confnat:advertise": {
+            "@advertise": "periodic"
+          },
+          "@name": "ipAddress"
+        },
+        {
+          "type": {
+            "@name": "mac-address"
+          },
+          "config": {
+            "@value": "false"
+          },
+          "@name": "macAddress"
+        }
+      ],
+      "@name": "outputInfo"
+    }
+  ],
+  "import": {
+    "prefix": {
+      "@value": "inet"
+    },
+    "@module": "ietf-inet-types"
+  },
+  "@xmlns:confnat": "polito.lab9.configurableNat"
+}

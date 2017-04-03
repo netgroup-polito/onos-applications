@@ -1,0 +1,121 @@
+module nat{
+    namespace "polito.lab9.configurableNat";
+    prefix "confnat";
+    import ietf-inet-types { 
+            prefix inet; 
+    }
+
+    extension advertise{
+        argument advertise{
+            yin-element false;
+        }
+    }
+
+    extension period{
+        argument period{
+            yin-element false;
+        }
+    }
+
+    extension minthreshold{
+        argument minthreshold{
+            yin-element false;
+        }
+    }
+
+    extension maxthreshold{
+        argument maxthreshold{
+            yin-element false;
+        }
+    }
+
+    container inputInfo{
+        leaf devId{
+            type string;
+            config false;
+            confnat:advertise onchange;
+        }
+        leaf port{
+            type uint16;
+            config true;
+            confnat:advertise onchange;            
+        }
+        leaf priority{
+            type int32;
+        }
+        leaf externalVlan{
+            type int32;
+        }
+        leaf ipAddress{
+            type string;
+            confnat:advertise periodic;
+            confnat:period 10000;
+        }
+        leaf macAddress{
+            type string;
+            config false;
+        }
+    }
+
+    container outputInfo{
+        leaf devId{
+            type string;
+            config false;
+            confnat:advertise onchange;
+        }
+        leaf port{
+            type uint16;
+            config true;
+            confnat:advertise onchange;            
+        }
+        leaf priority{
+            type int32;
+        }
+        leaf externalVlan{
+            type int32;
+        }
+        leaf ipAddress{
+            type string;
+            confnat:advertise periodic;
+            confnat:period 10000;
+        }
+        leaf macAddress{
+            type string;
+            config false;
+        }
+    }
+
+    list natTable{
+        key port;
+        leaf port{
+            type uint16;
+            config false;
+            confnat:advertise periodic;
+            confnat:period 5000;
+        }
+        leaf add-port{
+            type string;
+            config false;
+            confnat:advertise periodic;
+            confnat:period 5000;
+        }
+        config false;
+    }
+
+    list arpTable{
+        key ip;
+        leaf ip{
+            type string;
+            config false;
+            confnat:advertise periodic;
+            confnat:period 5000;
+        }
+        leaf mac{
+            type string;
+            config false;
+            confnat:advertise periodic;
+            confnat:period 5000;
+        }
+        config false;
+    }    
+}
