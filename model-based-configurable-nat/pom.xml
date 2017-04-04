@@ -10,7 +10,7 @@
     <description>Model-Based configuration on nat</description>
 
     <properties>
-        <onos.app.name>org.onosproject.modelbasedconfignat</onos.app.name>
+        <onos.app.name>it.polito.modelbasedconfignat</onos.app.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <onos.app.title>Model-Based configuration on nat</onos.app.title>
         <onos.version>1.9.0-rc2</onos.version>

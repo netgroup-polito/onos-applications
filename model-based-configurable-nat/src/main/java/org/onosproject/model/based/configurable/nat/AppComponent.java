@@ -150,7 +150,7 @@ public class AppComponent {
         // load configuration
         loadConfiguration();
 
-        appId = coreService.registerApplication("it.polito.onosapp.nat");
+        appId = coreService.registerApplication("it.polito.modelbasedconfignat");
         packetService.addProcessor(processor, PacketProcessor.director(0));
         configService.addListener(configListener);
         configRegistry.registerConfigFactory(configFactory);
