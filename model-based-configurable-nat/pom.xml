@@ -121,10 +121,10 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Import-Package>!com.google.gson,!org.codehaus.jackson,*</Import-Package>
+                        <Import-Package>!com.google.gson,!org.codehaus.jackson,!org.codehaus.jackson.map,!org.codehaus.jackson.node,!org.glassfish.jersey.media.sse,*</Import-Package>
                         <Embed-Dependency>dependencies</Embed-Dependency>
                     </instructions>
-                </configuration>
+                </configuration> 
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
