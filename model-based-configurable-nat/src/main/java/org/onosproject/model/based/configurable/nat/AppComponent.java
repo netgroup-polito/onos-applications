@@ -264,6 +264,7 @@ public class AppComponent {
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(inputApp.portNumber);
+        log.info("not setted vlan yet");
         if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
