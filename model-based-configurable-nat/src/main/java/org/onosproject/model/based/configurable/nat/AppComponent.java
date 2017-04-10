@@ -252,24 +252,25 @@ public class AppComponent {
      * Request packet in via packet service.
      */
     private void requestIntercepts() {
+        log.info("starting request Intercepts");
         TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_IPV4);
         selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(outputApp.portNumber);
-        if (outputApp.externalVlan.toShort() != 0)
+        if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(outputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
     }
