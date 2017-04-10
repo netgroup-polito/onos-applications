@@ -32,11 +32,17 @@ public class NatConfiguration {
         wanInterface = iniLoad(INTERFACES, "wan_interface");
 
         log.info("Uploaded Interfaces");
+        log.info(userDeviceId);
+        log.info(wanDeviceId);
+        log.info(userInterface);
+        log.info(wanInterface);
         
         // [addresses]
         privateAddress = iniLoad(ADDRESSES, "private_address");
         publicAddress = iniLoad(ADDRESSES, "public_address");
         log.info("Uploaded addresses");
+        log.info(privateAddress);
+        log.info(publicAddress);
     }
 
     public String getUserDeviceId() {
