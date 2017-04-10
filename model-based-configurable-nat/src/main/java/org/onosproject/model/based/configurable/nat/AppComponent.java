@@ -58,7 +58,7 @@ public class AppComponent {
     private static final String PRIVATE_PORT_ID = "USER:0";
     private static final String PUBLIC_PORT_ID = "WAN:0";
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected CoreService coreService;
