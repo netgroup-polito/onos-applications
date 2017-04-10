@@ -108,7 +108,7 @@ public class ConnectionModuleClient {
         Response cr = target.path("create").request().post(Entity.entity(id, MediaType.TEXT_PLAIN), Response.class);
         
         
-        if(cr.getStatus()!=200){
+        if(cr.getStatus()!=200 && cr.getStatus()!=204){
             System.out.println("Error in the post");
             System.out.println(cr.getStatus());
             return "Error";
