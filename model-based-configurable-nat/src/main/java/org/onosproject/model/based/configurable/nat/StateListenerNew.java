@@ -283,8 +283,8 @@ public class StateListenerNew extends Thread{
     }
     
     public void saveValues(Object actual, String subToListen, String complete, Map<String, Object> toSave) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
-        if(subToListen.contains(".")){
-            String inter = subToListen.substring(0, subToListen.indexOf("."));
+        if(subToListen.contains("/")){
+            String inter = subToListen.substring(0, subToListen.indexOf("/"));
             if(inter.contains("[")){
                 String lName = inter.substring(0, inter.indexOf("["));
                 String index = inter.substring(inter.indexOf("[")+1, inter.length()-1);
@@ -300,7 +300,7 @@ public class StateListenerNew extends Thread{
                         for(Object key:((Map)actual).keySet()){
                             String indexValue = key.toString();
                             String complToPass = complete.substring(0, complete.length()-subToListen.length())+lName+"["+indexValue+"]"+subToListen.substring(inter.length());
-                            if(subToListen.substring(inter.length()+1).equals("*")){
+                            if(subToListen.substring(inter.length()+1).equals("{key}")){
                                 //save the key
                                 toSave.put(complToPass, key);
                             }
@@ -329,7 +329,7 @@ public class StateListenerNew extends Thread{
                     }
                 }
             }else{
-                if(!subToListen.equals("#"))
+                if(!subToListen.equals("{value}"))
                     actual = actual.getClass().getField(subToListen).get(actual);
                 toSave.put(complete, actual);
             }
@@ -427,8 +427,8 @@ public class StateListenerNew extends Thread{
     }
     
     private void insertInNode(ObjectNode node, String s, String complete, Object v){
-        if(s.contains(".")){
-            String f = s.substring(0, s.indexOf("."));
+        if(s.contains("/")){
+            String f = s.substring(0, s.indexOf("/"));
             String field = (f.contains("["))?f.substring(0, f.indexOf("[")):f;
             String index = (f.contains("["))?f.substring(f.indexOf("[")+1, f.indexOf("]")):null;
             if(node.findValue(field)!=null){
@@ -442,7 +442,7 @@ public class StateListenerNew extends Thread{
                         while(nodes.hasNext()){
                             ObjectNode objN = (ObjectNode)nodes.next();
                             if(objN.findValue(ind)!=null && objN.get(ind).asText().equals(index)){
-                                insertInNode(objN, s.substring(s.indexOf(".")+1), complete, v);
+                                insertInNode(objN, s.substring(s.indexOf("/")+1), complete, v);
                                 found = true;
                                 break;
                             }
@@ -450,17 +450,17 @@ public class StateListenerNew extends Thread{
                         if(found==false){
                             ObjectNode obj = mapper.createObjectNode();
                             obj.put(ind, index);
-                            insertInNode(obj, s.substring(s.indexOf(".")+1), complete, v);
+                            insertInNode(obj, s.substring(s.indexOf("/")+1), complete, v);
                             ((ArrayNode)next).add(obj);
                         }
                     }
                 }else{
-                    insertInNode((ObjectNode)next, s.substring(s.indexOf(".")+1), complete, v);
+                    insertInNode((ObjectNode)next, s.substring(s.indexOf("/")+1), complete, v);
                 }
             }else{
                 if(index==null){
                     ObjectNode next = mapper.createObjectNode();
-                    insertInNode(next, s.substring(s.indexOf(".")+1), complete, v);
+                    insertInNode(next, s.substring(s.indexOf("/")+1), complete, v);
                     node.put(field, next);
                 }else{
                     ArrayNode array = mapper.createArrayNode();
@@ -469,7 +469,7 @@ public class StateListenerNew extends Thread{
                         String ind = lists.get(list);
                         ObjectNode next = mapper.createObjectNode();
                         next.put(ind, index);
-                        insertInNode(next, s.substring(s.indexOf(".")+1), complete, v);
+                        insertInNode(next, s.substring(s.indexOf("/")+1), complete, v);
                         array.add(next);
                     }
                     node.put(field, array);
@@ -482,11 +482,11 @@ public class StateListenerNew extends Thread{
     }
     
     private String getListName(String complete, String last){
-        String[] c = complete.split(Pattern.quote("."));
-        String[] l = last.split(Pattern.quote("."));
+        String[] c = complete.split(Pattern.quote("/"));
+        String[] l = last.split(Pattern.quote("/"));
         String res =new String();
         for(int i=0;i<c.length-l.length+1;i++)
-            res+=c[i]+".";
+            res+=c[i]+"/";
         res = res.substring(0,res.lastIndexOf("[")+1)+"]";
         return res;
     }
@@ -514,10 +514,10 @@ public class StateListenerNew extends Thread{
                             
                 }
             }
-        String toVerify = "root."+j;
+        String toVerify = "root/"+j;
         for(String s:YangToJava.keySet())
             if(s.equals(toVerify))
-                    y=YangToJava.get("root."+j);
+                    y=YangToJava.get("root/"+j);
         if(y!=null){
             String[] yparse = y.split(Pattern.quote("[]"));
             String toPub=new String();
@@ -544,17 +544,17 @@ public class StateListenerNew extends Thread{
                 while(fields.hasNext()){
                     String fieldJava = null;
                     String fieldName = (String)fields.next();
-                    if(YangToJava.containsValue(complete+"."+fieldName))
+                    if(YangToJava.containsValue(complete+"/"+fieldName))
                         for(String k:YangToJava.keySet())
-                            if(YangToJava.get(k).equals(complete+"."+fieldName))
+                            if(YangToJava.get(k).equals(complete+"/"+fieldName))
                                 fieldJava=k;
                     if(fieldJava!=null){
-                        fieldJava=fieldJava.substring(fieldJava.lastIndexOf(".")+1);
+                        fieldJava=fieldJava.substring(fieldJava.lastIndexOf("/")+1);
                         if(node.get(fieldName).isValueNode())
                             ((ObjectNode)newNode).put(fieldJava, node.get(fieldName));
                         else{
-                            String newCampo = (node.get(fieldName).isObject())?complete+"."+fieldName:complete+"."+fieldName+"[]";
-                            JsonNode subItem = getCorrectItem(mapper.writeValueAsString(node.get(fieldName)),complete+"."+fieldName);
+                            String newCampo = (node.get(fieldName).isObject())?complete+"/"+fieldName:complete+"/"+fieldName+"[]";
+                            JsonNode subItem = getCorrectItem(mapper.writeValueAsString(node.get(fieldName)),complete+"/"+fieldName);
                             ((ObjectNode)newNode).put(fieldJava, subItem);
                         }
                     }
@@ -578,7 +578,7 @@ public class StateListenerNew extends Thread{
     private void createTree(JsonNode node, String l) {
         if(l==null || l.equals(""))
             return;
-        String[] splitted = l.split(Pattern.quote("."));
+        String[] splitted = l.split(Pattern.quote("/"));
         if(node.isObject()){
             JsonNode next;
             if(splitted[0].contains("[")){
@@ -606,10 +606,10 @@ public class StateListenerNew extends Thread{
             if(splitted.length>1)
                 createTree(next, l.substring(splitted[0].length()+1));
             if(splitted.length==1&&next.isArray()){
-                ObjectNode elemMappa = mapper.createObjectNode();
-                elemMappa.put("key", "");
-                elemMappa.put("value", "");
-                ((ArrayNode)next).add(elemMappa);
+//                ObjectNode elemMappa = mapper.createObjectNode();
+//                elemMappa.put("key", "");
+//                elemMappa.put("value", "");
+//                ((ArrayNode)next).add(elemMappa);
             }
         }else{
             JsonNode next;
@@ -650,7 +650,7 @@ public class StateListenerNew extends Thread{
     }
 
     public JsonNode getComplexObj(String var) throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
-        String[] spl = var.split(Pattern.quote("."));
+        String[] spl = var.split(Pattern.quote("/"));
         JsonNode ref = rootJson;
         for(int i=0;i<spl.length;i++){
             String field =(spl[i].contains("["))?spl[i].substring(0, spl[i].indexOf("[")):spl[i];
@@ -682,14 +682,20 @@ public class StateListenerNew extends Thread{
         }
         System.out.println(ref);
         if(ref.isValueNode()){
-            //is a leaf, but it is not present in state: doesn't exist
-            return null;
+            //is a leaf, but it is not present in state
+            String varJava = fromYangToJava(var);
+            Object value = getLeafValue(varJava.substring(5));
+            ObjectNode result = mapper.createObjectNode();
+            result.put(var.substring(var.lastIndexOf("/")+1), (new Gson()).toJson(value));
+            return result;
         }
-        JsonNode res = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
-        var=(res.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
+        JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
+        var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
         res = fillResult(ref, var);
         System.out.println(res);
-        return res;
+        JsonNode r = mapper.createObjectNode();
+        ((ObjectNode)r).put(var.substring(var.lastIndexOf("/")+1), res);
+        return r;
     }
 
     private JsonNode fillResult(JsonNode ref, String var) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException {
@@ -728,7 +734,7 @@ public class StateListenerNew extends Thread{
                 String fieldName = field.next();
                 if(((ObjectNode)ref).get(fieldName).isValueNode()){
                     String varWithoutIndexes = new String();
-                    String[] varSp = (var+"."+fieldName).split("["+Pattern.quote("[]")+"]");
+                    String[] varSp = (var+"/"+fieldName).split("["+Pattern.quote("[]")+"]");
                     for(int i=0; i<varSp.length;i++)
                         if(i%2==0)
                             varWithoutIndexes+=varSp[i]+"[]";
@@ -738,7 +744,7 @@ public class StateListenerNew extends Thread{
                         for(String k:YangToJava.keySet())
                             if(YangToJava.get(k).equals(varWithoutIndexes))
                                 key = k;
-                        String[] yspez = (var+"."+fieldName).split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
+                        String[] yspez = (var+"/"+fieldName).split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
                         String[] jspez = key.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
                         String jWithIndex = new String();
                         for(int i=0;i<yspez.length;i++){
@@ -752,7 +758,7 @@ public class StateListenerNew extends Thread{
                             ((ObjectNode)toRet).put(fieldName, value.toString());
                     }
                 }else{
-                    JsonNode f = fillResult(((ObjectNode)ref).get(fieldName), var+"."+fieldName);
+                    JsonNode f = fillResult(((ObjectNode)ref).get(fieldName), var+"/"+fieldName);
                     if(f.size()!=0)
                         ((ObjectNode)toRet).put(fieldName, f);
                 }
@@ -761,18 +767,19 @@ public class StateListenerNew extends Thread{
         }else{
             
             //add elements
-            String listWithoutIndex = new String();
-                String[] varSp = var.split("["+Pattern.quote("[]")+"]");
-                for(int i=0; i<varSp.length;i++)
-                    if(i%2==0)
-                        listWithoutIndex+=varSp[i]+"[]";
-                listWithoutIndex = listWithoutIndex.substring(0, listWithoutIndex.length()-2);
+            String listWithoutIndex = noIndexes(var);
+//                    new String();
+//                String[] varSp = var.split("["+Pattern.quote("[]")+"]");
+//                for(int i=0; i<varSp.length;i++)
+//                    if(i%2==0)
+//                        listWithoutIndex+=varSp[i]+"[]";
+//                listWithoutIndex = listWithoutIndex.substring(0, listWithoutIndex.length()-2);
             toRet = mapper.createArrayNode();
             String listInJava = null;
             for(String l:YangToJava.keySet()){
                 if(YangToJava.get(l).contains(listWithoutIndex+"[") && YangToJava.get(l).substring(0, listWithoutIndex.length()+1).equals(listWithoutIndex+"[")){
                     String rem = YangToJava.get(l).substring(listWithoutIndex.length());
-                    if(!rem.contains("."))
+                    if(!rem.contains("/"))
                             listInJava = l;
                 }
             }
@@ -851,12 +858,12 @@ public class StateListenerNew extends Thread{
                 Entry<String, JsonNode> field = iter.next();
                 if(field.getValue().isValueNode()){
                     //leaf - check config
-                    if(config.containsKey(var+"."+field.getKey()))
-                        ok = ok && config.get(var+"."+field.getKey());
+                    if(config.containsKey(var+"/"+field.getKey()))
+                        ok = ok && config.get(var+"/"+field.getKey());
                     else
                         ok = false;
                 }else
-                    ok = ok && configVariables(var+"."+field.getKey(), field.getValue());
+                    ok = ok && configVariables(var+"/"+field.getKey(), field.getValue());
             }
             return ok;
             
@@ -873,7 +880,7 @@ public class StateListenerNew extends Thread{
     
     private boolean configVariables(String var){
         var = deleteIndexes(var);
-        String[] fields = var.split(Pattern.quote("."));
+        String[] fields = var.split(Pattern.quote("/"));
         JsonNode n = rootJson;
         for(int i=0;i<fields.length;i++){
             if(fields[i].contains("[]"))
@@ -885,7 +892,7 @@ public class StateListenerNew extends Thread{
                 n = ((ObjectNode)n).get(fields[i]);
             }
         }
-//        var = var.replace(".", "/");
+//        var = var.replace("/", "/");
         boolean c = checkConfig(n, var);
         return c;
     }
@@ -905,7 +912,7 @@ public class StateListenerNew extends Thread{
             boolean cc = true;
             while(it.hasNext()){
                 String fName = (String)it.next();
-                cc = cc && checkConfig(n.get(fName), v+"."+fName);
+                cc = cc && checkConfig(n.get(fName), v+"/"+fName);
             }
             return cc;            
         }
@@ -925,7 +932,7 @@ public class StateListenerNew extends Thread{
                 Iterator<String> fields = toSet.getFieldNames();
                 while(fields.hasNext()){
                     String fieldName = (String)fields.next();
-                    fillVariables(toSet.get(fieldName), var+"."+fieldName);
+                    fillVariables(toSet.get(fieldName), var+"/"+fieldName);
                 }
             }else{
                 //capire qual è la lista corrispondente
@@ -958,7 +965,7 @@ public class StateListenerNew extends Thread{
                     if(lists.containsKey(jgen+"[]")){
                         indice = lists.get(jgen+"[]");
                         Object actual = root;
-                        String[] fields = jWithIndex.split(Pattern.quote("."));
+                        String[] fields = jWithIndex.split(Pattern.quote("/"));
                         Field f = actual.getClass().getDeclaredField(fields[0]);
                         for(int i=1;i<fields.length;i++){
                             if(fields[i].contains("[")){
@@ -1062,15 +1069,20 @@ public class StateListenerNew extends Thread{
                     msg.obj=null;
                 else if(!var.equals("root") && state.containsKey(var.substring(5))){
                     ObjectNode on= mapper.createObjectNode();
-                    String field = (msg.var.contains("."))?msg.var.substring(msg.var.lastIndexOf(".")+1):msg.var;
+                    String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
                     on.put(field, getLeafValue(var.substring(5)).toString());
                    msg.objret = mapper.writeValueAsString(on);
-                   System.out.println("E' una foglia "+msg.objret);
+                   System.out.println("RESULT GET: E' una foglia "+msg.objret);
                 }
                 else{
             
                 //creare oggetto da passare!
-                msg.objret = mapper.writeValueAsString(getComplexObj(msg.var));
+                JsonNode result;
+                //String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
+                result = getComplexObj(msg.var);
+                
+                msg.objret = mapper.writeValueAsString(result);
+                System.out.println("RESULT GET: "+msg.objret);
             
                 }
                 //cM.setResourceValue((new Gson().toJson(msg)));
@@ -1116,7 +1128,7 @@ public class StateListenerNew extends Thread{
     }
     
     public void deleteVariable(Object actual, String var, String complete) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        String[] fs = var.split(Pattern.quote("."));
+        String[] fs = var.split(Pattern.quote("/"));
         if(fs.length==1){
             //delete
             if(var.contains("[")){
@@ -1192,7 +1204,7 @@ public class StateListenerNew extends Thread{
     }
     
     public boolean setVariable(String var, String complete, String newVal, Object actual) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
-        String[] fs = var.split(Pattern.quote("."));
+        String[] fs = var.split(Pattern.quote("/"));
         if(fs.length==1){
             //to set
             if(var.contains("[")){
@@ -1236,14 +1248,58 @@ public class StateListenerNew extends Thread{
                     if(f.get(actual)==null){
                         try {
                             Map<Object, Object> m = (f.getType().isInterface())?new HashMap<>():(Map)f.getType().newInstance();
-                            
+                            Class<?> valueType = (Class<?>)pt.getActualTypeArguments()[1];
+                            ObjectNode node = (ObjectNode)mapper.readTree(newVal);
+                            JsonNode kNode = node.get("{key}");
+                            node.remove("{key}");
+                            Object k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
+                            Object value = valueType.newInstance();
+                            Iterator<String> fields = node.getFieldNames();
+                            while(fields.hasNext()){
+                                String fieldName = fields.next();
+                                JsonNode v = node.get(fieldName);
+                                Field fV = value.getClass().getField(fieldName);
+                                if(Number.class.isAssignableFrom(fV.getType()))
+                                    fV.set(value, v.asDouble());
+                                else
+                                    fV.set(value, v.asText());
+                            }
+                            //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
+                            m.put(k, value);
+                            f.set(actual, m);
                             //!!
                             //m.put((new Gson()).fromJson(newVal, Map.Entry<Object,itemType>));
-                            f.set(actual, m);
+                            System.out.println("SETTED M = "+f.get(actual));
                         } catch (InstantiationException ex) {
+                            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (IOException ex) {
                             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }else if(index.matches("")){
+                        try{
+                            Class<?> valueType = (Class<?>)pt.getActualTypeArguments()[1];
+                            ObjectNode node = (ObjectNode)mapper.readTree(newVal);
+                            JsonNode kNode = node.get("{key}");
+                            node.remove("{key}");
+                            Object k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
+                            Object value = valueType.newInstance();
+                            Iterator<String> fields = node.getFieldNames();
+                            while(fields.hasNext()){
+                                String fieldName = fields.next();
+                                JsonNode v = node.get(fieldName);
+                                Field fV = value.getClass().getField(fieldName);
+                                if(Number.class.isAssignableFrom(fV.getType()))
+                                    fV.set(value, v.asDouble());
+                                else
+                                    fV.set(value, v.asText());
+                            }
+                            //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
+                            ((Map)f.get(actual)).put(k, value);
+                        } catch (IOException ex) {
+                            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (InstantiationException ex) {
+                            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                         //((Map)f.get(actual)).put((new Gson()).fromJson(newVal, itemType));
                     }else{
                         String listName = complete.substring(0, complete.length()-index.length()-1);
@@ -1341,6 +1397,43 @@ public class StateListenerNew extends Thread{
     public Object getLeafValue(String id){
         if(state.containsKey(id))
             return state.get(id);
+        try{
+            Object actual = root;
+            String[] fields = id.split(Pattern.quote("/"));
+            String recompose = new String();
+            for(int i = 0; i<fields.length; i++){
+                recompose +="/"+fields[i];
+                if(fields[i].contains("[")){
+                    String field = fields[i].substring(0, fields[i].lastIndexOf("["));
+                    String index = fields[i].substring(fields[i].lastIndexOf("[")+1, fields[i].lastIndexOf("]"));
+                    actual = actual.getClass().getField(field).get(actual);
+                    if(Map.class.isAssignableFrom(actual.getClass())){
+                        if(i<fields.length-1 && fields[i+1].equals("{key}"))
+                            actual = index;
+                        else
+                        actual= ((Map)actual).get(index);
+                    }else{
+                        String general = generalIndexes(recompose.substring(1));
+                        actual = getListItemWithIndex((List)actual,index, general.substring(0, general.lastIndexOf("["))+"[]");
+                    }
+                }else{
+                    if(fields[i].equals("{key}"))
+                        continue;
+                    if(fields[i].equals("{value}"))
+                        continue;
+                    actual = actual.getClass().getField(fields[i]).get(actual);
+                }
+            }
+            return actual;
+        } catch (NoSuchFieldException ex) {
+            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return null;
     }
     
@@ -1374,7 +1467,7 @@ public class StateListenerNew extends Thread{
     }
     
         public Object getLists(Object actual, String remaining, String complete) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
-        String[] fs = remaining.split(Pattern.quote("."));
+        String[] fs = remaining.split(Pattern.quote("/"));
         String fint = fs[0];
         if(fint.contains("[]")){
             //Siamo arrivati!
@@ -1483,7 +1576,7 @@ public class StateListenerNew extends Thread{
                             conf = true;
                         }
                         System.out.println("-+-config "+conf);
-                        config.put(prev+"."+child.get("@name").getTextValue(), conf);
+                        config.put(prev+"/"+child.get("@name").getTextValue(), conf);
                         
                         //check advertise attribute - prefix:advertise
                         Iterator<String> searchAdv = child.getFieldNames();
@@ -1499,11 +1592,11 @@ public class StateListenerNew extends Thread{
                             //the advertise field is specified
                             String adv = child.get(pref+":advertise").get("@advertise").asText();
                             if(adv.equals("onchange")){
-                                toListenPush.add(prev+"."+child.get("@name").getTextValue());
+                                toListenPush.add(prev+"/"+child.get("@name").getTextValue());
                             }else if(adv.equals("periodic")){
                                 if(child.has(pref+":period")){
                                     long p = child.get(pref+":period").get("@period").asLong();
-                                    PeriodicVariableTask task = new PeriodicVariableTask(this, prev+"."+child.get("@name").getTextValue());
+                                    PeriodicVariableTask task = new PeriodicVariableTask(this, prev+"/"+child.get("@name").getTextValue());
                                     toListenTimer.add(task);
                                     timer.schedule(task, p, p);
                                 }
@@ -1518,7 +1611,7 @@ public class StateListenerNew extends Thread{
                                     max = child.get(pref+":maxthreshold").get("@maxthreshold").asDouble();
                                 }
                                 if(min!=null || max!=null)
-                                    toListenThreshold.put(prev+"."+child.get("@name").getTextValue(), new Threshold(min, max));
+                                    toListenThreshold.put(prev+"/"+child.get("@name").getTextValue(), new Threshold(min, max));
                             }
                             //if never - nothing
                         }
@@ -1533,7 +1626,7 @@ public class StateListenerNew extends Thread{
                         conf = true;
                     }
                     System.out.println("-+-config "+conf);
-                    config.put(prev+"."+valueNode.get("@name").asText(), conf);
+                    config.put(prev+"/"+valueNode.get("@name").asText(), conf);
                     Iterator<String> searchAdv = valueNode.getFieldNames();
                     String pref=null;
                     while(searchAdv.hasNext()){
@@ -1547,11 +1640,11 @@ public class StateListenerNew extends Thread{
                         //the advertise field is specified
                         String adv = valueNode.get(pref+":advertise").get("@advertise").asText();
                         if(adv.equals("onchange")){
-                            toListenPush.add(prev+"."+valueNode.get("@name").asText());
+                            toListenPush.add(prev+"/"+valueNode.get("@name").asText());
                         }else if(adv.equals("periodic")){
                             if(valueNode.has(pref+":period")){
                                 long p = valueNode.get(pref+":period").get("@period").asLong();
-                                PeriodicVariableTask task = new PeriodicVariableTask(this, prev+"."+valueNode.get("@name").asText());
+                                PeriodicVariableTask task = new PeriodicVariableTask(this, prev+"/"+valueNode.get("@name").asText());
                                 toListenTimer.add(task);
                                 timer.schedule(task, p, p);
                             }
@@ -1566,7 +1659,7 @@ public class StateListenerNew extends Thread{
                                 max = valueNode.get(pref+":maxthreshold").get("@maxthreshold").asDouble();
                             }
                             if(min!=null || max!=null)
-                                toListenThreshold.put(prev+"."+valueNode.get("@name").getTextValue(), new Threshold(min, max));
+                                toListenThreshold.put(prev+"/"+valueNode.get("@name").getTextValue(), new Threshold(min, max));
                         }
                         //if never - nothing
                     }
@@ -1579,15 +1672,15 @@ public class StateListenerNew extends Thread{
                         while(objs.hasNext()){
                             JsonNode next = objs.next();
                             if(next.has("@name")&&fieldName.equals("list"))
-                                findYinLeafs(next, prev+"."+next.get("@name").getTextValue()+"[]");
+                                findYinLeafs(next, prev+"/"+next.get("@name").getTextValue()+"[]");
                             else if(next.has("@name"))
-                                findYinLeafs(next, prev+"."+next.get("@name").getTextValue());
+                                findYinLeafs(next, prev+"/"+next.get("@name").getTextValue());
                         }
                     }else{
                         if(valueNode.has("@name")&&fieldName.equals("list"))
-                            findYinLeafs(valueNode, prev+"."+valueNode.get("@name").getTextValue()+"[]");
+                            findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").getTextValue()+"[]");
                         else if(valueNode.has("@name"))
-                            findYinLeafs(valueNode, prev+"."+valueNode.get("@name").getTextValue());
+                            findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").getTextValue());
                     }
             }
         }
@@ -1601,8 +1694,8 @@ public class StateListenerNew extends Thread{
             boolean pub = false;
             String generalS = generalIndexes(s);
             String y = null;
-            if(YangToJava.containsKey("root."+generalS)){
-                y = YangToJava.get("root."+generalS);
+            if(YangToJava.containsKey("root/"+generalS)){
+                y = YangToJava.get("root/"+generalS);
                 if(toListenThreshold.containsKey(y)){
                     if(toListenThreshold.get(y).MIN!=null){
                         if(toListenThreshold.get(y).MAX!=null){
@@ -1819,7 +1912,7 @@ public class StateListenerNew extends Thread{
 //    //returns true if the actual value and the old value are the same, false othercase
 //    //recursive
 //    private boolean getLeafValueChange(Object actual, String remaining, String complete) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
-//        String[] fields = remaining.split(Pattern.quote("."));
+//        String[] fields = remaining.split(Pattern.quote("/"));
 //        String finteresting = fields[0];
 //        String fremaining = (fields.length>1)?remaining.substring(finteresting.length()+1):null;
 //        boolean lista = false;
@@ -2008,7 +2101,7 @@ public class StateListenerNew extends Thread{
 //    //ricorsive method, if the object exists, puts the object to observe in state, and eventuals lists that founds in the stateList
 //    //if still the object doesn't exists(or one of the "containers" puts the path to the object in the nullValuesToListen
 //    private boolean searchLeaf(Object actual, String fields, String complete) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
-//        String[] fs = fields.split(Pattern.quote("."));
+//        String[] fs = fields.split(Pattern.quote("/"));
 //        String finteresting = fs[0];
 //        String fremaining = (fs.length>1)?fields.substring(finteresting.length()+1):null;
 //        boolean lista = false;
