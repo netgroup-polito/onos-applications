@@ -259,20 +259,23 @@ public class AppComponent {
         if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
-
+        log.info("Traffic selector for ipv4 in input setted");
+        
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(inputApp.portNumber);
         if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
-
+        log.info("Traffic selector for ethernet in input setted");
+        
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(outputApp.portNumber);
         if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(outputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
+        log.info("Traffic selector for ethernet in output setted");
     }
 
     private void withdrawIntercepts() {
