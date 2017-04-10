@@ -50,6 +50,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import java.util.TimerTask;
 import java.util.Timer;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -78,7 +79,8 @@ public class StateListenerNew extends Thread{
     private HashMap<String, Object> stateNew;
     private HashMap<String, Boolean> config;
     private Timer timer;
-    
+    protected final org.slf4j.Logger log = LoggerFactory.getLogger(getClass());
+ 
     public StateListenerNew(Object root){
         this.root = root;
         state = new HashMap<>();
@@ -164,16 +166,19 @@ public class StateListenerNew extends Thread{
         
         System.out.println("---CONFIG-----");
         System.out.println(config);
+        log.info("++CONFIG "+config);
         
         System.out.println("---toListenPush-----");
         System.out.println(toListenPush);
+        log.info("--toListenPush "+toListenPush);
         
         System.out.println("---toListenThreshold-----");
         System.out.println(toListenThreshold);
+        log.info("--toListenThreshold "+toListenThreshold);
         
         System.out.println("---toListenTimer-----");
         System.out.println(toListenTimer);        
-        
+        log.info("--toListenTimer "+toListenTimer);
         
         //PARSE MAPPING FILE
             File mapFile = new File(loader.getResource("files/mappingFile.txt").getFile());
@@ -355,6 +360,7 @@ public class StateListenerNew extends Thread{
                            e.obj=stateNew.get(k);
                            happenings.add(e);
                            System.out.println((new Gson()).toJson(e));
+                           log.info((new Gson()).toJson(e));
                         }else{
                             stateNew.remove(k);
                             copyNewState.remove(k);
@@ -375,7 +381,7 @@ public class StateListenerNew extends Thread{
                        e.obj=stateNew.get(k);
                        happenings.add(e);
                        System.out.println((new Gson()).toJson(e));
-
+                       log.info((new Gson()).toJson(e));
                     }
                     copyState.remove(k);
                     copyNewState.remove(k);
@@ -394,6 +400,7 @@ public class StateListenerNew extends Thread{
                 happenings.add(e);
                 insertInNode(rootJ, k, generalIndexes(k), e.obj);
                 System.out.println((new Gson()).toJson(e));
+                log.info((new Gson()).toJson(e));
             }
             System.out.println("REM --");
             System.out.println(rootJ);
@@ -408,6 +415,7 @@ public class StateListenerNew extends Thread{
                 happenings.add(e);
                 insertInNode(rootJ, k, generalIndexes(k), e.obj);
                 System.out.println((new Gson()).toJson(e));
+                log.info((new Gson()).toJson(e));
             }
             System.out.println("ADD--");
             System.out.println(rootJ);
@@ -421,6 +429,7 @@ public class StateListenerNew extends Thread{
         
         for(NotifyMsg e:happenings){
             System.out.println(e.act + " "+e.var + " "+e.obj);
+            log.info(e.act+" "+e.var+" "+e.obj);
             //cM.somethingChanged((new Gson()).toJson(e));
         }
         
@@ -1719,6 +1728,7 @@ public class StateListenerNew extends Thread{
                     stateThreshold.put(s, thr.get(s));
                     System.out.println("---*ONTHRESHOLD");
                     System.out.println((new Gson()).toJson(e));
+                    log.info("*OnThreshold* "+(new Gson()).toJson(e));
                     //cM.somethingChanged((new Gson()).toJson(e));
                 }
             }else{
@@ -1816,6 +1826,7 @@ public class StateListenerNew extends Thread{
                 e.var = sl.trasformInPrint(s);
                 System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
                 System.out.println((new Gson()).toJson(e));
+                log.info("*Periodic* "+(new Gson()).toJson(e));
             }
 //            sl.cM.somethingChanged((new Gson()).toJson(e));
         }
