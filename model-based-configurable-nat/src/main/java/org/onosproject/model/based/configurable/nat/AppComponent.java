@@ -89,8 +89,8 @@ public class AppComponent {
     private NatPacketProcessor processor = new NatPacketProcessor();
 
     // default configuration
-    public ApplicationPort inputApp;
-    public ApplicationPort outputApp;
+    public ApplicationPort inputApp = new ApplicationPort();
+    public ApplicationPort outputApp= new ApplicationPort();
     
 //    private DeviceId inputApp.deviceId;
 //    private DeviceId outputApp.deviceId;
@@ -194,6 +194,8 @@ public class AppComponent {
             this.inputApp.portNumber = PortNumber.portNumber(config.getUserInterface());
             this.outputApp.portNumber = PortNumber.portNumber(config.getWanInterface());
 
+            log.info("setted");
+            
             this.inputApp.ipAddress = Ip4Address.valueOf(config.getPrivateAddress());
             this.outputApp.ipAddress = Ip4Address.valueOf(config.getPublicAddress());
 
