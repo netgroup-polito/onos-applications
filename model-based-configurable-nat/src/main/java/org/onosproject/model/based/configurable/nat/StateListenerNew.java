@@ -5,6 +5,10 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.File;
@@ -39,10 +43,6 @@ import java.util.Map.Entry;
 //import jyang.parser.YangTreeNode;
 //import jyang.parser.yang;
 //import jyang.tools.Yang2Yin;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
-import org.codehaus.jackson.node.ArrayNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -158,7 +158,7 @@ public class StateListenerNew extends Thread{
             
             System.out.println(rootYin);
             
-            findYinLeafs(rootYin, rootYin.get("@name").getTextValue());
+            findYinLeafs(rootYin, rootYin.get("@name").textValue());
             
         } catch (Exception ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -443,7 +443,7 @@ public class StateListenerNew extends Thread{
             if(node.findValue(field)!=null){
                 JsonNode next = node.get(field);
                 if(next.isArray()){
-                    Iterator<JsonNode> nodes = ((ArrayNode)next).getElements();
+                    Iterator<JsonNode> nodes = ((ArrayNode)next).elements();
                     String list = getListName(complete, s);
                     if(lists.containsKey(list)){
                         String ind = lists.get(list);
@@ -549,7 +549,7 @@ public class StateListenerNew extends Thread{
             JsonNode newNode;
             if(node.isObject()){
                 newNode = mapper.createObjectNode();
-                Iterator<String> fields = node.getFieldNames();
+                Iterator<String> fields = node.fieldNames();
                 while(fields.hasNext()){
                     String fieldJava = null;
                     String fieldName = (String)fields.next();
@@ -570,7 +570,7 @@ public class StateListenerNew extends Thread{
                 }
             }else{
                 newNode = mapper.createArrayNode();
-                Iterator<JsonNode> iter = ((ArrayNode)node).getElements();
+                Iterator<JsonNode> iter = ((ArrayNode)node).elements();
                 while(iter.hasNext()){
                     JsonNode item = iter.next();
                     JsonNode subItem = getCorrectItem(mapper.writeValueAsString(item),complete+"[]");
@@ -626,7 +626,7 @@ public class StateListenerNew extends Thread{
                 String inter = splitted[0].substring(0, splitted[0].indexOf("["));
                 if(node.isArray()){
                     //è una lista
-                    if(((ArrayNode)node).getElements().hasNext()==false)
+                    if(((ArrayNode)node).elements().hasNext()==false)
                         ((ArrayNode)node).addObject();
                     next = ((ArrayNode)node).get(0);
                     if(((ObjectNode)next).get(inter)==null)
@@ -642,7 +642,7 @@ public class StateListenerNew extends Thread{
                     return;
                 }
             }else{
-                if(((ArrayNode)node).getElements().hasNext()==false)
+                if(((ArrayNode)node).elements().hasNext()==false)
                     ((ArrayNode)node).addObject();
                 next = ((ArrayNode)node).get(0);
                 if(((ObjectNode)next).get(splitted[0])==null){
@@ -677,7 +677,7 @@ public class StateListenerNew extends Thread{
                     return null;
                 }
             }else{
-                if(((ArrayNode)ref).getElements().hasNext()==false){
+                if(((ArrayNode)ref).elements().hasNext()==false){
                     System.out.println(var + " not found-array version");
                     return null;
                 }
@@ -712,7 +712,7 @@ public class StateListenerNew extends Thread{
         if(ref.isObject()){
             //fill fields
             toRet = mapper.createObjectNode();
-            Iterator<String> field = ((ObjectNode)ref).getFieldNames();
+            Iterator<String> field = ((ObjectNode)ref).fieldNames();
             if(!field.hasNext()){
                 //searchCorrispondentField
                 String varWithoutIndexes = new String();
@@ -861,7 +861,7 @@ public class StateListenerNew extends Thread{
 
     private boolean configVariables(String var, JsonNode toSet){
         if(toSet.isObject()){
-            Iterator<Entry<String, JsonNode>> iter = ((ObjectNode)toSet).getFields();
+            Iterator<Entry<String, JsonNode>> iter = ((ObjectNode)toSet).fields();
             boolean ok = true;
             while(iter.hasNext()){
                 Entry<String, JsonNode> field = iter.next();
@@ -877,7 +877,7 @@ public class StateListenerNew extends Thread{
             return ok;
             
         }else{
-            Iterator<JsonNode> children = ((ArrayNode)toSet).getElements();
+            Iterator<JsonNode> children = ((ArrayNode)toSet).elements();
             boolean ok = true;
             while(children.hasNext()){
                 var = (var.endsWith("]"))?var : var+"[]";
@@ -917,7 +917,7 @@ public class StateListenerNew extends Thread{
             v = (v.endsWith("]"))?v:v+"[]";
             return checkConfig(n, v);
         }else{
-            Iterator<String> it = ((ObjectNode)n).getFieldNames();
+            Iterator<String> it = ((ObjectNode)n).fieldNames();
             boolean cc = true;
             while(it.hasNext()){
                 String fName = (String)it.next();
@@ -938,7 +938,7 @@ public class StateListenerNew extends Thread{
             //}
         }else{
             if(toSet.isObject()){
-                Iterator<String> fields = toSet.getFieldNames();
+                Iterator<String> fields = toSet.fieldNames();
                 while(fields.hasNext()){
                     String fieldName = (String)fields.next();
                     fillVariables(toSet.get(fieldName), var+"/"+fieldName);
@@ -1015,7 +1015,7 @@ public class StateListenerNew extends Thread{
                     //setVariable(jWithIndex, jWithIndex, null, root);
                     List<Object> newList = new ArrayList<>();
                     
-                        Iterator<JsonNode> iter = ((ArrayNode)toSet).getElements();
+                        Iterator<JsonNode> iter = ((ArrayNode)toSet).elements();
                         while(iter.hasNext()){                     
                             //insert the list element
                             JsonNode newValJava = getCorrectItem(mapper.writeValueAsString(iter.next()), varWithoutIndexes+"[]");
@@ -1263,7 +1263,7 @@ public class StateListenerNew extends Thread{
                             node.remove("{key}");
                             Object k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             Object value = valueType.newInstance();
-                            Iterator<String> fields = node.getFieldNames();
+                            Iterator<String> fields = node.fieldNames();
                             while(fields.hasNext()){
                                 String fieldName = fields.next();
                                 JsonNode v = node.get(fieldName);
@@ -1292,7 +1292,7 @@ public class StateListenerNew extends Thread{
                             node.remove("{key}");
                             Object k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             Object value = valueType.newInstance();
-                            Iterator<String> fields = node.getFieldNames();
+                            Iterator<String> fields = node.fieldNames();
                             while(fields.hasNext()){
                                 String fieldName = fields.next();
                                 JsonNode v = node.get(fieldName);
@@ -1567,7 +1567,7 @@ public class StateListenerNew extends Thread{
     
     //Versione "YIN" Json
     private void findYinLeafs(JsonNode y, String prev) {
-        Iterator<Entry<String, JsonNode>> iter = y.getFields();
+        Iterator<Entry<String, JsonNode>> iter = y.fields();
         while(iter.hasNext()){
             Entry<String, JsonNode> value = iter.next();
             String fieldName = value.getKey();
@@ -1575,7 +1575,7 @@ public class StateListenerNew extends Thread{
             if(fieldName.equals("leaf")){
                 //can be an array
                 if(valueNode.isArray()){
-                    Iterator<JsonNode> leafs = ((ArrayNode)valueNode).getElements();
+                    Iterator<JsonNode> leafs = ((ArrayNode)valueNode).elements();
                     while(leafs.hasNext()){
                         ObjectNode child = (ObjectNode)leafs.next();
                         boolean conf;
@@ -1585,10 +1585,10 @@ public class StateListenerNew extends Thread{
                             conf = true;
                         }
                         System.out.println("-+-config "+conf);
-                        config.put(prev+"/"+child.get("@name").getTextValue(), conf);
+                        config.put(prev+"/"+child.get("@name").textValue(), conf);
                         
                         //check advertise attribute - prefix:advertise
-                        Iterator<String> searchAdv = child.getFieldNames();
+                        Iterator<String> searchAdv = child.fieldNames();
                         String pref=null;
                         while(searchAdv.hasNext()){
                             String f = searchAdv.next();
@@ -1601,11 +1601,11 @@ public class StateListenerNew extends Thread{
                             //the advertise field is specified
                             String adv = child.get(pref+":advertise").get("@advertise").asText();
                             if(adv.equals("onchange")){
-                                toListenPush.add(prev+"/"+child.get("@name").getTextValue());
+                                toListenPush.add(prev+"/"+child.get("@name").textValue());
                             }else if(adv.equals("periodic")){
                                 if(child.has(pref+":period")){
                                     long p = child.get(pref+":period").get("@period").asLong();
-                                    PeriodicVariableTask task = new PeriodicVariableTask(this, prev+"/"+child.get("@name").getTextValue());
+                                    PeriodicVariableTask task = new PeriodicVariableTask(this, prev+"/"+child.get("@name").textValue());
                                     toListenTimer.add(task);
                                     timer.schedule(task, p, p);
                                 }
@@ -1620,7 +1620,7 @@ public class StateListenerNew extends Thread{
                                     max = child.get(pref+":maxthreshold").get("@maxthreshold").asDouble();
                                 }
                                 if(min!=null || max!=null)
-                                    toListenThreshold.put(prev+"/"+child.get("@name").getTextValue(), new Threshold(min, max));
+                                    toListenThreshold.put(prev+"/"+child.get("@name").textValue(), new Threshold(min, max));
                             }
                             //if never - nothing
                         }
@@ -1636,7 +1636,7 @@ public class StateListenerNew extends Thread{
                     }
                     System.out.println("-+-config "+conf);
                     config.put(prev+"/"+valueNode.get("@name").asText(), conf);
-                    Iterator<String> searchAdv = valueNode.getFieldNames();
+                    Iterator<String> searchAdv = valueNode.fieldNames();
                     String pref=null;
                     while(searchAdv.hasNext()){
                         String f = searchAdv.next();
@@ -1668,7 +1668,7 @@ public class StateListenerNew extends Thread{
                                 max = valueNode.get(pref+":maxthreshold").get("@maxthreshold").asDouble();
                             }
                             if(min!=null || max!=null)
-                                toListenThreshold.put(prev+"/"+valueNode.get("@name").getTextValue(), new Threshold(min, max));
+                                toListenThreshold.put(prev+"/"+valueNode.get("@name").textValue(), new Threshold(min, max));
                         }
                         //if never - nothing
                     }
@@ -1677,19 +1677,19 @@ public class StateListenerNew extends Thread{
             }else{
                 //traverse
                     if(valueNode.isArray()){
-                        Iterator<JsonNode> objs = ((ArrayNode)valueNode).getElements();
+                        Iterator<JsonNode> objs = ((ArrayNode)valueNode).elements();
                         while(objs.hasNext()){
                             JsonNode next = objs.next();
                             if(next.has("@name")&&fieldName.equals("list"))
-                                findYinLeafs(next, prev+"/"+next.get("@name").getTextValue()+"[]");
+                                findYinLeafs(next, prev+"/"+next.get("@name").textValue()+"[]");
                             else if(next.has("@name"))
-                                findYinLeafs(next, prev+"/"+next.get("@name").getTextValue());
+                                findYinLeafs(next, prev+"/"+next.get("@name").textValue());
                         }
                     }else{
                         if(valueNode.has("@name")&&fieldName.equals("list"))
-                            findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").getTextValue()+"[]");
+                            findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").textValue()+"[]");
                         else if(valueNode.has("@name"))
-                            findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").getTextValue());
+                            findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").textValue());
                     }
             }
         }
