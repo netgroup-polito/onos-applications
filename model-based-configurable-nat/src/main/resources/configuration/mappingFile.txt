@@ -17,5 +17,5 @@ nat/natTable[]/port : root/natPortMap[{key}]/{key};
 nat/natTable[]/add-port : root/natPortMap[{key}]/{value};
 nat/arpTable : root/arpTable;
 nat/arpTable[] : root/arpTable[{key}];
-nat/arpTable/ip : root/arpTable[{key}]/{key};
-nat/arpTable/mac : root/arpTable[{key}]/{value};
+nat/arpTable[]/ip : root/arpTable[{key}]/{key};
+nat/arpTable[]/mac : root/arpTable[{key}]/{value};
