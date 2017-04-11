@@ -247,7 +247,13 @@ public class StateListenerNew extends Thread{
                 Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        stopTimerTasks();
         cM.deleteResources();
+    }
+    
+    private void stopTimerTasks(){
+        for(PeriodicVariableTask t:toListenTimer)
+            t.cancel();
     }
     
     public void saveNewValues(){
