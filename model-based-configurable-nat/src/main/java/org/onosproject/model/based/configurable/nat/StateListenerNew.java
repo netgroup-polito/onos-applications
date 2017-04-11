@@ -112,7 +112,7 @@ public class StateListenerNew extends Thread{
             System.out.println(spec);
             spec.check();
             
-            File yin = new File("src/main/resources/files/yin.txt");
+            File yin = new File("src/main/resources/files/yinFile.txt");
             if(!yin.exists())
                 yin.createNewFile();
             new Yang2Yin(spec, new String[0], new PrintStream(yin));
@@ -153,7 +153,7 @@ public class StateListenerNew extends Thread{
             
             findYinLeafs(doc.getDocumentElement(), "");*/
             
-            File yinFile = new File(loader.getResource("files/yin.txt").getFile());
+            File yinFile = new File(loader.getResource("files/yinFile.txt").getFile());
             JsonNode rootYin = mapper.readTree(yinFile);
             
             System.out.println(rootYin);
