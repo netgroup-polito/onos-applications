@@ -187,7 +187,7 @@ public class StateListenerNew extends Thread{
         log.info("--toListenTimer "+toListenTimer);
         
         //PARSE MAPPING FILE
-            File mapFile = new File(loader.getResource("MAPPINGFILE").getFile());
+            InputStream mapFile = loader.getResourceAsStream("MAPPINGFILE");
             try(Scanner s = new Scanner(mapFile)){
                 while(s.hasNextLine()){
                     String line = s.nextLine();
@@ -199,8 +199,6 @@ public class StateListenerNew extends Thread{
                     }
                     //System.out.println(YangToJava.toString());
                 }
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
             }
             //ADD VARIABLES TO LISTEN
             Collection<String> all = YangToJava.keySet();
