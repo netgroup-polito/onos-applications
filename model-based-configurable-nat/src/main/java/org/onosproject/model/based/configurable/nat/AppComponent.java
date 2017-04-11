@@ -120,7 +120,7 @@ public class AppComponent {
      *  key: IP
      *  value: MAC
      */
-    private Map<Ip4Address, MacAddress> arpTable = new HashMap<>();
+    public Map<Ip4Address, MacAddress> arpTable = new HashMap<>();
 
     /**
      *  Map containing all pending IP packets that need to be processed after IP address resolution
