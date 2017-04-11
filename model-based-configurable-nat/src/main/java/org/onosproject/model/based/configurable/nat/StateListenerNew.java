@@ -603,7 +603,7 @@ public class StateListenerNew extends Thread{
             }else{
                 next = ((ObjectNode)node).get(splitted[0]);
                 if(next==null){
-                    if(splitted.length>2 || (splitted.length>1&&splitted[1].contains("[")))
+                    if(splitted.length>1 || (splitted.length>1&&splitted[1].contains("[")))
                         ((ObjectNode)node).put(splitted[0], mapper.createObjectNode());
                     else if (splitted.length==1 && splitted[0].contains("[")){
                         ArrayNode mappa = mapper.createArrayNode();
