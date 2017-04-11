@@ -187,7 +187,7 @@ public class StateListenerNew extends Thread{
         log.info("--toListenTimer "+toListenTimer);
         
         //PARSE MAPPING FILE
-            InputStream mapFile = loader.getResourceAsStream("MAPPINGFILE");
+            InputStream mapFile = loader.getResourceAsStream(MAPPINGFILE);
             try(Scanner s = new Scanner(mapFile)){
                 while(s.hasNextLine()){
                     String line = s.nextLine();
