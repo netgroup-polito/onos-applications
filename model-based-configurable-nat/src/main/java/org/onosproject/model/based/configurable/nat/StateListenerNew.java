@@ -58,6 +58,9 @@ import org.slf4j.LoggerFactory;
  * @author lara
  */
 public class StateListenerNew extends Thread{
+    private static final String YINFILE = "configuration/yinFile.txt";
+    private static final String YANGFILE = "configuration/yangFile.yang";
+    private static final String MAPPINGFILE = "configuration/mappingFile.txt";    
     //protected List<String> state;
     protected HashMap<String, Object> state;
     protected HashMap<String, Object> stateThreshold;
@@ -101,11 +104,11 @@ public class StateListenerNew extends Thread{
         timer = new Timer();
         //cM = new ConnectionModuleClient(this, "StateListener");
         //PARSE YANG FILE
-        ClassLoader loader = getClass().getClassLoader();
+        ClassLoader loader = AppComponent.class.getClassLoader();
         try{
             
             
-            File yangFile = new File(loader.getResource("files/yangFile.yang").getFile());
+            File yangFile = new File(loader.getResource(YANGFILE).getFile());
             /*new yang(new FileInputStream(yangFile));
             
             YANG_Specification spec = yang.Start();
@@ -153,7 +156,7 @@ public class StateListenerNew extends Thread{
             
             findYinLeafs(doc.getDocumentElement(), "");*/
             
-            File yinFile = new File(loader.getResource("files/yinFile.txt").getFile());
+            File yinFile = new File(loader.getResource(YINFILE).getFile());
             JsonNode rootYin = mapper.readTree(yinFile);
             
             System.out.println(rootYin);
@@ -181,7 +184,7 @@ public class StateListenerNew extends Thread{
         log.info("--toListenTimer "+toListenTimer);
         
         //PARSE MAPPING FILE
-            File mapFile = new File(loader.getResource("files/mappingFile.txt").getFile());
+            File mapFile = new File(loader.getResource("MAPPINGFILE").getFile());
             try(Scanner s = new Scanner(mapFile)){
                 while(s.hasNextLine()){
                     String line = s.nextLine();
