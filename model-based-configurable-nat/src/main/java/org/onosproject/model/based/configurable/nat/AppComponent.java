@@ -164,14 +164,16 @@ public class AppComponent {
     @Deactivate
     protected void deactivate() {
 
+        sl.stopSL();
+        
+        log.info("stopped State Listener");
+        
         withdrawIntercepts();
         flowRuleService.removeFlowRulesById(appId);
         packetService.removeProcessor(processor);
         configService.removeListener(configListener);
         configRegistry.unregisterConfigFactory(configFactory);
         processor = null;
-
-        sl.stopSL();
         
         log.info("Stopped");
     }
