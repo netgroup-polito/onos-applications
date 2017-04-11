@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.io.IOException;
+import java.io.InputStream;
 import static java.lang.Thread.sleep;
 import java.lang.reflect.ParameterizedType;
 import java.util.Date;
@@ -156,9 +157,11 @@ public class StateListenerNew extends Thread{
             
             findYinLeafs(doc.getDocumentElement(), "");*/
             
-            File yinFile = new File(loader.getResource(YINFILE).getFile());
+            InputStream yinFile = loader.getResourceAsStream(YINFILE);
             JsonNode rootYin = mapper.readTree(yinFile);
             
+            
+            log.info("read yinFile " +rootYin);
             System.out.println(rootYin);
             
             findYinLeafs(rootYin, rootYin.get("@name").textValue());
