@@ -5,6 +5,7 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -1848,7 +1849,9 @@ public class StateListenerNew extends Thread{
                 sl.log.info("dopo trasform in print "+e.var);
                 ////System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
                 ////System.out.println((new Gson()).toJson(e));
-                sl.log.info("*Periodic* "+e);
+                try{sl.log.info("*Periodic* "+mapper.writeValueAsString(e));} catch (JsonProcessingException ex) {
+                    Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
 //            sl.cM.somethingChanged((new Gson()).toJson(e));
         }
