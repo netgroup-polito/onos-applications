@@ -151,13 +151,12 @@ public class AppComponent {
         loadConfiguration();
 
         appId = coreService.registerApplication("it.polito.modelbasedconfignat");
+        log.info("AppId "+appId);
         packetService.addProcessor(processor, PacketProcessor.director(0));
         configService.addListener(configListener);
         configRegistry.registerConfigFactory(configFactory);
         requestIntercepts();
-        
-        log.info("AppId "+appId);
-        
+                
         sl = new StateListenerNew(this);
         
         log.info("Started");
@@ -292,7 +291,9 @@ public class AppComponent {
         if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         log.info("Siamo dopo l'if e appId "+appId+" e devId "+inputApp.deviceId);
-        packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
+        TrafficSelector sel = selector.build();
+        log.info("build the selector");
+        packetService.cancelPackets(sel, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
         log.info("Stop input ipv4");
         
