@@ -5,6 +5,7 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1815,6 +1816,7 @@ public class StateListenerNew extends Thread{
             //System.out.println("COSTRUITO THREAD TIMER PER "+var);
         }
         
+        @JsonIgnore
         public void run(){
             sl.log.info("**Periodic Task of " + var+ " running**");
             Map<String, Object> listToSave = new HashMap<>();
