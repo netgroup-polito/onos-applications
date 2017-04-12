@@ -248,7 +248,6 @@ public class StateListenerNew extends Thread{
             }
         }
         log.info("The program has been stopped");
-        stopTimerTasks();
         //cM.deleteResources();
     }
     
@@ -1398,7 +1397,9 @@ public class StateListenerNew extends Thread{
     }
     
     public void stopSL(){
+        stopTimerTasks();
         stopCondition = true;
+        
     } 
     
     
