@@ -1833,6 +1833,7 @@ public class StateListenerNew extends Thread{
             } catch (IllegalAccessException ex) {
                 Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
             }
+            sl.log.info("Dopo try savedValues "+listToSave);
             for(String s: listToSave.keySet()){
                 NotifyMsg e = new NotifyMsg();
                 e.act = action.NOCHANGES;
