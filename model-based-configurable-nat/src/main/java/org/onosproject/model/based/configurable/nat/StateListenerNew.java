@@ -1753,6 +1753,18 @@ public class StateListenerNew extends Thread{
             }
         }
     }
+    
+    protected String trasformNotifyInJson(NotifyMsg e){
+        String ret = null;
+        try{
+            ret = "{\"act\":\""+e.act+"\",\"obj\":";
+            ret += mapper.writeValueAsString(e.obj);
+            ret +=",\"var\":\""+e.var+"\",\"timestamp\":"+e.timestamp;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
+    }
  
     public enum action{ADDED, UPDATED, REMOVED, NOCHANGES};
     public class NotifyMsg{
@@ -1816,7 +1828,6 @@ public class StateListenerNew extends Thread{
             //System.out.println("COSTRUITO THREAD TIMER PER "+var);
         }
         
-        @JsonIgnore
         public void run(){
             sl.log.info("**Periodic Task of " + var+ " running**");
             Map<String, Object> listToSave = new HashMap<>();
@@ -1851,9 +1862,7 @@ public class StateListenerNew extends Thread{
                 sl.log.info("dopo trasform in print "+e.var);
                 ////System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
                 ////System.out.println((new Gson()).toJson(e));
-                try{sl.log.info("*Periodic* "+mapper.writeValueAsString(e));} catch (JsonProcessingException ex) {
-                    Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                sl.log.info("*Periodic "+sl.trasformNotifyInJson(e));
             }
 //            sl.cM.somethingChanged((new Gson()).toJson(e));
         }
