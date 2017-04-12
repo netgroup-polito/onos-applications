@@ -1833,15 +1833,15 @@ public class StateListenerNew extends Thread{
             } catch (IllegalAccessException ex) {
                 Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
             }
-            sl.log.info("Dopo try savedValues "+listToSave);
             for(String s: listToSave.keySet()){
+                sl.log.info("Ciclo con chiave "+s);
                 NotifyMsg e = new NotifyMsg();
                 e.act = action.NOCHANGES;
                 e.obj = listToSave.get(s);
                 e.var = sl.trasformInPrint(s);
                 System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
                 System.out.println((new Gson()).toJson(e));
-                sl.log.info("*Periodic* "+(new Gson()).toJson(e));
+                sl.log.info("*Periodic* "+e.var+" value "+e.obj);
             }
 //            sl.cM.somethingChanged((new Gson()).toJson(e));
         }
