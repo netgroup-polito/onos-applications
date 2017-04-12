@@ -285,23 +285,29 @@ public class AppComponent {
         TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_IPV4);
         selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
+        log.info("Stop input ipv4");
+        
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
+        log.info("Stop input arp");
+        
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(outputApp.portNumber);
-        if (outputApp.externalVlan.toShort() != 0)
+        if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(outputApp.externalVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
+    
+        log.info("stop output");
     }
 
     private class NatPacketProcessor implements PacketProcessor {
