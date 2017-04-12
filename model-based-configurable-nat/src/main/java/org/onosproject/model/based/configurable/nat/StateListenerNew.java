@@ -1836,11 +1836,14 @@ public class StateListenerNew extends Thread{
             for(String s: listToSave.keySet()){
                 sl.log.info("Ciclo con chiave "+s);
                 NotifyMsg e = new NotifyMsg();
+                sl.log.info("dopo creazione NotifyMsg");
                 e.act = action.NOCHANGES;
                 e.obj = listToSave.get(s);
+                sl.log.info("dopo get obj "+e.obj);
                 e.var = sl.trasformInPrint(s);
-                System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
-                System.out.println((new Gson()).toJson(e));
+                sl.log.info("dopo trasform in print "+e.var);
+                //System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
+                //System.out.println((new Gson()).toJson(e));
                 sl.log.info("*Periodic* "+e.var+" value "+e.obj);
             }
 //            sl.cM.somethingChanged((new Gson()).toJson(e));
