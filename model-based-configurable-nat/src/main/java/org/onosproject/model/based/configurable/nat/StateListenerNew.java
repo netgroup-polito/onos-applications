@@ -1815,13 +1815,16 @@ public class StateListenerNew extends Thread{
             Map<String, Object> listToSave = new HashMap<>();
             try{
                 if(YangToJava.containsValue(var)){
+                    sl.log.info("YangToJava contains value "+var);
                     String j = null;
                     for(String k:YangToJava.keySet())
                         if(YangToJava.get(k).equals(var)){
                             j = k;
                             break;
                         }
+                    sl.log.info("The key is "+j);
                     sl.saveValues(sl.root, j.substring(5), j.substring(5), listToSave);
+                    sl.log.info("Values saved "+listToSave);
                 }
             } catch (NoSuchFieldException ex) {
                 Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
