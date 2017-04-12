@@ -291,7 +291,7 @@ public class AppComponent {
         log.info("externalVlan "+inputApp.externalVlan);
         if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
-        log.info("Siamo dopo l'if");
+        log.info("Siamo dopo l'if e appId "+appId+" e devId "+inputApp.deviceId);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
         log.info("Stop input ipv4");
