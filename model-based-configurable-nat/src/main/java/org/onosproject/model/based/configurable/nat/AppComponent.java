@@ -201,6 +201,7 @@ public class AppComponent {
             this.inputApp.ipAddress = Ip4Address.valueOf(config.getPrivateAddress());
             this.outputApp.ipAddress = Ip4Address.valueOf(config.getPublicAddress());
 
+            log.info("ip addresses: "+this.inputApp.ipAddress+" "+this.outputApp.ipAddress);
             log.info("Loaded parameters from configuration file.");
         } catch (IOException e) {
             log.info(e.getMessage());
