@@ -1811,6 +1811,7 @@ public class StateListenerNew extends Thread{
         }
         
         public void run(){
+            sl.log.info("**Periodic Task of " + var+ " running**");
             Map<String, Object> listToSave = new HashMap<>();
             try{
                 if(YangToJava.containsValue(var)){
@@ -1836,7 +1837,7 @@ public class StateListenerNew extends Thread{
                 e.var = sl.trasformInPrint(s);
                 System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
                 System.out.println((new Gson()).toJson(e));
-                log.info("*Periodic* "+(new Gson()).toJson(e));
+                sl.log.info("*Periodic* "+(new Gson()).toJson(e));
             }
 //            sl.cM.somethingChanged((new Gson()).toJson(e));
         }
