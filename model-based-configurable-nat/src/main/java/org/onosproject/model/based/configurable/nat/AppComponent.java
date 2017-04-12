@@ -282,9 +282,11 @@ public class AppComponent {
     }
 
     private void withdrawIntercepts() {
+        log.info("In withdrawIntercepts!");
         TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_IPV4);
         selector.matchInPort(inputApp.portNumber);
+        log.info("externalVlan "+inputApp.externalVlan);
         if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
