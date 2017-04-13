@@ -122,7 +122,7 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>!com.google.gson,*</Import-Package>
-                        <Embed-Dependency>*;scope=compile|runtime;inline=false;</Embed-Dependency>
+                        <Embed-Dependency>dependencies</Embed-Dependency>
                     </instructions>
                 </configuration>
             </plugin>
