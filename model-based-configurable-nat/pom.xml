@@ -121,7 +121,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Import-Package>*;scope=compile;inline=false;</Import-Package>
+                        <Import-Package>*,scope=compile|running;</Import-Package>
                         <Embed-Dependency>dependencies</Embed-Dependency>
                     </instructions>
                 </configuration>
