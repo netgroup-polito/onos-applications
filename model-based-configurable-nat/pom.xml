@@ -121,8 +121,8 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Import-Package>!com.google.gson,!org.glassfish.jersey.media.sse,*</Import-Package>
-                        <Embed-Dependency>gson,sse.*</Embed-Dependency>
+                        <Import-Package>!com.google.gson,*</Import-Package>
+                        <Embed-Dependency>gson</Embed-Dependency>
                     </instructions>
                 </configuration>
             </plugin>
