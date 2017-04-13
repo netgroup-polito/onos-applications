@@ -105,7 +105,7 @@ public class StateListenerNew extends Thread{
         config = new HashMap<>();
         mapper = new ObjectMapper();
         timer = new Timer();
-        //cM = new ConnectionModuleClient(this, "StateListener");
+        cM = new ConnectionModuleClient(this, "StateListener");
         //PARSE YANG FILE
         ClassLoader loader = AppComponent.class.getClassLoader();
         try{
