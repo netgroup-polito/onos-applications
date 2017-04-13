@@ -122,7 +122,7 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>!com.google.gson,!org.glassfish.jersey.media.sse,*</Import-Package>
-                        <Embed-Dependency>com.google.gson, org.glassfish.jersey.media.sse</Embed-Dependency>
+                        <Embed-Dependency>com.google.gson, org.glassfish.jersey.media.sse;scope=compile|runtime;inline=false;</Embed-Dependency>
                     </instructions>
                 </configuration>
             </plugin>
