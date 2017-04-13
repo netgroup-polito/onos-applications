@@ -1862,7 +1862,7 @@ public class StateListenerNew extends Thread{
                 sl.log.info("dopo trasform in print "+e.var);
                 ////System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
                 ////System.out.println((new Gson()).toJson(e));
-                sl.log.info("*Periodic "+sl.trasformNotifyInJson(e));
+                sl.log.info("*Periodic "+((new Gson()).toJson(e)));
             }
 //            sl.cM.somethingChanged((new Gson()).toJson(e));
         }
