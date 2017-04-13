@@ -88,6 +88,7 @@ public class StateListenerNew extends Thread{
     protected final org.slf4j.Logger log = LoggerFactory.getLogger(getClass());
  
     public StateListenerNew(Object root){
+        log.info("In constructor");
         this.root = root;
         state = new HashMap<>();
         stateThreshold = new HashMap<>();
