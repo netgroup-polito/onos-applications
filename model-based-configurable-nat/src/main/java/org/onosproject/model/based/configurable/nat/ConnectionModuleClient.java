@@ -107,7 +107,7 @@ public class ConnectionModuleClient {
     
     public String CreateRequest(){
         String res;
-        Response cr = target.path("create").request().post(Entity.entity(id, MediaType.TEXT_PLAIN), Response.class);
+        //Response cr = target.path("create").request().post(Entity.entity(id, MediaType.TEXT_PLAIN), Response.class);
         
         l.log.info("ho mandalo la richiesta, prima dello startSSE");
 //        if(cr.getStatus()!=200 && cr.getStatus()!=204){
