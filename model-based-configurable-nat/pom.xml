@@ -121,8 +121,8 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Import-Package>*,scope=compile|running;</Import-Package>
-                        <Embed-Dependency>dependencies</Embed-Dependency>
+                        <Import-Package>!com.google.gson,*</Import-Package>
+                        <Embed-Dependency>*;scope=compile|runtime;inline=false;</Embed-Dependency>
                     </instructions>
                 </configuration>
             </plugin>
