@@ -24,7 +24,7 @@ import org.glassfish.jersey.media.sse.SseFeature;
  * @author lara
  */
 public class ConnectionModuleClient {
-    public static final String BASE_URI = "http://130.192.225.154:8080/ConnectionModule/webresources/ConnectionModule";
+    public static final String BASE_URI = "http://130.192.225.154:8080/ConnectionModule/ConnectionModule";
     public static Client client;
     public static WebTarget target;
     public static EventSource eventSource;
@@ -108,7 +108,9 @@ public class ConnectionModuleClient {
     
     public String CreateRequest(){
         String res;
-        l.log.info("Prima di mandare la create");
+        l.log.info("!!-------*******Prima di mandare la create******-------!!!!");
+        Response c = client.target("http://130.192.225.154:8080/ConnectionModule").request().get();
+        l.log.info("--Where to find web service-- "+c.getStatus()+c.getStatusInfo());
         Response cr = target.path("create").request().post(Entity.entity(id, MediaType.TEXT_PLAIN), Response.class);
         
         l.log.info("ho mandalo la richiesta, prima dello startSSE "+cr.getStatus());
