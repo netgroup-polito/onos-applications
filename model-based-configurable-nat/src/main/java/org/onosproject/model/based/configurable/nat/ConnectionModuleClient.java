@@ -24,7 +24,7 @@ import org.glassfish.jersey.media.sse.SseFeature;
  * @author lara
  */
 public class ConnectionModuleClient {
-    public static final String BASE_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webservices/ConnectionModule";
+    public static final String BASE_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/ConnectionModule";
     public static Client client;
     public static WebTarget target;
     public static EventSource eventSource;
