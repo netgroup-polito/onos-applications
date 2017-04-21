@@ -109,7 +109,7 @@ public class ConnectionModuleClient {
     public String CreateRequest(){
         String res;
         l.log.info("!!-------*******Prima di mandare la create******-------!!!!");
-        Response c = client.target("http://130.192.225.154:8080/ConnectionModule").request().get();
+        Response c = client.target("http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT").request().get();
         l.log.info("--Where to find web service-- "+c.getStatus()+c.getStatusInfo());
         Response cr = target.path("create").request().post(Entity.entity(id, MediaType.TEXT_PLAIN), Response.class);
         
