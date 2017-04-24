@@ -246,12 +246,12 @@ public class StateListenerNew extends Thread{
                 sleep(5000);
             } catch (InterruptedException ex) {
                 stopCondition = true;
-                //cM.deleteResources();
+                cM.deleteResources();
                 Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         log.info("The program has been stopped");
-        //cM.deleteResources();
+        cM.deleteResources();
     }
     
     private void stopTimerTasks(){
@@ -445,7 +445,7 @@ public class StateListenerNew extends Thread{
         for(NotifyMsg e:happenings){
             //System.out.println(e.act + " "+e.var + " "+e.obj);
             log.info(e.act+" "+e.var+" "+e.obj);
-            //cM.somethingChanged((new Gson()).toJson(e));
+            cM.somethingChanged((new Gson()).toJson(e));
         }
         
     }
@@ -1109,7 +1109,7 @@ public class StateListenerNew extends Thread{
                 //System.out.println("RESULT GET: "+msg.objret);
             
                 }
-                //cM.setResourceValue((new Gson().toJson(msg)));
+                cM.setResourceValue((new Gson().toJson(msg)));
                 break;
             case CONFIG:
                 String noInd = deleteIndexes(msg.var);
@@ -1746,7 +1746,7 @@ public class StateListenerNew extends Thread{
                     //System.out.println("---*ONTHRESHOLD");
                     //System.out.println((new Gson()).toJson(e));
                     log.info("*OnThreshold* "+(new Gson()).toJson(e));
-                    //cM.somethingChanged((new Gson()).toJson(e));
+                    cM.somethingChanged((new Gson()).toJson(e));
                 }
             }else{
                 if(stateThreshold.containsKey(s))
@@ -1864,8 +1864,8 @@ public class StateListenerNew extends Thread{
                 ////System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
                 ////System.out.println((new Gson()).toJson(e));
                 sl.log.info("*Periodic "+((new Gson()).toJson(e)));
+                sl.cM.somethingChanged((new Gson()).toJson(e));
             }
-//            sl.cM.somethingChanged((new Gson()).toJson(e));
         }
         
     }
