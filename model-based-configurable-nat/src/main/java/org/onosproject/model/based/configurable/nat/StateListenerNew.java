@@ -1376,6 +1376,7 @@ public class StateListenerNew extends Thread{
             }else{
                 Field f = actual.getClass().getField(var);
                 log.info("--Arrivata al field da configurare "+f.getName()+" "+f.getGenericType());
+                log.info("Valore: "+newVal);
                 f.set(actual, (new Gson()).fromJson(newVal, f.getGenericType()));
             }
         }else{
