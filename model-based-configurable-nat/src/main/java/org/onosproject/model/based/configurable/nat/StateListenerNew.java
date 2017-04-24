@@ -944,7 +944,7 @@ public class StateListenerNew extends Thread{
     }
     
     private void fillVariables(JsonNode toSet, String var) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
-        
+        log.info("In fillVariables");
         if(toSet.isValueNode()){
             log.info("In fillVariables - reached leaf");
             //set the corrispondent leaf
