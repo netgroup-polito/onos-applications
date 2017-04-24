@@ -1127,7 +1127,7 @@ public class StateListenerNew extends Thread{
                     if(var!=null){
                         //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
                         if(!var.equals("root")&&state.containsKey(var.substring(5))){
-                            log.info("Config a leaf");
+                            log.info("Config a leaf "+var);
                             setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);
                             log.info("Leaf should be configured");
                         }else{
@@ -1375,7 +1375,8 @@ public class StateListenerNew extends Thread{
                    
             }else{
                 Field f = actual.getClass().getField(var);
-                    f.set(actual, (new Gson()).fromJson(newVal, f.getGenericType()));
+                log.info("--Arrivata al field da configurare "+f.getName()+" "+f.getGenericType());
+                f.set(actual, (new Gson()).fromJson(newVal, f.getGenericType()));
             }
         }else{
             if(fs[0].contains("[")){
