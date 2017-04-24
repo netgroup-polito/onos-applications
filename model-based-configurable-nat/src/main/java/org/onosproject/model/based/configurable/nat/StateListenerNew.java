@@ -889,8 +889,10 @@ public class StateListenerNew extends Thread{
                     //leaf - check config
                     if(config.containsKey(var+"/"+field.getKey()))
                         ok = ok && config.get(var+"/"+field.getKey());
-                    else
+                    else{
+                        log.info("Config non contiene "+var+"/"+field.getKey());
                         ok = false;
+                    }
                 }else
                     ok = ok && configVariables(var+"/"+field.getKey(), field.getValue());
             }
