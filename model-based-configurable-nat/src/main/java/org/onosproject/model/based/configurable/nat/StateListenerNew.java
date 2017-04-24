@@ -859,6 +859,7 @@ public class StateListenerNew extends Thread{
             log.info("toSet is "+toSet);
             //check if all the values are configurable
             if(!configVariables(noIndexes(var), toSet)){
+                log.info("not to config..");
                 return;
             }
 //            if(!configVariables(var))
