@@ -876,6 +876,10 @@ public class StateListenerNew extends Thread{
     }
 
     private boolean configVariables(String var, JsonNode toSet){
+        if(toSet.isValueNode()){
+            log.info("Is a value Node: "+var);
+            return config.get(var);
+        }
         if(toSet.isObject()){
             Iterator<Entry<String, JsonNode>> iter = ((ObjectNode)toSet).fields();
             boolean ok = true;
