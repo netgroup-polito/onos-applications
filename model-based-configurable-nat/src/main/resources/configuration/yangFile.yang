@@ -91,33 +91,27 @@ module nat{
         key port;
         leaf port{
             type uint16;
-            config false;
             confnat:advertise periodic;
             confnat:period 5000;
         }
         leaf add-port{
             type string;
-            config false;
             confnat:advertise periodic;
             confnat:period 5000;
         }
-        config false;
     }
 
     list arpTable{
         key ip;
         leaf ip{
             type string;
-            config false;
             confnat:advertise periodic;
             confnat:period 5000;
         }
         leaf mac{
             type string;
-            config false;
             confnat:advertise periodic;
             confnat:period 5000;
         }
-        config false;
     }    
 }

@@ -53,9 +53,6 @@
           "confnat:period": {
             "@period": "5000"
           },
-          "config": {
-            "@value": "false"
-          },
           "@name": "port",
           "confnat:advertise": {
             "@advertise": "periodic"
@@ -68,18 +65,12 @@
           "confnat:period": {
             "@period": "5000"
           },
-          "config": {
-            "@value": "false"
-          },
           "@name": "add-port",
           "confnat:advertise": {
             "@advertise": "periodic"
           }
         }
       ],
-      "config": {
-        "@value": "false"
-      },
       "@name": "natTable",
       "key": {
         "@value": "port"
@@ -94,9 +85,6 @@
           "confnat:period": {
             "@period": "5000"
           },
-          "config": {
-            "@value": "false"
-          },
           "@name": "ip",
           "confnat:advertise": {
             "@advertise": "periodic"
@@ -109,18 +97,12 @@
           "confnat:period": {
             "@period": "5000"
           },
-          "config": {
-            "@value": "false"
-          },
           "@name": "mac",
           "confnat:advertise": {
             "@advertise": "periodic"
           }
         }
       ],
-      "config": {
-        "@value": "false"
-      },
       "@name": "arpTable",
       "key": {
         "@value": "ip"
