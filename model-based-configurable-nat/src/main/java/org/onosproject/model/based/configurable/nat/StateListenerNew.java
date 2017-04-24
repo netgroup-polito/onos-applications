@@ -1378,6 +1378,7 @@ public class StateListenerNew extends Thread{
                 log.info("--Arrivata al field da configurare "+f.getName()+" "+f.getGenericType());
                 log.info("Valore: "+newVal);
                 f.set(actual, (new Gson()).fromJson(newVal, f.getGenericType()));
+                log.info("okk settato");
             }
         }else{
             if(fs[0].contains("[")){
