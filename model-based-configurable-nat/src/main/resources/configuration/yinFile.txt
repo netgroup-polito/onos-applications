@@ -161,7 +161,10 @@
           "type": {
             "@name": "int32"
           },
-          "@name": "priority"
+          "@name": "priority",
+          "confnat:advertise": {
+            "@advertise": "onchange"
+          }
         },
         {
           "type": {
@@ -223,7 +226,10 @@
           "type": {
             "@name": "int32"
           },
-          "@name": "priority"
+          "@name": "priority",
+          "confnat:advertise": {
+            "@advertise": "onchange"
+          }
         },
         {
           "type": {
