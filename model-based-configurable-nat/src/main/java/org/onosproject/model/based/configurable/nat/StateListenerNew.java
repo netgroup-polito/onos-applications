@@ -1117,6 +1117,7 @@ public class StateListenerNew extends Thread{
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
             case CONFIG:
+                log.info("Config command "+var);
                 String noInd = deleteIndexes(msg.var);
                 if(config.containsKey(noInd) && !config.get(noInd)){
                     //no configurable
@@ -1125,10 +1126,15 @@ public class StateListenerNew extends Thread{
                 try {
                     if(var!=null){
                         //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
-                        if(!var.equals("root")&&state.containsKey(var.substring(5)))
+                        if(!var.equals("root")&&state.containsKey(var.substring(5))){
+                            log.info("Config a leaf");
                             setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);
-                        else
+                            log.info("Leaf should be configured");
+                        }else{
+                            log.info("Config a complex object");
                             setComplexObject(msg.var, (String)msg.obj);
+                            log.info("complex object should be configured");
+                        }
                     }
                 } catch (NoSuchFieldException ex) {
                     Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
