@@ -891,7 +891,7 @@ public class StateListenerNew extends Thread{
                         ok = ok && config.get(var+"/"+field.getKey());
                     else{
                         log.info("Config non contiene "+var+"/"+field.getKey());
-                        ok = false;
+                        ok = true;
                     }
                 }else
                     ok = ok && configVariables(var+"/"+field.getKey(), field.getValue());
