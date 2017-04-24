@@ -1089,23 +1089,28 @@ public class StateListenerNew extends Thread{
         switch(msg.act){
             case GET:
                 //System.out.println("devo passare "+var);
+                log.info("Arrived command GET of "+var);
                 if(var==null)
                     msg.obj=null;
                 else if(!var.equals("root") && state.containsKey(var.substring(5))){
+                    log.info("Is a Leaf");
                     ObjectNode on= mapper.createObjectNode();
                     String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
                     on.put(field, getLeafValue(var.substring(5)).toString());
                    msg.objret = mapper.writeValueAsString(on);
+                   log.info("Leaf value "+msg.objret);
                    //System.out.println("RESULT GET: E' una foglia "+msg.objret);
                 }
                 else{
             
                 //creare oggetto da passare!
                 JsonNode result;
+                log.info("IT's not a leaf");
                 //String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
                 result = getComplexObj(msg.var);
                 
                 msg.objret = mapper.writeValueAsString(result);
+                log.info("Result value "+msg.objret);
                 //System.out.println("RESULT GET: "+msg.objret);
             
                 }
@@ -1834,16 +1839,13 @@ public class StateListenerNew extends Thread{
             Map<String, Object> listToSave = new HashMap<>();
             try{
                 if(YangToJava.containsValue(var)){
-                    sl.log.info("YangToJava contains value "+var);
                     String j = null;
                     for(String k:YangToJava.keySet())
                         if(YangToJava.get(k).equals(var)){
                             j = k;
                             break;
                         }
-                    sl.log.info("The key is "+j);
                     sl.saveValues(sl.root, j.substring(5), j.substring(5), listToSave);
-                    sl.log.info("Values saved "+listToSave);
                 }
             } catch (NoSuchFieldException ex) {
                 Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -1853,17 +1855,12 @@ public class StateListenerNew extends Thread{
                 Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
             }
             for(String s: listToSave.keySet()){
-                sl.log.info("Ciclo con chiave "+s);
                 NotifyMsg e = new NotifyMsg();
-                sl.log.info("dopo creazione NotifyMsg");
                 e.act = action.NOCHANGES;
                 e.obj = listToSave.get(s);
-                sl.log.info("dopo get obj "+e.obj);
                 e.var = sl.trasformInPrint(s);
-                sl.log.info("dopo trasform in print "+e.var);
                 ////System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
                 ////System.out.println((new Gson()).toJson(e));
-                sl.log.info("*Periodic "+((new Gson()).toJson(e)));
                 sl.cM.somethingChanged((new Gson()).toJson(e));
             }
         }
