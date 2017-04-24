@@ -856,7 +856,7 @@ public class StateListenerNew extends Thread{
         try {
             JsonNode toSet = mapper.readTree(newVal);
             //System.out.println(toSet);
-            
+            log.info("toSet is "+toSet);
             //check if all the values are configurable
             if(!configVariables(noIndexes(var), toSet)){
                 return;
@@ -945,9 +945,11 @@ public class StateListenerNew extends Thread{
     private void fillVariables(JsonNode toSet, String var) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
         
         if(toSet.isValueNode()){
+            log.info("In fillVariables - reached leaf");
             //set the corrispondent leaf
             String j = fromYangToJava(var);
             //if(state.containsKey(j.substring(5))){
+            log.info("And variable is "+j);
             if(j!=null)
                 setVariable(j.substring(5), j.substring(5), toSet.asText(), root);
             //}
