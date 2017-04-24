@@ -1255,6 +1255,7 @@ public class StateListenerNew extends Thread{
                             f.set(actual, l);
                         } catch (InstantiationException ex) {
                             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                            log.info(ex.getMessage());
                         }
                     }else if(index.matches("")){
                         //List<Object> newList = (new Gson()).fromJson(newVal, List.class);
@@ -1332,8 +1333,10 @@ public class StateListenerNew extends Thread{
                             ((Map)f.get(actual)).put(k, value);
                         } catch (IOException ex) {
                             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                            log.info(ex.getMessage());
                         } catch (InstantiationException ex) {
                             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                            log.info(ex.getMessage());
                         }
                         //((Map)f.get(actual)).put((new Gson()).fromJson(newVal, itemType));
                     }else{
@@ -1406,6 +1409,7 @@ public class StateListenerNew extends Thread{
                 }
             }else{
                 Field f = actual.getClass().getField(fs[0]);
+                log.info("Passing throug "+f.getGenericType());
                 actual = f.get(actual);
                 setVariable(var.substring(fs[0].length()+1), complete, newVal, actual);
             }
