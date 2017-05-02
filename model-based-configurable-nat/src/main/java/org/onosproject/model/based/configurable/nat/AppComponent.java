@@ -260,7 +260,7 @@ public class AppComponent {
      */
     private void requestIntercepts() {
 //        log.info("starting request Intercepts");
-//        try{
+        try{
             TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_IPV4);
             selector.matchInPort(inputApp.portNumber);
@@ -285,18 +285,19 @@ public class AppComponent {
                 selector.matchVlanId(outputApp.externalVlan);
             packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
     //        log.info("Traffic selector for ethernet in output setted");
-//        }catch(Exception ex){
-//            log.error(ex.getMessage());
-//            withdrawIntercepts();
-//            if(first){
-//                first = false;
-//                requestIntercepts();
-//            }
-//        }
+        }catch(Exception ex){
+            log.error(ex.getMessage());
+            withdrawIntercepts();
+            if(first){
+                first = false;
+                requestIntercepts();
+            }
+            sl.stopSL();
+        }
     }
 
     private void withdrawIntercepts() {
-//        try{
+        try{
             TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_IPV4);
             selector.matchInPort(inputApp.portNumber);
@@ -327,9 +328,9 @@ public class AppComponent {
             packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
 
     //        log.info("stop output");
-//        }catch(Exception ex){
-//            log.error(ex.getMessage());
-//        }
+        }catch(Exception ex){
+            log.error(ex.getMessage());
+        }
     }
 
     private class NatPacketProcessor implements PacketProcessor {
