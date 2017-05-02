@@ -1120,7 +1120,7 @@ public class StateListenerNew extends Thread{
             
                 //creare oggetto da passare!
                 JsonNode result;
-//                log.info("IT's not a leaf");
+                log.info("IT's not a leaf");
                 //String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
                 result = getComplexObj(msg.var);
                 
