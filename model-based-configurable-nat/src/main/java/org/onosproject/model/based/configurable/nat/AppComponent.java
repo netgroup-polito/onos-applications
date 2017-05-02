@@ -296,7 +296,7 @@ public class AppComponent {
     }
 
     private void withdrawIntercepts() {
-        try{
+//        try{
             TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_IPV4);
             selector.matchInPort(inputApp.portNumber);
@@ -327,9 +327,9 @@ public class AppComponent {
             packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
 
     //        log.info("stop output");
-        }catch(Exception ex){
-            log.error(ex.getMessage());
-        }
+//        }catch(Exception ex){
+//            log.error(ex.getMessage());
+//        }
     }
 
     private class NatPacketProcessor implements PacketProcessor {
