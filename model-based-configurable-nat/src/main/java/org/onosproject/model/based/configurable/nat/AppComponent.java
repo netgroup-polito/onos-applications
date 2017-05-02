@@ -59,6 +59,7 @@ public class AppComponent {
     private static final String PUBLIC_PORT_ID = "WAN:0";
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
+    private boolean first = true;
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected CoreService coreService;
@@ -286,6 +287,10 @@ public class AppComponent {
     //        log.info("Traffic selector for ethernet in output setted");
         }catch(Exception ex){
             log.error(ex.getMessage());
+            if(first){
+                first = false;
+                requestIntercepts();
+            }
             //withdrawIntercepts();
         }
     }
