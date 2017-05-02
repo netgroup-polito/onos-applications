@@ -288,11 +288,12 @@ public class AppComponent {
         }catch(Exception ex){
             log.error(ex.getMessage());
             withdrawIntercepts();
+            sl.stopSL();
             if(first){
                 first = false;
                 requestIntercepts();
+                sl = new StateListenerNew(this);
             }
-            sl.stopSL();
         }
     }
 
