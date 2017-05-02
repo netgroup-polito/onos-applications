@@ -71,6 +71,7 @@ public class ConnectionModuleClient {
                     Logger.getLogger(ConnectionModuleClient.class.getName()).log(Level.SEVERE, null, ex);
                     System.err.println("Closing the channel in the client");
                     }*/
+                    l.log.info("Dal connect.. parsed command!");
                 } catch (IllegalArgumentException ex) {
                     Logger.getLogger(ConnectionModuleClient.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (NoSuchFieldException ex) {
@@ -98,10 +99,10 @@ public class ConnectionModuleClient {
     }
     
     public void setResourceValue(String msg){
-        System.out.println("Passo al web service il valore "+msg);
+        l.log.info("Passo al web service il valore "+msg);
         Response r = target.path(id.toString()).path("response").request().post(Entity.entity(msg, MediaType.TEXT_PLAIN), Response.class);
         if(r.getStatus()!=200){
-            System.out.print("!!Error in the passage of a requested value");
+            l.log.info("!!Error in the passage of a requested value "+r.getStatus());
         }
     }
     

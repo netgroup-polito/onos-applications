@@ -1168,14 +1168,15 @@ public class StateListenerNew extends Thread{
                     }else
                         deleteVariable(root, var.substring(5), var.substring(5));
                 } catch (NoSuchFieldException ex) {
-            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
-        }
-                break;
-        }
+                    Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                    break;
+            }
+        log.info("Fine parse command");
     }
     
     public void deleteVariable(Object actual, String var, String complete) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {

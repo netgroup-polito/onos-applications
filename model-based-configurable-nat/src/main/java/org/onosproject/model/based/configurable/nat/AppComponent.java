@@ -164,6 +164,8 @@ public class AppComponent {
 
     @Deactivate
     protected void deactivate() {
+        
+        log.info("Deactivate");
 
         sl.stopSL();
         
