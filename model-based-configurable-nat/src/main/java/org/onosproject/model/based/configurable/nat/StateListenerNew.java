@@ -1105,9 +1105,9 @@ public class StateListenerNew extends Thread{
 //                log.info("Arrived command GET of "+var);
                 log.info("Arrived from ConnectionModule the command GET for "+msg.var);
                 log.info("Translated in "+var);
-                if(var==null)
-                    msg.obj=null;
-                else if(!var.equals("root") && state.containsKey(var.substring(5))){
+//                if(var==null)
+//                    msg.obj=null;
+                if(!var.equals("root") && state.containsKey(var.substring(5))){
 //                    log.info("Is a Leaf");
                     ObjectNode on= mapper.createObjectNode();
                     String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
