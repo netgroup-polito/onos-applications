@@ -266,7 +266,9 @@ public class AppComponent {
         log.info("Selector "+selector);
         log.info("inputApp "+inputApp);
         log.info("E al suo interno deviceId "+inputApp.deviceId);
-        packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
+        TrafficSelector s = selector.build();
+        log.info("Selector built");
+        packetService.requestPackets(s, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 //        log.info("Traffic selector for ipv4 in input setted");
         
         selector = DefaultTrafficSelector.builder();
