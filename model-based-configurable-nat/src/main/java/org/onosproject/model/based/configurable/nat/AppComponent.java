@@ -287,11 +287,11 @@ public class AppComponent {
     //        log.info("Traffic selector for ethernet in output setted");
         }catch(Exception ex){
             log.error(ex.getMessage());
+            withdrawIntercepts();
             if(first){
                 first = false;
                 requestIntercepts();
             }
-            //withdrawIntercepts();
         }
     }
 
