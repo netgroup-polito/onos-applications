@@ -27,7 +27,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <onos.version>1.6.0</onos.version>
+        <onos.version>1.8.0</onos.version>
         <onos.app.name>it.polito.onosapp.nat</onos.app.name>
         <onos.app.title>Nat Application</onos.app.title>
         <onos.app.origin>Netgroup, Polito</onos.app.origin>
