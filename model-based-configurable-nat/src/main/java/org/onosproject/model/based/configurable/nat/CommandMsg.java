@@ -5,8 +5,6 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
-import org.codehaus.jackson.JsonNode;
-
 /**
  *
  * @author lara

@@ -35,8 +35,8 @@ public class PortConfig extends Config<ApplicationId> {
         int portNumber = port.path(PORT_NUMBER).asInt();
         int flowPriority = port.path(FLOW_PRIORITY).asInt(DEFAULT_PRIORITY);
         int externalVlan = port.path(EXTERNAL_VLAN).asInt(0);
-        log.info("externalVlan = " + externalVlan);
-        log.info("deviceID = " + deviceId);
+//        log.info("externalVlan = " + externalVlan);
+//        log.info("deviceID = " + deviceId);
         return new ApplicationPort(
                 DeviceId.deviceId(deviceId),
                 PortNumber.portNumber(portNumber),

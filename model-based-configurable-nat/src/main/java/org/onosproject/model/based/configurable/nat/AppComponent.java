@@ -58,7 +58,7 @@ public class AppComponent {
     private static final String PRIVATE_PORT_ID = "USER:0";
     private static final String PUBLIC_PORT_ID = "WAN:0";
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected CoreService coreService;
@@ -89,8 +89,8 @@ public class AppComponent {
     private NatPacketProcessor processor = new NatPacketProcessor();
 
     // default configuration
-    public ApplicationPort inputApp;
-    public ApplicationPort outputApp;
+    public ApplicationPort inputApp = new ApplicationPort();
+    public ApplicationPort outputApp= new ApplicationPort();
     
 //    private DeviceId inputApp.deviceId;
 //    private DeviceId outputApp.deviceId;
@@ -120,7 +120,7 @@ public class AppComponent {
      *  key: IP
      *  value: MAC
      */
-    private Map<Ip4Address, MacAddress> arpTable = new HashMap<>();
+    public Map<Ip4Address, MacAddress> arpTable = new HashMap<>();
 
     /**
      *  Map containing all pending IP packets that need to be processed after IP address resolution
@@ -150,12 +150,13 @@ public class AppComponent {
         // load configuration
         loadConfiguration();
 
-        appId = coreService.registerApplication("it.polito.onosapp.nat");
+        appId = coreService.registerApplication("it.polito.modelbasedconfignat");
+//        log.info("AppId "+appId);
         packetService.addProcessor(processor, PacketProcessor.director(0));
         configService.addListener(configListener);
         configRegistry.registerConfigFactory(configFactory);
         requestIntercepts();
-        
+                
         sl = new StateListenerNew(this);
         
         log.info("Started");
@@ -164,14 +165,16 @@ public class AppComponent {
     @Deactivate
     protected void deactivate() {
 
+        sl.stopSL();
+        
+        log.info("stopped State Listener");
+        
         withdrawIntercepts();
         flowRuleService.removeFlowRulesById(appId);
         packetService.removeProcessor(processor);
         configService.removeListener(configListener);
         configRegistry.unregisterConfigFactory(configFactory);
         processor = null;
-
-        sl.stopSL();
         
         log.info("Stopped");
     }
@@ -194,9 +197,12 @@ public class AppComponent {
             this.inputApp.portNumber = PortNumber.portNumber(config.getUserInterface());
             this.outputApp.portNumber = PortNumber.portNumber(config.getWanInterface());
 
+//            log.info("setted");
+            
             this.inputApp.ipAddress = Ip4Address.valueOf(config.getPrivateAddress());
             this.outputApp.ipAddress = Ip4Address.valueOf(config.getPublicAddress());
 
+//            log.info("ip addresses: "+this.inputApp.ipAddress+" "+this.outputApp.ipAddress);
             log.info("Loaded parameters from configuration file.");
         } catch (IOException e) {
             log.info(e.getMessage());
@@ -250,49 +256,70 @@ public class AppComponent {
      * Request packet in via packet service.
      */
     private void requestIntercepts() {
+//        log.info("starting request Intercepts");
         TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_IPV4);
         selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
-        packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
-
+        log.info("appId "+appId);
+        log.info("Selector "+selector);
+        log.info("inputApp "+inputApp);
+        log.info("E al suo interno deviceId "+inputApp.deviceId);
+        TrafficSelector s = selector.build();
+        log.info("Selector built");
+        packetService.requestPackets(s, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
+//        log.info("Traffic selector for ipv4 in input setted");
+        
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
-
+//        log.info("Traffic selector for ethernet in input setted");
+        
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(outputApp.portNumber);
-        if (outputApp.externalVlan.toShort() != 0)
+        if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(outputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
+//        log.info("Traffic selector for ethernet in output setted");
     }
 
     private void withdrawIntercepts() {
+        log.info("In withdrawIntercepts!");
         TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_IPV4);
         selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan.toShort() != 0)
+//        log.info("externalVlan "+inputApp.externalVlan);
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
-        packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
+//        log.info("Siamo dopo l'if e appId "+appId+" e devId "+inputApp.deviceId);
+        TrafficSelector sel = selector.build();
+//        log.info("build the selector");
+        packetService.cancelPackets(sel, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
+//        log.info("Stop input ipv4");
+        
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
+//        log.info("Stop input arp");
+        
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
         selector.matchInPort(outputApp.portNumber);
-        if (outputApp.externalVlan.toShort() != 0)
+        if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(outputApp.externalVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
+    
+//        log.info("stop output");
     }
 
     private class NatPacketProcessor implements PacketProcessor {

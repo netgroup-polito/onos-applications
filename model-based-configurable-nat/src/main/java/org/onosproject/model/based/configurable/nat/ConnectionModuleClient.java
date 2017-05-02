@@ -5,7 +5,6 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
-import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +24,7 @@ import org.glassfish.jersey.media.sse.SseFeature;
  * @author lara
  */
 public class ConnectionModuleClient {
-    public static final String BASE_URI = "http://localhost:8080/frogsssa/webresources/ConnectionModule";
+    public static final String BASE_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule";
     public static Client client;
     public static WebTarget target;
     public static EventSource eventSource;
@@ -39,6 +38,7 @@ public class ConnectionModuleClient {
         target = client.target(BASE_URI);
         this.l = l;
         this.id = id;
+//        l.log.info("Prima della create request");
         CreateRequest();
     }
     
@@ -51,9 +51,10 @@ public class ConnectionModuleClient {
     }
     
     private void startSSE(String id){
-        WebTarget endpoint = client.target("http://localhost:8080/frogsssa/webresources/events").path(id);
+        WebTarget endpoint = client.target("http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events").path(id);
         //WebTarget endpoint;
         eventSource = EventSource.target(endpoint).build();
+//        l.log.info("Ho costruito l'eventSource");
         EventListener listener = new EventListener() {
             
             @Override
@@ -61,6 +62,7 @@ public class ConnectionModuleClient {
                 System.out.println("received SSE");
                 //try {
                     System.out.println(ie.getName() + " data is " +ie.readData());
+                        l.log.info("++Received SSE data "+ie.readData());
                 try {
                     //l.setVariable("id4", ie.readData());
                     //split and set commands
@@ -106,14 +108,16 @@ public class ConnectionModuleClient {
     
     public String CreateRequest(){
         String res;
+//        l.log.info("!!-------*******Prima di mandare la create******-------!!!!");
+       
         Response cr = target.path("create").request().post(Entity.entity(id, MediaType.TEXT_PLAIN), Response.class);
         
-        
-        if(cr.getStatus()!=200){
-            System.out.println("Error in the post");
-            System.out.println(cr.getStatus());
-            return "Error";
-        }
+//        l.log.info("ho mandalo la richiesta, prima dello startSSE "+cr.getStatus());
+//        if(cr.getStatus()!=200 && cr.getStatus()!=204){
+//            System.out.println("Error in the post");
+//            System.out.println(cr.getStatus());
+//            return "Error";
+//        }
     
         //res = cr.getEntity().toString();
         startSSE(id);

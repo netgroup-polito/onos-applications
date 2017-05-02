@@ -20,18 +20,29 @@ public class NatConfiguration {
 
     private String privateAddress;
     private String publicAddress;
+    protected final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
 
     public NatConfiguration() throws IOException {
 
+        log.info("In NatConfiguration - starting upload");
         // [interfaces]
         userDeviceId = iniLoad(INTERFACES, "user_device");
         wanDeviceId = iniLoad(INTERFACES, "wan_device");
         userInterface = iniLoad(INTERFACES, "user_interface");
         wanInterface = iniLoad(INTERFACES, "wan_interface");
-
+//
+//        log.info("Uploaded Interfaces");
+//        log.info(userDeviceId);
+//        log.info(wanDeviceId);
+//        log.info(userInterface);
+//        log.info(wanInterface);
+        
         // [addresses]
         privateAddress = iniLoad(ADDRESSES, "private_address");
         publicAddress = iniLoad(ADDRESSES, "public_address");
+//        log.info("Uploaded addresses");
+//        log.info(privateAddress);
+//        log.info(publicAddress);
     }
 
     public String getUserDeviceId() {
