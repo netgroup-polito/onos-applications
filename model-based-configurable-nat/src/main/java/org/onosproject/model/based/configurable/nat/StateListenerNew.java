@@ -88,7 +88,7 @@ public class StateListenerNew extends Thread{
     protected final org.slf4j.Logger log = LoggerFactory.getLogger(getClass());
  
     public StateListenerNew(Object root){
-        log.info("In constructor");
+//        log.info("In constructor");
         this.root = root;
         state = new HashMap<>();
         stateThreshold = new HashMap<>();
@@ -164,7 +164,7 @@ public class StateListenerNew extends Thread{
             JsonNode rootYin = mapper.readTree(yinFile);
             
             
-            log.info("read yinFile " +rootYin);
+//            log.info("read yinFile " +rootYin);
             //System.out.println(rootYin);
             
             findYinLeafs(rootYin, rootYin.get("@name").textValue());
@@ -175,19 +175,19 @@ public class StateListenerNew extends Thread{
         
         //System.out.println("---CONFIG-----");
         //System.out.println(config);
-        log.info("++CONFIG "+config);
+//        log.info("++CONFIG "+config);
         
         //System.out.println("---toListenPush-----");
         //System.out.println(toListenPush);
-        log.info("--toListenPush "+toListenPush);
+//        log.info("--toListenPush "+toListenPush);
         
         //System.out.println("---toListenThreshold-----");
         //System.out.println(toListenThreshold);
-        log.info("--toListenThreshold "+toListenThreshold);
+//        log.info("--toListenThreshold "+toListenThreshold);
         
         //System.out.println("---toListenTimer-----");
         //System.out.println(toListenTimer);        
-        log.info("--toListenTimer "+toListenTimer);
+//        log.info("--toListenTimer "+toListenTimer);
         
         //PARSE MAPPING FILE
             InputStream mapFile = loader.getResourceAsStream(MAPPINGFILE);
@@ -255,10 +255,10 @@ public class StateListenerNew extends Thread{
     }
     
     private void stopTimerTasks(){
-        log.info("Stopping periodicTasks");
+        log.info("Stopping periodicTasks....");
         for(PeriodicVariableTask t:toListenTimer)
             t.cancel();
-        log.info("Stopped periodic tasks");
+        log.info("...Stopped periodic tasks");
     }
     
     public void saveNewValues(){
@@ -375,7 +375,7 @@ public class StateListenerNew extends Thread{
                            e.obj=stateNew.get(k);
                            happenings.add(e);
                            //System.out.println((new Gson()).toJson(e));
-                           log.info((new Gson()).toJson(e));
+//                           log.info((new Gson()).toJson(e));
                         }else{
                             stateNew.remove(k);
                             copyNewState.remove(k);
@@ -396,7 +396,7 @@ public class StateListenerNew extends Thread{
                        e.obj=stateNew.get(k);
                        happenings.add(e);
                        //System.out.println((new Gson()).toJson(e));
-                       log.info((new Gson()).toJson(e));
+//                       log.info((new Gson()).toJson(e));
                     }
                     copyState.remove(k);
                     copyNewState.remove(k);
@@ -415,7 +415,7 @@ public class StateListenerNew extends Thread{
                 happenings.add(e);
                 insertInNode(rootJ, k, generalIndexes(k), e.obj);
                 //System.out.println((new Gson()).toJson(e));
-                log.info((new Gson()).toJson(e));
+//                log.info((new Gson()).toJson(e));
             }
             //System.out.println("REM --");
             //System.out.println(rootJ);
@@ -430,7 +430,7 @@ public class StateListenerNew extends Thread{
                 happenings.add(e);
                 insertInNode(rootJ, k, generalIndexes(k), e.obj);
                 //System.out.println((new Gson()).toJson(e));
-                log.info((new Gson()).toJson(e));
+//                log.info((new Gson()).toJson(e));
             }
             //System.out.println("ADD--");
             //System.out.println(rootJ);
@@ -444,7 +444,7 @@ public class StateListenerNew extends Thread{
         
         for(NotifyMsg e:happenings){
             //System.out.println(e.act + " "+e.var + " "+e.obj);
-            log.info(e.act+" "+e.var+" "+e.obj);
+//            log.info(e.act+" "+e.var+" "+e.obj);
             cM.somethingChanged((new Gson()).toJson(e));
         }
         
@@ -856,10 +856,10 @@ public class StateListenerNew extends Thread{
         try {
             JsonNode toSet = mapper.readTree(newVal);
             //System.out.println(toSet);
-            log.info("toSet is "+toSet);
+//            log.info("toSet is "+toSet);
             //check if all the values are configurable
             if(!configVariables(noIndexes(var), toSet)){
-                log.info("not to config..");
+//                log.info("not to config..");
                 return;
             }
 //            if(!configVariables(var))
@@ -877,7 +877,7 @@ public class StateListenerNew extends Thread{
 
     private boolean configVariables(String var, JsonNode toSet){
         if(toSet.isValueNode()){
-            log.info("Is a value Node: "+var);
+//            log.info("Is a value Node: "+var);
             return config.get(var);
         }
         if(toSet.isObject()){
@@ -890,7 +890,7 @@ public class StateListenerNew extends Thread{
                     if(config.containsKey(var+"/"+field.getKey()))
                         ok = ok && config.get(var+"/"+field.getKey());
                     else{
-                        log.info("Config non contiene "+var+"/"+field.getKey());
+//                        log.info("Config non contiene "+var+"/"+field.getKey());
                         ok = true;
                     }
                 }else
@@ -950,13 +950,13 @@ public class StateListenerNew extends Thread{
     }
     
     private void fillVariables(JsonNode toSet, String var) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
-        log.info("In fillVariables");
+//        log.info("In fillVariables");
         if(toSet.isValueNode()){
-            log.info("In fillVariables - reached leaf");
+//            log.info("In fillVariables - reached leaf");
             //set the corrispondent leaf
             String j = fromYangToJava(var);
             //if(state.containsKey(j.substring(5))){
-            log.info("And variable is "+j);
+//            log.info("And variable is "+j);
             if(j!=null)
                 setVariable(j.substring(5), j.substring(5), toSet.asText(), root);
             //}
@@ -1098,23 +1098,23 @@ public class StateListenerNew extends Thread{
         switch(msg.act){
             case GET:
                 //System.out.println("devo passare "+var);
-                log.info("Arrived command GET of "+var);
+////                log.info("Arrived command GET of "+var);
                 if(var==null)
                     msg.obj=null;
                 else if(!var.equals("root") && state.containsKey(var.substring(5))){
-                    log.info("Is a Leaf");
+//                    log.info("Is a Leaf");
                     ObjectNode on= mapper.createObjectNode();
                     String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
                     on.put(field, getLeafValue(var.substring(5)).toString());
                    msg.objret = mapper.writeValueAsString(on);
-                   log.info("Leaf value "+msg.objret);
+//                   log.info("Leaf value "+msg.objret);
                    //System.out.println("RESULT GET: E' una foglia "+msg.objret);
                 }
                 else{
             
                 //creare oggetto da passare!
                 JsonNode result;
-                log.info("IT's not a leaf");
+//                log.info("IT's not a leaf");
                 //String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
                 result = getComplexObj(msg.var);
                 
@@ -1126,7 +1126,7 @@ public class StateListenerNew extends Thread{
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
             case CONFIG:
-                log.info("Config command "+var);
+//                log.info("Config command "+var);
                 String noInd = deleteIndexes(msg.var);
                 if(config.containsKey(noInd) && !config.get(noInd)){
                     //no configurable
@@ -1136,13 +1136,13 @@ public class StateListenerNew extends Thread{
                     if(var!=null){
                         //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
                         if(!var.equals("root")&&state.containsKey(var.substring(5))){
-                            log.info("Config a leaf "+var);
+//                            log.info("Config a leaf "+var);
                             setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);
-                            log.info("Leaf should be configured");
+//                            log.info("Leaf should be configured");
                         }else{
-                            log.info("Config a complex object");
+//                            log.info("Config a complex object");
                             setComplexObject(msg.var, (String)msg.obj);
-                            log.info("complex object should be configured");
+//                            log.info("complex object should be configured");
                         }
                     }
                 } catch (NoSuchFieldException ex) {
@@ -1387,10 +1387,10 @@ public class StateListenerNew extends Thread{
                    
             }else{
                 Field f = actual.getClass().getField(var);
-                log.info("--Arrivata al field da configurare "+f.getName()+" "+f.getGenericType());
-                log.info("Valore: "+newVal);
+//                log.info("--Arrivata al field da configurare "+f.getName()+" "+f.getGenericType());
+//                log.info("Valore: "+newVal);
                 f.set(actual, (new Gson()).fromJson(newVal, f.getGenericType()));
-                log.info("okk settato");
+//                log.info("okk settato");
             }
         }else{
             if(fs[0].contains("[")){
@@ -1418,7 +1418,7 @@ public class StateListenerNew extends Thread{
                 }
             }else{
                 Field f = actual.getClass().getField(fs[0]);
-                log.info("Passing throug "+f.getGenericType());
+//                log.info("Passing throug "+f.getGenericType());
                 actual = f.get(actual);
                 setVariable(var.substring(fs[0].length()+1), complete, newVal, actual);
             }
@@ -1772,7 +1772,7 @@ public class StateListenerNew extends Thread{
                     stateThreshold.put(s, thr.get(s));
                     //System.out.println("---*ONTHRESHOLD");
                     //System.out.println((new Gson()).toJson(e));
-                    log.info("*OnThreshold* "+(new Gson()).toJson(e));
+//                    log.info("*OnThreshold* "+(new Gson()).toJson(e));
                     cM.somethingChanged((new Gson()).toJson(e));
                 }
             }else{
@@ -1857,7 +1857,7 @@ public class StateListenerNew extends Thread{
         }
         
         public void run(){
-            sl.log.info("**Periodic Task of " + var+ " running**");
+//            sl.log.info("**Periodic Task of " + var+ " running**");
             Map<String, Object> listToSave = new HashMap<>();
             try{
                 if(YangToJava.containsValue(var)){

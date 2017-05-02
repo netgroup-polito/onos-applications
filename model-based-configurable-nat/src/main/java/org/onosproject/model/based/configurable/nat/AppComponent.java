@@ -202,7 +202,7 @@ public class AppComponent {
             this.inputApp.ipAddress = Ip4Address.valueOf(config.getPrivateAddress());
             this.outputApp.ipAddress = Ip4Address.valueOf(config.getPublicAddress());
 
-            log.info("ip addresses: "+this.inputApp.ipAddress+" "+this.outputApp.ipAddress);
+//            log.info("ip addresses: "+this.inputApp.ipAddress+" "+this.outputApp.ipAddress);
             log.info("Loaded parameters from configuration file.");
         } catch (IOException e) {
             log.info(e.getMessage());
@@ -263,7 +263,7 @@ public class AppComponent {
         if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
-        log.info("Traffic selector for ipv4 in input setted");
+//        log.info("Traffic selector for ipv4 in input setted");
         
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
@@ -271,7 +271,7 @@ public class AppComponent {
         if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
-        log.info("Traffic selector for ethernet in input setted");
+//        log.info("Traffic selector for ethernet in input setted");
         
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
@@ -279,7 +279,7 @@ public class AppComponent {
         if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(outputApp.externalVlan);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
-        log.info("Traffic selector for ethernet in output setted");
+//        log.info("Traffic selector for ethernet in output setted");
     }
 
     private void withdrawIntercepts() {
@@ -287,15 +287,15 @@ public class AppComponent {
         TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_IPV4);
         selector.matchInPort(inputApp.portNumber);
-        log.info("externalVlan "+inputApp.externalVlan);
+//        log.info("externalVlan "+inputApp.externalVlan);
         if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
-        log.info("Siamo dopo l'if e appId "+appId+" e devId "+inputApp.deviceId);
+//        log.info("Siamo dopo l'if e appId "+appId+" e devId "+inputApp.deviceId);
         TrafficSelector sel = selector.build();
-        log.info("build the selector");
+//        log.info("build the selector");
         packetService.cancelPackets(sel, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
-        log.info("Stop input ipv4");
+//        log.info("Stop input ipv4");
         
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
@@ -304,7 +304,7 @@ public class AppComponent {
             selector.matchVlanId(inputApp.externalVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
-        log.info("Stop input arp");
+//        log.info("Stop input arp");
         
         selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_ARP);
@@ -313,7 +313,7 @@ public class AppComponent {
             selector.matchVlanId(outputApp.externalVlan);
         packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
     
-        log.info("stop output");
+//        log.info("stop output");
     }
 
     private class NatPacketProcessor implements PacketProcessor {
