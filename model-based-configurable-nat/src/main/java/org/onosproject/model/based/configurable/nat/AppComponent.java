@@ -262,6 +262,10 @@ public class AppComponent {
         selector.matchInPort(inputApp.portNumber);
         if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selector.matchVlanId(inputApp.externalVlan);
+        log.info("appId "+appId);
+        log.info("Selector "+selector);
+        log.info("inputApp "+inputApp);
+        log.info("E al suo interno deviceId "+inputApp.deviceId);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 //        log.info("Traffic selector for ipv4 in input setted");
         
