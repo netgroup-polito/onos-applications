@@ -1107,7 +1107,7 @@ public class StateListenerNew extends Thread{
                 log.info("Translated in "+var);
 //                if(var==null)
 //                    msg.obj=null;
-                if(!var.equals("root") && state.containsKey(var.substring(5))){
+                if(!var.equals("root") && var!=null && state.containsKey(var.substring(5))){
 //                    log.info("Is a Leaf");
                     ObjectNode on= mapper.createObjectNode();
                     String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
