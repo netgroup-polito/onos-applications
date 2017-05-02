@@ -256,8 +256,9 @@ public class StateListenerNew extends Thread{
     
     private void stopTimerTasks(){
         log.info("Stopping periodicTasks....");
-        for(PeriodicVariableTask t:toListenTimer)
+        toListenTimer.forEach((t) -> {
             t.cancel();
+        });
         log.info("...Stopped periodic tasks");
     }
     
@@ -375,7 +376,7 @@ public class StateListenerNew extends Thread{
                            e.obj=stateNew.get(k);
                            happenings.add(e);
                            //System.out.println((new Gson()).toJson(e));
-//                           log.info((new Gson()).toJson(e));
+                           log.info((new Gson()).toJson(e));
                         }else{
                             stateNew.remove(k);
                             copyNewState.remove(k);
@@ -396,7 +397,7 @@ public class StateListenerNew extends Thread{
                        e.obj=stateNew.get(k);
                        happenings.add(e);
                        //System.out.println((new Gson()).toJson(e));
-//                       log.info((new Gson()).toJson(e));
+                       log.info((new Gson()).toJson(e));
                     }
                     copyState.remove(k);
                     copyNewState.remove(k);
@@ -415,7 +416,7 @@ public class StateListenerNew extends Thread{
                 happenings.add(e);
                 insertInNode(rootJ, k, generalIndexes(k), e.obj);
                 //System.out.println((new Gson()).toJson(e));
-//                log.info((new Gson()).toJson(e));
+                log.info((new Gson()).toJson(e));
             }
             //System.out.println("REM --");
             //System.out.println(rootJ);
@@ -430,7 +431,7 @@ public class StateListenerNew extends Thread{
                 happenings.add(e);
                 insertInNode(rootJ, k, generalIndexes(k), e.obj);
                 //System.out.println((new Gson()).toJson(e));
-//                log.info((new Gson()).toJson(e));
+                log.info((new Gson()).toJson(e));
             }
             //System.out.println("ADD--");
             //System.out.println(rootJ);
@@ -1098,7 +1099,8 @@ public class StateListenerNew extends Thread{
         switch(msg.act){
             case GET:
                 //System.out.println("devo passare "+var);
-////                log.info("Arrived command GET of "+var);
+//                log.info("Arrived command GET of "+var);
+                log.info("Arrived from ConnectionModule the command GET for "+msg.var);
                 if(var==null)
                     msg.obj=null;
                 else if(!var.equals("root") && state.containsKey(var.substring(5))){
@@ -1126,7 +1128,7 @@ public class StateListenerNew extends Thread{
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
             case CONFIG:
-//                log.info("Config command "+var);
+                log.info("Arrived from ConnectionModule the command CONFIG for "+msg.var);
                 String noInd = deleteIndexes(msg.var);
                 if(config.containsKey(noInd) && !config.get(noInd)){
                     //no configurable
@@ -1155,6 +1157,7 @@ public class StateListenerNew extends Thread{
                 break;
             case DELETE:
                 //delete
+                log.info("Arrived from ConnectionModule the command DELETE for "+msg.var);
                 try{
                     if(var==null || var.equals("root")){
                         //System.out.println("Can't delete the root obj!");
@@ -1772,7 +1775,7 @@ public class StateListenerNew extends Thread{
                     stateThreshold.put(s, thr.get(s));
                     //System.out.println("---*ONTHRESHOLD");
                     //System.out.println((new Gson()).toJson(e));
-//                    log.info("*OnThreshold* "+(new Gson()).toJson(e));
+                    log.info("*OnThreshold* "+(new Gson()).toJson(e));
                     cM.somethingChanged((new Gson()).toJson(e));
                 }
             }else{
@@ -1780,18 +1783,6 @@ public class StateListenerNew extends Thread{
                     stateThreshold.remove(s);
             }
         }
-    }
-    
-    protected String trasformNotifyInJson(NotifyMsg e){
-        String ret = null;
-        try{
-            ret = "{\"act\":\""+e.act+"\",\"obj\":";
-            ret += mapper.writeValueAsString(e.obj);
-            ret +=",\"var\":\""+e.var+"\",\"timestamp\":"+e.timestamp;
-        } catch (JsonProcessingException ex) {
-            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return ret;
     }
  
     public enum action{ADDED, UPDATED, REMOVED, NOCHANGES};
