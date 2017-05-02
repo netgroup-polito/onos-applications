@@ -1104,6 +1104,7 @@ public class StateListenerNew extends Thread{
                 //System.out.println("devo passare "+var);
 //                log.info("Arrived command GET of "+var);
                 log.info("Arrived from ConnectionModule the command GET for "+msg.var);
+                log.info("Translated in "+var);
                 if(var==null)
                     msg.obj=null;
                 else if(!var.equals("root") && state.containsKey(var.substring(5))){
