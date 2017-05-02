@@ -705,7 +705,7 @@ public class StateListenerNew extends Thread{
                 continue;
             }
         }
-        log.info("Created tree: "+ref);
+//        log.info("Created tree: "+ref);
         //System.out.println(ref);
         if(ref.isValueNode()){
             //is a leaf, but it is not present in state
@@ -719,10 +719,10 @@ public class StateListenerNew extends Thread{
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
         res = fillResult(ref, var);
         //System.out.println(res);
-        log.info("The result is "+res);
+//        log.info("The result is "+res);
         JsonNode r = mapper.createObjectNode();
         ((ObjectNode)r).put(var.substring(var.lastIndexOf("/")+1), res);
-        log.info("The result is ready");
+//        log.info("The result is ready");
         return r;
     }
 
@@ -1104,7 +1104,7 @@ public class StateListenerNew extends Thread{
                 //System.out.println("devo passare "+var);
 //                log.info("Arrived command GET of "+var);
                 log.info("Arrived from ConnectionModule the command GET for "+msg.var);
-                log.info("Translated in "+var);
+//                log.info("Translated in "+var);
 //                if(var==null)
 //                    msg.obj=null;
                 if(var!=null && !var.equals("root") && state.containsKey(var.substring(5))){
@@ -1120,12 +1120,12 @@ public class StateListenerNew extends Thread{
             
                 //creare oggetto da passare!
                 JsonNode result;
-                log.info("IT's not a leaf");
+//                log.info("IT's not a leaf");
                 //String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
                 result = getComplexObj(msg.var);
                 
                 msg.objret = mapper.writeValueAsString(result);
-                log.info("Result value "+msg.objret);
+//                log.info("Result value "+msg.objret);
                 //System.out.println("RESULT GET: "+msg.objret);
             
                 }
