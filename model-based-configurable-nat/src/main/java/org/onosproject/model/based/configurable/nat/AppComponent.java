@@ -260,7 +260,7 @@ public class AppComponent {
      */
     private void requestIntercepts() {
 //        log.info("starting request Intercepts");
-        try{
+//        try{
             TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_IPV4);
             selector.matchInPort(inputApp.portNumber);
@@ -285,14 +285,14 @@ public class AppComponent {
                 selector.matchVlanId(outputApp.externalVlan);
             packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
     //        log.info("Traffic selector for ethernet in output setted");
-        }catch(Exception ex){
-            log.error(ex.getMessage());
-            withdrawIntercepts();
-            if(first){
-                first = false;
-                requestIntercepts();
-            }
-        }
+//        }catch(Exception ex){
+//            log.error(ex.getMessage());
+//            withdrawIntercepts();
+//            if(first){
+//                first = false;
+//                requestIntercepts();
+//            }
+//        }
     }
 
     private void withdrawIntercepts() {
