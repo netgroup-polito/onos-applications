@@ -705,7 +705,7 @@ public class StateListenerNew extends Thread{
                 continue;
             }
         }
-//        log.info("Created tree: "+ref);
+        log.info("Created tree: "+ref);
         //System.out.println(ref);
         if(ref.isValueNode()){
             //is a leaf, but it is not present in state
@@ -719,10 +719,10 @@ public class StateListenerNew extends Thread{
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
         res = fillResult(ref, var);
         //System.out.println(res);
-//        log.info("The result is "+res);
+        log.info("The result is "+res);
         JsonNode r = mapper.createObjectNode();
         ((ObjectNode)r).put(var.substring(var.lastIndexOf("/")+1), res);
-//        log.info("The result is ready");
+        log.info("The result is ready");
         return r;
     }
 
@@ -1120,7 +1120,7 @@ public class StateListenerNew extends Thread{
             
                 //creare oggetto da passare!
                 JsonNode result;
-//                log.info("IT's not a leaf");
+                log.info("IT's not a leaf");
                 //String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
                 result = getComplexObj(msg.var);
                 
