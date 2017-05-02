@@ -151,7 +151,7 @@ public class AppComponent {
         loadConfiguration();
 
         appId = coreService.registerApplication("it.polito.modelbasedconfignat");
-        log.info("AppId "+appId);
+//        log.info("AppId "+appId);
         packetService.addProcessor(processor, PacketProcessor.director(0));
         configService.addListener(configListener);
         configRegistry.registerConfigFactory(configFactory);
@@ -197,7 +197,7 @@ public class AppComponent {
             this.inputApp.portNumber = PortNumber.portNumber(config.getUserInterface());
             this.outputApp.portNumber = PortNumber.portNumber(config.getWanInterface());
 
-            log.info("setted");
+//            log.info("setted");
             
             this.inputApp.ipAddress = Ip4Address.valueOf(config.getPrivateAddress());
             this.outputApp.ipAddress = Ip4Address.valueOf(config.getPublicAddress());
@@ -256,7 +256,7 @@ public class AppComponent {
      * Request packet in via packet service.
      */
     private void requestIntercepts() {
-        log.info("starting request Intercepts");
+//        log.info("starting request Intercepts");
         TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
         selector.matchEthType(Ethernet.TYPE_IPV4);
         selector.matchInPort(inputApp.portNumber);
