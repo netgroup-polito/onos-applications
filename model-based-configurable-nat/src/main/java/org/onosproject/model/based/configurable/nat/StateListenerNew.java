@@ -1176,7 +1176,6 @@ public class StateListenerNew extends Thread{
                 }
                     break;
             }
-        log.info("Fine parse command");
     }
     
     public void deleteVariable(Object actual, String var, String complete) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
