@@ -705,6 +705,7 @@ public class StateListenerNew extends Thread{
                 continue;
             }
         }
+        log.info("Created tree: "+ref);
         //System.out.println(ref);
         if(ref.isValueNode()){
             //is a leaf, but it is not present in state
@@ -718,8 +719,10 @@ public class StateListenerNew extends Thread{
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
         res = fillResult(ref, var);
         //System.out.println(res);
+        log.info("The result is "+res);
         JsonNode r = mapper.createObjectNode();
         ((ObjectNode)r).put(var.substring(var.lastIndexOf("/")+1), res);
+        log.info("The result is ready");
         return r;
     }
 
