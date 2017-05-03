@@ -55,7 +55,7 @@ public class ConnectionModuleClient {
         WebTarget endpoint = client.target("http://192.168.213.131:8080/frogsssa-1.0-SNAPSHOT/webresources/events").path(id);
         //WebTarget endpoint;
         eventSource = EventSource.target(endpoint).build();
-//        l.log.info("Ho costruito l'eventSource");
+        l.log.info("Ho costruito l'eventSource");
         EventListener listener = new EventListener() {
             
             @Override
@@ -109,11 +109,11 @@ public class ConnectionModuleClient {
     
     public String CreateRequest(){
         String res;
-//        l.log.info("!!-------*******Prima di mandare la create******-------!!!!");
+        l.log.info("!!-------*******Prima di mandare la create******-------!!!!");
        
         Response cr = target.path("create").request().post(Entity.entity(id, MediaType.TEXT_PLAIN), Response.class);
         
-//        l.log.info("ho mandalo la richiesta, prima dello startSSE "+cr.getStatus());
+        l.log.info("ho mandalo la richiesta, prima dello startSSE "+cr.getStatus());
 //        if(cr.getStatus()!=200 && cr.getStatus()!=204){
 //            System.out.println("Error in the post");
 //            System.out.println(cr.getStatus());
