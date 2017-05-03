@@ -240,7 +240,7 @@ public class StateListenerNew extends Thread{
     public void run(){
         while(!stopCondition){
             try {
-                log.info("Parte il ciclo");
+//                log.info("Parte il ciclo");
                 //checkValue();
                 saveNewValues();
                 sleep(5000);
