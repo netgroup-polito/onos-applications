@@ -16,6 +16,8 @@ Modify the files in the configuration package:
 
 You can change the the id of the SDN Application (that will be used by the ONOS Configuraion Agent to address this application) by changing the String parameter (the second one) at line 109 fo the StateListener.java file.
 
+You shold change the address (address:port) where to find the ONOS Configuration Agent web service at line 27 and 29 of the file ConnectionModuleClient.java.
+
 Install the bundle on ONOS using the appropriate onos-app command.
 
 #### RUN
