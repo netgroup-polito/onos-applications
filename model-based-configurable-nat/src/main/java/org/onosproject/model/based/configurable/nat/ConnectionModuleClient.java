@@ -26,6 +26,7 @@ import org.glassfish.jersey.media.sse.SseFeature;
 public class ConnectionModuleClient {
     public static final String BASE_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule";
 //    public static final String BASE_URI = "http://192.168.213.131:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule";
+    public static final String EVENTS_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events";
     public static Client client;
     public static WebTarget target;
     public static EventSource eventSource;
@@ -52,7 +53,7 @@ public class ConnectionModuleClient {
     }
     
     private void startSSE(String id){
-        WebTarget endpoint = client.target("http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events").path(id);
+        WebTarget endpoint = client.target(EVENTS_URI).path(id);
         //WebTarget endpoint;
         eventSource = EventSource.target(endpoint).build();
         l.log.info("Ho costruito l'eventSource");
