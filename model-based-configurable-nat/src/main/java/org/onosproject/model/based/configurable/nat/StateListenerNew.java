@@ -113,6 +113,12 @@ public class StateListenerNew extends Thread{
             
             
             File yangFile = new File(loader.getResource(YANGFILE).getFile());
+            String yangString = new String();
+            try(Scanner s = new Scanner(yangFile)){
+                while(s.hasNextLine())
+                    yangString+=s.nextLine();
+            }
+            cM.SetDataModel(yangString);
             /*new yang(new FileInputStream(yangFile));
             
             YANG_Specification spec = yang.Start();

@@ -126,11 +126,13 @@ public class ConnectionModuleClient {
     }
     
     public void SetDataModel(String input){
+        l.log.info("Setting DM");
         Response cr = target.path(id).path("dataModel").request().post(Entity.entity(input, MediaType.TEXT_PLAIN), Response.class);
         if(cr.getStatus()!=204){
             System.out.println("Error in the post");
             System.out.println(cr.getStatus());
         }
+        l.log.info(cr.getStatusInfo().toString());
     }
     
 //    public boolean SetVariableCorrispondence(String x, String c){
