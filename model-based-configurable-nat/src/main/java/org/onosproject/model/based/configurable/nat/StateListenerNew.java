@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  */
 public class StateListenerNew extends Thread{
     private static final String YINFILE = "configuration/yinFile.txt";
-    private static final String YANGFILE = "configuration/yangFile.yang";
+    private static final String YANGFILE = "configuration/yangFile.txt";
     private static final String MAPPINGFILE = "configuration/mappingFile.txt";    
     //protected List<String> state;
     protected HashMap<String, Object> state;
