@@ -767,7 +767,6 @@ public class StateListenerNew extends Thread{
             }
             while(field.hasNext()){
                 String fieldName = field.next();
-                log.info("field "+fieldName);
                 if(((ObjectNode)ref).get(fieldName).isValueNode()){
                     String varWithoutIndexes = new String();
                     String[] varSp = (var+"/"+fieldName).split("["+Pattern.quote("[]")+"]");
@@ -790,7 +789,6 @@ public class StateListenerNew extends Thread{
                                 jWithIndex+="["+yspez[i]+"]";
                         }
                         Object value = getLeafValue(jWithIndex.substring(5));
-                        log.info("Its value is "+value);
                         if(value!=null)
                             ((ObjectNode)toRet).put(fieldName, value.toString());
                     }
@@ -845,13 +843,10 @@ public class StateListenerNew extends Thread{
                             ((ArrayNode)toRet).add(child);
                     }
                 }else if(list!=null && Map.class.isAssignableFrom(list.getClass())){
-                    log.info("is a Map");
                     Map<Object, Object> elems = new HashMap<>();
                     elems.putAll((Map)list);
                     for(Object k:elems.keySet()){
                         JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+k+"]");
-                        log.info("The child is:"+child);
-                        log.info("I passed "+((ArrayNode)ref).get(0));
                         if(child.size()!=0)
                             ((ArrayNode)toRet).add(child);
                     }
@@ -1493,13 +1488,10 @@ public class StateListenerNew extends Thread{
                     String index = fields[i].substring(fields[i].lastIndexOf("[")+1, fields[i].lastIndexOf("]"));
                     actual = actual.getClass().getField(field).get(actual);
                     if(Map.class.isAssignableFrom(actual.getClass())){
-                        log.info("E' palesemente una mappa");
                         if(i<fields.length-1 && fields[i+1].equals("{key}")){
-                            log.info("Ma ho preso la chiave");
                             actual = index;
                         }
                         else{
-                            log.info("Dovrei prendere il valore corretto qui");
                             for(Object k:((Map)actual).keySet()){
                                 if(k.toString().equals(index)){
                                     actual= ((Map)actual).get(k);
@@ -1519,7 +1511,6 @@ public class StateListenerNew extends Thread{
                     actual = actual.getClass().getField(fields[i]).get(actual);
                 }
             }
-            log.info("E ora ti torno actual che è "+actual);
             return actual;
         } catch (NoSuchFieldException ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
