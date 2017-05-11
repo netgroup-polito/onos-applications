@@ -1192,6 +1192,7 @@ public class StateListenerNew extends Thread{
                 //delete an element of the list
                 String index = var.substring(var.lastIndexOf("[")+1, var.lastIndexOf("]"));
                 if(index!=null && index.matches("")){
+                    //shouldn't do this!
                     Field f = actual.getClass().getField(var.substring(0,var.length()-2));
                     f.set(actual, null);
                     return;
@@ -1345,11 +1346,19 @@ public class StateListenerNew extends Thread{
                             while(fields.hasNext()){
                                 String fieldName = fields.next();
                                 JsonNode v = node.get(fieldName);
+                                log.info("##the field is "+fieldName+" and the value is "+v );
+                                if(fieldName.equals("{value}")){
+                                    if(Number.class.isAssignableFrom(valueType))
+                                        value = v.asDouble();
+                                    else
+                                        value = v.asText();
+                                }else{
                                 Field fV = value.getClass().getField(fieldName);
                                 if(Number.class.isAssignableFrom(fV.getType()))
                                     fV.set(value, v.asDouble());
                                 else
                                     fV.set(value, v.asText());
+                                }
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
                             ((Map)f.get(actual)).put(k, value);
