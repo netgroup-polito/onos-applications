@@ -848,6 +848,7 @@ public class StateListenerNew extends Thread{
                     for(Object k:elems.keySet()){
                         JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+k+"]");
                         log.info("The child is:"+child);
+                        log.info("I passed "+((ArrayNode)ref).get(0));
                         if(child.size()!=0)
                             ((ArrayNode)toRet).add(child);
                     }
