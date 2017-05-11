@@ -842,10 +842,12 @@ public class StateListenerNew extends Thread{
                             ((ArrayNode)toRet).add(child);
                     }
                 }else if(list!=null && Map.class.isAssignableFrom(list.getClass())){
+                    log.info("is a Map");
                     Map<Object, Object> elems = new HashMap<>();
                     elems.putAll((Map)list);
                     for(Object k:elems.keySet()){
                         JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+k+"]");
+                        log.info("The child is:"+child);
                         if(child.size()!=0)
                             ((ArrayNode)toRet).add(child);
                     }
