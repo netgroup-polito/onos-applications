@@ -1118,7 +1118,7 @@ public class StateListenerNew extends Thread{
 //                    log.info("Is a Leaf");
                     ObjectNode on= mapper.createObjectNode();
                     String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
-                    on.put(field, getLeafValue(var.substring(5)).toString());
+                    on.put(field, (new Gson()).toJson(getLeafValue(var.substring(5))));
                    msg.objret = mapper.writeValueAsString(on);
 //                   log.info("Leaf value "+msg.objret);
                    //System.out.println("RESULT GET: E' una foglia "+msg.objret);
