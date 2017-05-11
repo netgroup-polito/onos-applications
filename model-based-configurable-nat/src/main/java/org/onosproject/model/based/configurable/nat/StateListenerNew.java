@@ -739,7 +739,6 @@ public class StateListenerNew extends Thread{
             toRet = mapper.createObjectNode();
             Iterator<String> field = ((ObjectNode)ref).fieldNames();
             if(!field.hasNext()){
-                log.info("field "+field.next());
                 //searchCorrispondentField
                 String varWithoutIndexes = new String();
                 String[] varSp = var.split("["+Pattern.quote("[]")+"]");
@@ -761,14 +760,14 @@ public class StateListenerNew extends Thread{
                         else
                             jWithIndex+="["+yspez[i]+"]";
                     }
-                    log.info("Var "+var);
                     ((ObjectNode)toRet).put(var, getLeafValue(jWithIndex.substring(5)).toString());
-                    log.info("To ret "+toRet);
+                    field.next();
                 }
                 return toRet;
             }
             while(field.hasNext()){
                 String fieldName = field.next();
+                log.info("field "+fieldName);
                 if(((ObjectNode)ref).get(fieldName).isValueNode()){
                     String varWithoutIndexes = new String();
                     String[] varSp = (var+"/"+fieldName).split("["+Pattern.quote("[]")+"]");
@@ -791,6 +790,7 @@ public class StateListenerNew extends Thread{
                                 jWithIndex+="["+yspez[i]+"]";
                         }
                         Object value = getLeafValue(jWithIndex.substring(5));
+                        log.info("Its value is "+value);
                         if(value!=null)
                             ((ObjectNode)toRet).put(fieldName, value.toString());
                     }
