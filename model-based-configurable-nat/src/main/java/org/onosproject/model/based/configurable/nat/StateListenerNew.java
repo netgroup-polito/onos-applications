@@ -1135,7 +1135,7 @@ public class StateListenerNew extends Thread{
 //                log.info("Result value "+msg.objret);
                 //System.out.println("RESULT GET: "+msg.objret);
             
-                }
+                //}
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
             case CONFIG:
