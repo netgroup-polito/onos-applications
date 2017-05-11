@@ -1500,7 +1500,9 @@ public class StateListenerNew extends Thread{
                         }
                         else{
                             log.info("Dovrei prendere il valore corretto qui");
-                        actual= ((Map)actual).get(index);
+                            log.info("La mappa è"+actual);
+                            log.info("E l'indice è"+index);
+                            actual= ((Map)actual).get(index);
                         }
                     }else{
                         String general = generalIndexes(recompose.substring(1));
