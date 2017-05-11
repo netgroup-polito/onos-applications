@@ -1493,10 +1493,15 @@ public class StateListenerNew extends Thread{
                     String index = fields[i].substring(fields[i].lastIndexOf("[")+1, fields[i].lastIndexOf("]"));
                     actual = actual.getClass().getField(field).get(actual);
                     if(Map.class.isAssignableFrom(actual.getClass())){
-                        if(i<fields.length-1 && fields[i+1].equals("{key}"))
+                        log.info("E' palesemente una mappa");
+                        if(i<fields.length-1 && fields[i+1].equals("{key}")){
+                            log.info("Ma ho preso la chiave");
                             actual = index;
-                        else
+                        }
+                        else{
+                            log.info("Dovrei prendere il valore corretto qui");
                         actual= ((Map)actual).get(index);
+                        }
                     }else{
                         String general = generalIndexes(recompose.substring(1));
                         actual = getListItemWithIndex((List)actual,index, general.substring(0, general.lastIndexOf("["))+"[]");
@@ -1509,6 +1514,7 @@ public class StateListenerNew extends Thread{
                     actual = actual.getClass().getField(fields[i]).get(actual);
                 }
             }
+            log.info("E ora ti torno actual che è "+actual);
             return actual;
         } catch (NoSuchFieldException ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
