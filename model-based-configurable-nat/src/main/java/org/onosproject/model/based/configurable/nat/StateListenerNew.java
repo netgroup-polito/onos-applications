@@ -718,7 +718,7 @@ public class StateListenerNew extends Thread{
             String varJava = fromYangToJava(var);
             Object value = getLeafValue(varJava.substring(5));
             ObjectNode result = mapper.createObjectNode();
-            result.put(var.substring(var.lastIndexOf("/")+1), (new Gson()).toJson(value));
+            result.put(var.substring(var.lastIndexOf("/")+1), value.toString());
             return result;
         }
         JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
