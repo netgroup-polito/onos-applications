@@ -1201,9 +1201,11 @@ public class StateListenerNew extends Thread{
                 listName+="]";
                 listName = generalIndexes(listName)+"[]";
                 String indice = null;
+                log.info("Deleting from "+listName);
                 if(lists.containsKey(listName))
                     indice = lists.get(listName);
                 if(indice!=null){
+                    log.info("Index!=null");
                     actual = actual.getClass().getField(var.substring(0, var.lastIndexOf("["))).get(actual);
                     Object delete = null;
                     if(List.class.isAssignableFrom(actual.getClass())){
@@ -1215,9 +1217,11 @@ public class StateListenerNew extends Thread{
                     }
                     if(delete!=null) ((List)actual).remove(delete);
                     }else if(Map.class.isAssignableFrom(actual.getClass())){
+                        log.info("Is a Map!");
                         if(((Map)actual).containsKey(index))
                            ((Map)actual).remove(index);
                         else{
+                            log.info("Faccio il ciclo");
                             for(Object k:((Map)actual).keySet())
                                 if(k.toString().equals(index)){
                                     delete = k; break;}
