@@ -1482,6 +1482,8 @@ public class StateListenerNew extends Thread{
             String[] fields = id.split(Pattern.quote("/"));
             String recompose = new String();
             for(int i = 0; i<fields.length; i++){
+                if(actual==null)
+                    return null;
                 recompose +="/"+fields[i];
                 if(fields[i].contains("[")){
                     String field = fields[i].substring(0, fields[i].lastIndexOf("["));
@@ -1489,15 +1491,28 @@ public class StateListenerNew extends Thread{
                     actual = actual.getClass().getField(field).get(actual);
                     if(Map.class.isAssignableFrom(actual.getClass())){
                         if(i<fields.length-1 && fields[i+1].equals("{key}")){
-                            actual = index;
-                        }
-                        else{
+                            boolean found = false;
                             for(Object k:((Map)actual).keySet()){
                                 if(k.toString().equals(index)){
-                                    actual= ((Map)actual).get(k);
+                                    actual= index;
+                                    found = true;
                                     break;
                                 }
                             }
+                            if(!found)
+                                actual = null;
+                        }
+                        else{
+                            boolean found = false;
+                            for(Object k:((Map)actual).keySet()){
+                                if(k.toString().equals(index)){
+                                    actual= ((Map)actual).get(k);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if(!found)
+                                actual = null;
                         }
                     }else{
                         String general = generalIndexes(recompose.substring(1));
