@@ -739,6 +739,7 @@ public class StateListenerNew extends Thread{
             toRet = mapper.createObjectNode();
             Iterator<String> field = ((ObjectNode)ref).fieldNames();
             if(!field.hasNext()){
+                log.info("field "+field.next());
                 //searchCorrispondentField
                 String varWithoutIndexes = new String();
                 String[] varSp = var.split("["+Pattern.quote("[]")+"]");
@@ -760,7 +761,9 @@ public class StateListenerNew extends Thread{
                         else
                             jWithIndex+="["+yspez[i]+"]";
                     }
+                    log.info("Var "+var);
                     ((ObjectNode)toRet).put(var, getLeafValue(jWithIndex.substring(5)).toString());
+                    log.info("To ret "+toRet);
                 }
                 return toRet;
             }
