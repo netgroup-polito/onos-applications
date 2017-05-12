@@ -379,7 +379,7 @@ public class StateListenerNew extends Thread{
                            NotifyMsg e = new NotifyMsg();
                            e.act=action.ADDED;
                            e.var=trasformInPrint(k);
-                           e.obj=stateNew.get(k);
+                           e.obj=stateNew.get(k).toString();
                            happenings.add(e);
                            //System.out.println((new Gson()).toJson(e));
                            log.info((new Gson()).toJson(e));
@@ -400,7 +400,7 @@ public class StateListenerNew extends Thread{
                        NotifyMsg e = new NotifyMsg();
                        e.act=action.UPDATED;
                        e.var=trasformInPrint(k);
-                       e.obj=stateNew.get(k);
+                       e.obj=stateNew.get(k).toString();
                        happenings.add(e);
                        //System.out.println((new Gson()).toJson(e));
                        log.info((new Gson()).toJson(e));
@@ -417,7 +417,7 @@ public class StateListenerNew extends Thread{
             for(String k:copyState.keySet()){
                 NotifyMsg e = new NotifyMsg();
                 e.act=action.REMOVED;
-                e.obj=copyState.get(k);
+                e.obj=copyState.get(k).toString();
                 e.var=trasformInPrint(k);
                 happenings.add(e);
                 insertInNode(rootJ, k, generalIndexes(k), e.obj);
@@ -432,7 +432,7 @@ public class StateListenerNew extends Thread{
             for(String k:copyNewState.keySet()){
                 NotifyMsg e = new NotifyMsg();
                 e.act=action.ADDED;
-                e.obj=copyNewState.get(k);
+                e.obj=copyNewState.get(k).toString();
                 e.var=trasformInPrint(k);
                 happenings.add(e);
                 insertInNode(rootJ, k, generalIndexes(k), e.obj);
@@ -1817,7 +1817,7 @@ public class StateListenerNew extends Thread{
                     NotifyMsg e = new NotifyMsg();
                     e.act = action.UPDATED;
                     e.var = trasformInPrint(s);
-                    e.obj = thr.get(s);
+                    e.obj = thr.get(s).toString();
                     stateThreshold.put(s, thr.get(s));
                     //System.out.println("---*ONTHRESHOLD");
                     //System.out.println((new Gson()).toJson(e));
