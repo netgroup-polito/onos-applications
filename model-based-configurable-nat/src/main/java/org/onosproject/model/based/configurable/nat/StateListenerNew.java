@@ -1423,10 +1423,13 @@ public class StateListenerNew extends Thread{
                 log.info("Valore: "+newVal);
                 try{
                     f.set(actual, (new Gson()).fromJson(newVal, f.getGenericType()));
+                    log.info("Settato!");
                 }catch(Exception e){
+                    log.info("Sono nel catch");
                     Constructor<?>[] constr = f.getType().getConstructors();
                     for(int i=0; i<constr.length;i++){
                         try {
+                            log.info("constr[i]"+constr[i]);
                             Class<?>[] params = constr[i].getParameterTypes();
                             if(params.length==1 && String.class.isAssignableFrom(params[0])){
                                 Object val = constr[i].newInstance(newVal);
