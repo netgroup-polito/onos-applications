@@ -1142,6 +1142,7 @@ public class StateListenerNew extends Thread{
                 break;
             case CONFIG:
                 log.info("Arrived from ConnectionModule the command CONFIG for "+msg.var);
+                log.info("trasformed in "+var);
                 String noInd = deleteIndexes(msg.var);
                 if(config.containsKey(noInd) && !config.get(noInd)){
                     //no configurable
