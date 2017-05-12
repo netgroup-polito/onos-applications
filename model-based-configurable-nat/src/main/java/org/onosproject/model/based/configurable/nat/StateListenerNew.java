@@ -36,6 +36,8 @@ import java.util.regex.Pattern;
 import java.io.IOException;
 import java.io.InputStream;
 import static java.lang.Thread.sleep;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.Date;
 import java.util.Iterator;
@@ -1416,9 +1418,30 @@ public class StateListenerNew extends Thread{
                 Field f = actual.getClass().getField(var);
 //                log.info("--Arrivata al field da configurare "+f.getName()+" "+f.getGenericType());
 //                log.info("Valore: "+newVal);
-                f.set(actual, (new Gson()).fromJson(newVal, f.getGenericType()));
+                try{
+                    f.set(actual, (new Gson()).fromJson(newVal, f.getGenericType()));
+                }catch(Exception e){
+                    Constructor<?>[] constr = f.getType().getConstructors();
+                    for(int i=0; i<constr.length;i++){
+                        try {
+                            Class<?>[] params = constr[i].getParameterTypes();
+                            if(params.length==1 && String.class.isAssignableFrom(params[0])){
+                                Object val = constr[i].newInstance(newVal);
+                                f.set(actual, val);
+                                break;
+                            }
+                        } catch (InstantiationException ex1) {
+                            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex1);
+                            log.info("Cannot allocate event with the String constructor");
+                        } catch (InvocationTargetException ex1) {
+                            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex1);
+                            log.info("Cannot allocate even with the String constructor");
+                        }
+                    }
+                }
 //                log.info("okk settato");
             }
+                
         }else{
             if(fs[0].contains("[")){
                 //select element in the list
