@@ -1145,19 +1145,20 @@ public class StateListenerNew extends Thread{
                 String noInd = deleteIndexes(msg.var);
                 if(config.containsKey(noInd) && !config.get(noInd)){
                     //no configurable
+                    log.info("Not configurable");
                     return;
                 }
                 try {
                     if(var!=null){
                         //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
                         if(!var.equals("root")&&state.containsKey(var.substring(5))){
-//                            log.info("Config a leaf "+var);
+                            log.info("Config a leaf "+var);
                             setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);
-//                            log.info("Leaf should be configured");
+                            log.info("Leaf should be configured");
                         }else{
-//                            log.info("Config a complex object");
+                            log.info("Config a complex object");
                             setComplexObject(msg.var, (String)msg.obj);
-//                            log.info("complex object should be configured");
+                            log.info("complex object should be configured");
                         }
                     }
                 } catch (NoSuchFieldException ex) {
