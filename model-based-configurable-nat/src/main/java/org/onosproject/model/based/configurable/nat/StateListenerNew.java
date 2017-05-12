@@ -106,7 +106,7 @@ public class StateListenerNew extends Thread{
         config = new HashMap<>();
         mapper = new ObjectMapper();
         timer = new Timer();
-        cM = new ConnectionModuleClient(this, "StateListener");
+        cM = new ConnectionModuleClient(this, "natLara");
         //PARSE YANG FILE
         ClassLoader loader = AppComponent.class.getClassLoader();
         try{
@@ -1831,7 +1831,7 @@ public class StateListenerNew extends Thread{
         }
     }
  
-    public enum action{ADDED, UPDATED, REMOVED, NOCHANGES};
+    public enum action{ADDED, UPDATED, REMOVED, NOCHANGES, PERIODIC};
     public class NotifyMsg{
         public action act;
         public Object obj;
@@ -1915,8 +1915,8 @@ public class StateListenerNew extends Thread{
             }
             for(String s: listToSave.keySet()){
                 NotifyMsg e = new NotifyMsg();
-                e.act = action.NOCHANGES;
-                e.obj = listToSave.get(s);
+                e.act = action.PERIODIC;
+                e.obj = listToSave.get(s).toString();
                 e.var = sl.trasformInPrint(s);
                 ////System.out.println("--*PERIODIC*-- " + System.currentTimeMillis());
                 ////System.out.println((new Gson()).toJson(e));
