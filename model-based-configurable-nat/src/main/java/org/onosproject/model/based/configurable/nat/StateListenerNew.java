@@ -872,7 +872,7 @@ public class StateListenerNew extends Thread{
 //            log.info("toSet is "+toSet);
             //check if all the values are configurable
             if(!configVariables(noIndexes(var), toSet)){
-//                log.info("not to config..");
+                log.info("not to config..");
                 return;
             }
 //            if(!configVariables(var))
@@ -965,7 +965,7 @@ public class StateListenerNew extends Thread{
     private void fillVariables(JsonNode toSet, String var) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
 //        log.info("In fillVariables");
         if(toSet.isValueNode()){
-//            log.info("In fillVariables - reached leaf");
+            log.info("In fillVariables - reached leaf");
             //set the corrispondent leaf
             String j = fromYangToJava(var);
             //if(state.containsKey(j.substring(5))){
@@ -1280,6 +1280,7 @@ public class StateListenerNew extends Thread{
                 if(List.class.isAssignableFrom(f.getType())){
                     if(f.get(actual)==null){
                         try {
+                            log.info("Setting the values of a list");
                             List<Object> l = (f.getType().isInterface())?new ArrayList<>():(List)f.getType().newInstance();
                             l.add((new Gson()).fromJson(newVal, itemType));
                             f.set(actual, l);
@@ -1416,8 +1417,8 @@ public class StateListenerNew extends Thread{
                    
             }else{
                 Field f = actual.getClass().getField(var);
-//                log.info("--Arrivata al field da configurare "+f.getName()+" "+f.getGenericType());
-//                log.info("Valore: "+newVal);
+                log.info("--Arrivata al field da configurare "+f.getName()+" "+f.getGenericType());
+                log.info("Valore: "+newVal);
                 try{
                     f.set(actual, (new Gson()).fromJson(newVal, f.getGenericType()));
                 }catch(Exception e){
