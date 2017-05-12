@@ -1859,8 +1859,7 @@ public class StateListenerNew extends Thread{
         public action act;
         public Object obj;
         public String var;
-        public Date timestamp;
-
+        public Date timestamp = new Date(System.currentTimeMillis());
         public action getAct() {
             return act;
         }
