@@ -81,6 +81,7 @@ public class StateListenerNew extends Thread{
     private List<PeriodicVariableTask> toListenTimer;
     //private List<String> nullValuesToListen;
     private HashMap<String, String> YangToJava;
+    private HashMap<String, String> YangType;
     //private List<NotifyMsg> whatHappened;
     //private ReadLock readLock;
     //private WriteLock writeLock;
@@ -132,6 +133,7 @@ public class StateListenerNew extends Thread{
         toListenTimer = new ArrayList<>();
         //nullValuesToListen = new ArrayList<>();
         YangToJava = new HashMap<>();
+        YangType = new HashMap<>();
         //whatHappened = new ArrayList<>();
         //ReentrantReadWriteLock wHLock = new ReentrantReadWriteLock();
         //readLock = wHLock.readLock();
@@ -1713,6 +1715,8 @@ public class StateListenerNew extends Thread{
                     boolean c = (att.item(i).getAttributes().item(0).getNodeValue().equals("true"))?true:false;
                     //System.out.println("-+-config "+att.item(i).getAttributes().item(0).getNodeValue());
                     config.put(prev.substring(1)+"/"+e.getAttribute("name"), c);
+                    log.info(prev.substring(1)+"/"+e.getAttribute("name")+" is a "+e.getAttribute("type"));
+                    YangType.put(prev.substring(1)+"/"+e.getAttribute("name"), e.getAttribute("type"));
                 }
                 //default
                 if(!config.containsKey(prev+"/"+e.getAttribute("name")))
