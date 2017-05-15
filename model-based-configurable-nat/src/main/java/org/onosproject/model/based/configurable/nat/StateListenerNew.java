@@ -56,6 +56,7 @@ import org.w3c.dom.NodeList;
 import java.util.TimerTask;
 import java.util.Timer;
 import org.onlab.packet.Ip4Address;
+import org.onosproject.net.PortNumber;
 import org.slf4j.LoggerFactory;
 
 
@@ -66,7 +67,8 @@ import org.slf4j.LoggerFactory;
 public class StateListenerNew extends Thread{
     private static final String YINFILE = "configuration/yinFile.txt";
     private static final String YANGFILE = "configuration/yangFile.yang";
-    private static final String MAPPINGFILE = "configuration/mappingFile.txt";    
+    private static final String MAPPINGFILE = "configuration/mappingFile.txt";  
+    private final String AppId = "natLara";
     //protected List<String> state;
     protected HashMap<String, Object> state;
     protected HashMap<String, Object> stateThreshold;
@@ -99,10 +101,18 @@ public class StateListenerNew extends Thread{
                 Ip4Address value = Ip4Address.valueOf(json);
                 return value;
             }
+            if(type == PortNumber.class){
+                PortNumber value = PortNumber.portNumber(json);
+                return value;
+            }
         }catch(Exception e){
             log.info("Can't convert the json correctly");
             return null;
         }
+        return null;
+    }
+    
+    private Object personalizedSerialization(){
         return null;
     }
     
@@ -125,7 +135,7 @@ public class StateListenerNew extends Thread{
         config = new HashMap<>();
         mapper = new ObjectMapper();
         timer = new Timer();
-        cM = new ConnectionModuleClient(this, "natLara");
+        cM = new ConnectionModuleClient(this, AppId);
         //PARSE YANG FILE
         ClassLoader loader = AppComponent.class.getClassLoader();
         try{
