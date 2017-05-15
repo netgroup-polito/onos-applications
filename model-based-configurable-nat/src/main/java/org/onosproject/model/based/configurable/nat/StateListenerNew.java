@@ -128,7 +128,7 @@ public class StateListenerNew extends Thread{
             return (Integer)value;
         if(type.equals("int32"))
             return (Integer)value;
-        if(type.equals("inet:portNumber"))
+        if(type.equals("inet:port-number"))
             return (Integer)value;
         return value.toString();
     }
