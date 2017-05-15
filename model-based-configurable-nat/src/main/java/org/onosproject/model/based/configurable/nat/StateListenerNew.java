@@ -102,6 +102,7 @@ public class StateListenerNew extends Thread{
                 return value;
             }
             if(type == PortNumber.class){
+                log.info("E' un port number, the value passed is "+json+" and the type is "+type);
                 PortNumber value = PortNumber.portNumber(json);
                 return value;
             }
