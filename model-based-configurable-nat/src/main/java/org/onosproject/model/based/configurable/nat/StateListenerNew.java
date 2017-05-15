@@ -1764,6 +1764,10 @@ public class StateListenerNew extends Thread{
                         //System.out.println("-+-config "+conf);
                         config.put(prev+"/"+child.get("@name").textValue(), conf);
                         
+                        if(child.get("type")!=null){
+                            String type = child.get("type").get("@name").asText();
+                            log.info(prev+"/"+child.get("@name").textValue()+" is a "+type);
+                        }
                         //check advertise attribute - prefix:advertise
                         Iterator<String> searchAdv = child.fieldNames();
                         String pref=null;
