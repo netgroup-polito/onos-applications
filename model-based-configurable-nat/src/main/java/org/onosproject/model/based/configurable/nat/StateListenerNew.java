@@ -840,7 +840,7 @@ public class StateListenerNew extends Thread{
                         }
                         Object value = getLeafValue(jWithIndex.substring(5));
                         if(value!=null){
-                            Object parsed = personalizedSerialization(varWithoutIndexes+"/"+fieldName, value);
+                            Object parsed = personalizedSerialization(varWithoutIndexes, value);
                             if(Boolean.class.isAssignableFrom(parsed.getClass()))   
                                 ((ObjectNode)toRet).put(fieldName, (Boolean)parsed);
                             else if(Long.class.isAssignableFrom(parsed.getClass()))
