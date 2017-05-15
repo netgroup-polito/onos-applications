@@ -118,7 +118,8 @@ public class StateListenerNew extends Thread{
         return null;
     }
     
-    /*****************************************/
+    /***********-----
+     ******************************/
     
     public StateListenerNew(Object root){
 //        log.info("In constructor");
