@@ -1717,14 +1717,15 @@ public class StateListenerNew extends Thread{
                     config.put(prev.substring(1)+"/"+e.getAttribute("name"), c);
                 }
                 if(att.item(i).getNodeName().equals("type")){
+                    log.info("Ho trovato il type");
                     String t = att.item(i).getAttributes().item(0).getNodeValue();
                     log.info(prev.substring(1)+"/"+e.getAttribute("name")+" is a "+t);
                     YangType.put(prev.substring(1)+"/"+e.getAttribute("name"), t);
                 }
                 //default
-                if(!config.containsKey(prev+"/"+e.getAttribute("name")))
-                    config.put(prev.substring(1)+"/"+e.getAttribute("name"), true);
             }
+            if(!config.containsKey(prev+"/"+e.getAttribute("name")))
+                config.put(prev.substring(1)+"/"+e.getAttribute("name"), true);
             //System.out.println("Lista config -- "+config);
             return;
         }
