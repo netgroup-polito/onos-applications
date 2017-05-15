@@ -85,7 +85,7 @@ public class AppComponent {
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected NetworkConfigRegistry configRegistry;
 
-    private ApplicationId appId;
+    public ApplicationId appId;
 
     private NatPacketProcessor processor = new NatPacketProcessor();
 
@@ -258,7 +258,7 @@ public class AppComponent {
     /**
      * Request packet in via packet service.
      */
-    private void requestIntercepts() {
+    public void requestIntercepts() {
 //        log.info("starting request Intercepts");
         try{
             TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
@@ -291,7 +291,7 @@ public class AppComponent {
         }
     }
 
-    private void withdrawIntercepts() {
+    public void withdrawIntercepts() {
         try{
             TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_IPV4);

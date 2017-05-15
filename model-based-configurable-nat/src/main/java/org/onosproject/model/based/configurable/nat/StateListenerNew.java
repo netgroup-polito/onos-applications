@@ -1219,6 +1219,7 @@ public class StateListenerNew extends Thread{
                 }
                 try {
                     if(var!=null){
+                        ((AppComponent)root).withdrawIntercepts();
                         //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
                         if(!var.equals("root")&&state.containsKey(var.substring(5))){
                             log.info("Config a leaf "+var);
@@ -1229,6 +1230,8 @@ public class StateListenerNew extends Thread{
                             setComplexObject(msg.var, (String)msg.obj);
                             log.info("complex object should be configured");
                         }
+                        ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
+                        ((AppComponent)root).requestIntercepts();
                     }
                 } catch (NoSuchFieldException ex) {
                     Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
