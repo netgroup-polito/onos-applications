@@ -108,6 +108,7 @@ public class StateListenerNew extends Thread{
             }
         }catch(Exception e){
             log.info("Can't convert the json correctly");
+            log.info(e.getMessage());
             return null;
         }
         return null;
