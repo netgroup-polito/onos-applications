@@ -117,7 +117,7 @@ public class StateListenerNew extends Thread{
     }
     
     private Object personalizedSerialization(String field, Object value){
-        log.info("Il campo è "+field);
+        log.info("Il campo è "+field+" il valore "+value);
         String type = YangType.get(field);
         log.info("Il tipo è "+type);
         if(type==null)
@@ -841,13 +841,18 @@ public class StateListenerNew extends Thread{
                         Object value = getLeafValue(jWithIndex.substring(5));
                         if(value!=null){
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
-                            if(Boolean.class.isAssignableFrom(parsed.getClass()))   
-                                ((ObjectNode)toRet).put(fieldName, (Boolean)parsed);
-                            else if(Long.class.isAssignableFrom(parsed.getClass()))
-                                ((ObjectNode)toRet).put(fieldName, (Long)parsed);
-                            else if(Double.class.isAssignableFrom(parsed.getClass()))
-                                ((ObjectNode)toRet).put(fieldName, (Double)parsed);
-                            else ((ObjectNode)toRet).put(fieldName, (String)parsed);
+                            if(Boolean.class.isAssignableFrom(parsed.getClass())){  
+                                log.info("Trattato come boolean");
+                                ((ObjectNode)toRet).put(fieldName, (Boolean)parsed);}
+                            else if(Long.class.isAssignableFrom(parsed.getClass())){
+                                log.info("Trattato come long");
+                                ((ObjectNode)toRet).put(fieldName, (Long)parsed);}
+                            else if(Double.class.isAssignableFrom(parsed.getClass())){
+                                log.info("trattato come double");
+                                ((ObjectNode)toRet).put(fieldName, (Double)parsed);}
+                            else {log.info("Trattato come string");
+                            ((ObjectNode)toRet).put(fieldName, (String)parsed);
+                            }
                         }
                     }
                 }else{
