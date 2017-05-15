@@ -840,13 +840,15 @@ public class StateListenerNew extends Thread{
                         }
                         Object value = getLeafValue(jWithIndex.substring(5));
                         if(value!=null){
+                            log.info("Devo parsare l'oggetto "+value);
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
+                            log.info("ora parsed è di class "+parsed.getClass());
                             if(Boolean.class.isAssignableFrom(parsed.getClass())){  
                                 log.info("Trattato come boolean");
                                 ((ObjectNode)toRet).put(fieldName, (Boolean)parsed);}
-                            else if(Long.class.isAssignableFrom(parsed.getClass())){
+                            else if(Integer.class.isAssignableFrom(parsed.getClass())){
                                 log.info("Trattato come long");
-                                ((ObjectNode)toRet).put(fieldName, (Long)parsed);}
+                                ((ObjectNode)toRet).put(fieldName, (Integer)parsed);}
                             else if(Double.class.isAssignableFrom(parsed.getClass())){
                                 log.info("trattato come double");
                                 ((ObjectNode)toRet).put(fieldName, (Double)parsed);}
