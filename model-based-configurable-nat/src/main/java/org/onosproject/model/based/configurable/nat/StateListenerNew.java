@@ -1447,8 +1447,12 @@ public class StateListenerNew extends Thread{
                 }catch(Exception e){
                     log.info("Sono nel catch");
                     toInsert = personalizedDeserialization(f.getType(), newVal);
-                    if(toInsert!=null)  
+                    log.info("ToInsert is "+toInsert);
+                    if(toInsert!=null){
+                        log.info("Non è null");
                         f.set(actual, toInsert);
+                        log.info("Settato");
+                    }
                 }
 //                log.info("okk settato");
             }
