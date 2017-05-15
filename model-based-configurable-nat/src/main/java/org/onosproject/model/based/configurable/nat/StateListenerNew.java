@@ -108,7 +108,7 @@ public class StateListenerNew extends Thread{
             }
         }catch(Exception e){
             log.info("Can't convert the json correctly");
-            log.info(e.getMessage());
+            log.error(e.getMessage());
             return null;
         }
         return null;
@@ -117,6 +117,8 @@ public class StateListenerNew extends Thread{
     private Object personalizedSerialization(){
         return null;
     }
+    
+    /*****************************************/
     
     public StateListenerNew(Object root){
 //        log.info("In constructor");
@@ -1313,7 +1315,13 @@ public class StateListenerNew extends Thread{
                         try {
                             log.info("Setting the values of a list");
                             List<Object> l = (f.getType().isInterface())?new ArrayList<>():(List)f.getType().newInstance();
-                            l.add((new Gson()).fromJson(newVal, itemType));
+                            try{
+                                l.add((new Gson()).fromJson(newVal, itemType));
+                            }catch(Exception e){
+                                Object toInsert = personalizedDeserialization(itemType, newVal);
+                                if(toInsert!=null)
+                                    l.add(toInsert);
+                            }
                             f.set(actual, l);
                         } catch (InstantiationException ex) {
                             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -1337,8 +1345,16 @@ public class StateListenerNew extends Thread{
                                 }
                             }
                             if(toChange!=null){
-                                l.add((new Gson()).fromJson(newVal, itemType));
-                                l.remove(toChange);
+                                try{
+                                    l.add((new Gson()).fromJson(newVal, itemType));
+                                    l.remove(toChange);
+                                }catch(Exception e){
+                                    Object toInsert = personalizedDeserialization(itemType, newVal);
+                                    if(toInsert!=null){
+                                        l.add(toInsert);
+                                        l.remove(toChange);
+                                    }
+                                }
                             }
                         }
                     }
@@ -1425,8 +1441,16 @@ public class StateListenerNew extends Thread{
                                     }
                                 }
                                 if(toChange!=null){
-                                    l.add((new Gson()).fromJson(newVal, itemType));
-                                    l.remove(toChange);
+                                    try{
+                                        l.add((new Gson()).fromJson(newVal, itemType));
+                                        l.remove(toChange);
+                                    }catch(Exception e){
+                                        Object toInsert = personalizedDeserialization(itemType, newVal);
+                                        if(toInsert!=null){
+                                            l.add(toInsert);
+                                            l.remove(toChange);
+                                        }
+                                    }
                                 }
                             }else if(Map.class.isAssignableFrom(f.getType())){
                                 Map<Object, Object> l = (Map)f.get(actual);
