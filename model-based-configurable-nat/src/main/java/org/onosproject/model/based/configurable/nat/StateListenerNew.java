@@ -55,6 +55,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import java.util.TimerTask;
 import java.util.Timer;
+import org.onlab.packet.Ip4Address;
 import org.slf4j.LoggerFactory;
 
 
@@ -89,6 +90,22 @@ public class StateListenerNew extends Thread{
     private Timer timer;
     protected final org.slf4j.Logger log = LoggerFactory.getLogger(getClass());
  
+    
+    /*****PERSONALIZABLE FUNCTIONS*******/
+    
+    private Object personalizedDeserialization(Class<?> type, String json){
+        try{
+            if(type == Ip4Address.class){
+                Ip4Address value = Ip4Address.valueOf(json);
+                return value;
+            }
+        }catch(Exception e){
+            log.info("Can't convert the json correctly");
+            return null;
+        }
+        return null;
+    }
+    
     public StateListenerNew(Object root){
 //        log.info("In constructor");
         this.root = root;
@@ -1421,29 +1438,17 @@ public class StateListenerNew extends Thread{
                 Field f = actual.getClass().getField(var);
                 log.info("--Arrivata al field da configurare "+f.getName()+" "+f.getGenericType());
                 log.info("Valore: "+newVal);
+                Object toInsert;
                 try{
-                    f.set(actual, (new Gson()).fromJson(newVal, f.getGenericType()));
+                    toInsert = (new Gson()).fromJson(newVal, f.getGenericType());
+                    log.info("Translated");
+                    f.set(actual, toInsert);
                     log.info("Settato!");
                 }catch(Exception e){
                     log.info("Sono nel catch");
-                    Constructor<?>[] constr = f.getType().getConstructors();
-                    for(int i=0; i<constr.length;i++){
-                        try {
-                            log.info("constr[i]"+constr[i]);
-                            Class<?>[] params = constr[i].getParameterTypes();
-                            if(params.length==1 && String.class.isAssignableFrom(params[0])){
-                                Object val = constr[i].newInstance(newVal);
-                                f.set(actual, val);
-                                break;
-                            }
-                        } catch (InstantiationException ex1) {
-                            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex1);
-                            log.info("Cannot allocate event with the String constructor");
-                        } catch (InvocationTargetException ex1) {
-                            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex1);
-                            log.info("Cannot allocate even with the String constructor");
-                        }
-                    }
+                    toInsert = personalizedDeserialization(f.getType(), newVal);
+                    if(toInsert!=null)  
+                        f.set(actual, toInsert);
                 }
 //                log.info("okk settato");
             }
