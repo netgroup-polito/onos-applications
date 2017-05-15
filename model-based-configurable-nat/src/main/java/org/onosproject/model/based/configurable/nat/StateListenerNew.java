@@ -129,7 +129,7 @@ public class StateListenerNew extends Thread{
         if(type.equals("int32"))
             return (Integer)value;
         if(type.equals("inet:port-number"))
-            return (Integer)value;
+            return (Long)value;
         return value.toString();
     }
     
@@ -846,8 +846,12 @@ public class StateListenerNew extends Thread{
                             if(Boolean.class.isAssignableFrom(parsed.getClass())){  
                                 log.info("Trattato come boolean");
                                 ((ObjectNode)toRet).put(fieldName, (Boolean)parsed);}
-                            else if(Integer.class.isAssignableFrom(parsed.getClass())){
+                            else if(parsed.getClass() == Long.class){
                                 log.info("Trattato come long");
+                                ((ObjectNode)toRet).put(fieldName, (Long)parsed);
+                            }
+                            else if(Integer.class.isAssignableFrom(parsed.getClass())){
+                                log.info("Trattato come int");
                                 ((ObjectNode)toRet).put(fieldName, (Integer)parsed);}
                             else if(Double.class.isAssignableFrom(parsed.getClass())){
                                 log.info("trattato come double");
