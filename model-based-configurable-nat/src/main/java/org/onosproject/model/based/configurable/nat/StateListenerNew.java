@@ -129,7 +129,7 @@ public class StateListenerNew extends Thread{
         if(type.equals("int32"))
             return (Integer)value;
         if(type.equals("inet:port-number"))
-            return (Long)value;
+            return (long)value;
         return value.toString();
     }
     
@@ -857,7 +857,7 @@ public class StateListenerNew extends Thread{
                                 log.info("trattato come double");
                                 ((ObjectNode)toRet).put(fieldName, (Double)parsed);}
                             else {log.info("Trattato come string");
-                            ((ObjectNode)toRet).put(fieldName, (String)parsed);
+                            ((ObjectNode)toRet).put(fieldName, parsed.toString());
                             }
                         }
                     }
