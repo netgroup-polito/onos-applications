@@ -1716,6 +1716,7 @@ public class StateListenerNew extends Thread{
                     config.put(prev.substring(1)+"/"+e.getAttribute("name"), c);
                     YangType.put(prev.substring(1)+"/"+e.getAttribute("name"), e.getAttribute("type"));
                     log.info(e.getAttribute("name")+" is a "+e.getAttribute("type"));
+                    
                 }
                 //default
                 if(!config.containsKey(prev+"/"+e.getAttribute("name")))
