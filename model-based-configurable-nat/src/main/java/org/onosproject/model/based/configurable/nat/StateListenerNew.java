@@ -122,11 +122,15 @@ public class StateListenerNew extends Thread{
         log.info("Il tipo è "+type);
         if(type==null)
             return null;
-        if(type.equals("string"))
-            return value.toString();
+        if(type.equals("boolean"))
+            return Boolean.parseBoolean(value.toString());
         if(type.equals("uint16"))
             return (Integer)value;
-        return value;
+        if(type.equals("int32"))
+            return (Integer)value;
+        if(type.equals("inet:portNumber"))
+            return (Integer)value;
+        return value.toString();
     }
     
     /***********-----
