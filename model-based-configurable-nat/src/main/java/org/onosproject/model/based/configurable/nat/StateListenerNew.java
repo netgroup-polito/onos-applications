@@ -1715,8 +1715,11 @@ public class StateListenerNew extends Thread{
                     boolean c = (att.item(i).getAttributes().item(0).getNodeValue().equals("true"))?true:false;
                     //System.out.println("-+-config "+att.item(i).getAttributes().item(0).getNodeValue());
                     config.put(prev.substring(1)+"/"+e.getAttribute("name"), c);
-                    log.info(prev.substring(1)+"/"+e.getAttribute("name")+" is a "+e.getAttribute("type"));
-                    YangType.put(prev.substring(1)+"/"+e.getAttribute("name"), e.getAttribute("type"));
+                }
+                if(att.item(i).getNodeName().equals("type")){
+                    String t = att.item(i).getAttributes().item(0).getNodeValue();
+                    log.info(prev.substring(1)+"/"+e.getAttribute("name")+" is a "+t);
+                    YangType.put(prev.substring(1)+"/"+e.getAttribute("name"), t);
                 }
                 //default
                 if(!config.containsKey(prev+"/"+e.getAttribute("name")))
