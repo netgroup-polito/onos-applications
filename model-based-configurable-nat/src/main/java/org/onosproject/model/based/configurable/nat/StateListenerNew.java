@@ -39,6 +39,7 @@ import static java.lang.Thread.sleep;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -115,8 +116,17 @@ public class StateListenerNew extends Thread{
         return null;
     }
     
-    private Object personalizedSerialization(){
-        return null;
+    private Object personalizedSerialization(String field, Object value){
+        log.info("Il campo è "+field);
+        String type = YangType.get(field);
+        log.info("Il tipo è "+type);
+        if(type==null)
+            return null;
+        if(type.equals("string"))
+            return value.toString();
+        if(type.equals("uint16"))
+            return (Integer)value;
+        return value;
     }
     
     /***********-----
@@ -825,8 +835,16 @@ public class StateListenerNew extends Thread{
                                 jWithIndex+="["+yspez[i]+"]";
                         }
                         Object value = getLeafValue(jWithIndex.substring(5));
-                        if(value!=null)
-                            ((ObjectNode)toRet).put(fieldName, value.toString());
+                        if(value!=null){
+                            Object parsed = personalizedSerialization(varWithoutIndexes+"/"+fieldName, value);
+                            if(Boolean.class.isAssignableFrom(parsed.getClass()))   
+                                ((ObjectNode)toRet).put(fieldName, (Boolean)parsed);
+                            else if(Long.class.isAssignableFrom(parsed.getClass()))
+                                ((ObjectNode)toRet).put(fieldName, (Long)parsed);
+                            else if(Double.class.isAssignableFrom(parsed.getClass()))
+                                ((ObjectNode)toRet).put(fieldName, (Double)parsed);
+                            else ((ObjectNode)toRet).put(fieldName, (String)parsed);
+                        }
                     }
                 }else{
                     JsonNode f = fillResult(((ObjectNode)ref).get(fieldName), var+"/"+fieldName);
@@ -1766,7 +1784,7 @@ public class StateListenerNew extends Thread{
                         
                         if(child.get("type")!=null){
                             String type = child.get("type").get("@name").asText();
-                            log.info(prev+"/"+child.get("@name").textValue()+" is a "+type);
+                            YangType.put(prev+"/"+child.get("@name").textValue(),type);
                         }
                         //check advertise attribute - prefix:advertise
                         Iterator<String> searchAdv = child.fieldNames();
