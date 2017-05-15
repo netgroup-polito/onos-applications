@@ -1712,6 +1712,7 @@ public class StateListenerNew extends Thread{
             NodeList att = e.getChildNodes();
             for(int i=0;i<att.getLength();i++){
                 if(att.item(i).getNodeName().equals("config")){
+                    log.info("Ho trovato il config");
                     boolean c = (att.item(i).getAttributes().item(0).getNodeValue().equals("true"))?true:false;
                     //System.out.println("-+-config "+att.item(i).getAttributes().item(0).getNodeValue());
                     config.put(prev.substring(1)+"/"+e.getAttribute("name"), c);
