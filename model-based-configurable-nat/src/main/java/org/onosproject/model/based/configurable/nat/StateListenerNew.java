@@ -736,7 +736,7 @@ public class StateListenerNew extends Thread{
         }
     }
 
-    public JsonNode getComplexObj(String var) throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
+    public Object getComplexObj(String var) throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
         String[] spl = var.split(Pattern.quote("/"));
         JsonNode ref = rootJson;
         for(int i=0;i<spl.length;i++){
@@ -775,7 +775,7 @@ public class StateListenerNew extends Thread{
             Object value = getLeafValue(varJava.substring(5));
             ObjectNode result = mapper.createObjectNode();
             result.put(var.substring(var.lastIndexOf("/")+1), value.toString());
-            return result;
+            return value;
         }
         JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
@@ -785,7 +785,7 @@ public class StateListenerNew extends Thread{
         JsonNode r = mapper.createObjectNode();
         ((ObjectNode)r).put(var.substring(var.lastIndexOf("/")+1), res);
 //        log.info("The result is ready");
-        return r;
+        return res;
     }
 
     private JsonNode fillResult(JsonNode ref, String var) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException {
@@ -1201,7 +1201,7 @@ public class StateListenerNew extends Thread{
 //                else{
             
                 //creare oggetto da passare!
-                JsonNode result;
+                Object result;
 //                log.info("IT's not a leaf");
                 //String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
                 result = getComplexObj(msg.var);
