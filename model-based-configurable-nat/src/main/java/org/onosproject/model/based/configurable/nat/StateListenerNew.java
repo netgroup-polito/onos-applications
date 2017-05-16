@@ -869,7 +869,7 @@ public class StateListenerNew extends Thread{
                     }
                 }else{
                     JsonNode f = fillResult(((ObjectNode)ref).get(fieldName), var+"/"+fieldName);
-                    if(f.size()!=0)
+//                    if(f.size()!=0)
                         ((ObjectNode)toRet).put(fieldName, f);
                 }
             }
@@ -938,7 +938,7 @@ public class StateListenerNew extends Thread{
         }
     }
 
-    private void setComplexObject(String var, String newVal) {
+    private int setComplexObject(String var, String newVal) {
         try {
             JsonNode toSet = mapper.readTree(newVal);
             //System.out.println(toSet);
@@ -946,11 +946,11 @@ public class StateListenerNew extends Thread{
             //check if all the values are configurable
             if(!configVariables(noIndexes(var), toSet)){
                 log.info("not to config..");
-                return;
+                return 1;
             }
 //            if(!configVariables(var))
 //                return;
-            fillVariables(toSet, var);
+            return fillVariables(toSet, var);
         } catch (IOException ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
         }catch(NoSuchFieldException ex){
@@ -958,7 +958,7 @@ public class StateListenerNew extends Thread{
         }catch(IllegalAccessException ex){
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+        return 2;
     }
 
     private boolean configVariables(String var, JsonNode toSet){
@@ -1035,7 +1035,7 @@ public class StateListenerNew extends Thread{
         }
     }
     
-    private void fillVariables(JsonNode toSet, String var) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
+    private int fillVariables(JsonNode toSet, String var) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
 //        log.info("In fillVariables");
         if(toSet.isValueNode()){
             log.info("In fillVariables - reached leaf");
@@ -1043,16 +1043,24 @@ public class StateListenerNew extends Thread{
             String j = fromYangToJava(var);
             //if(state.containsKey(j.substring(5))){
 //            log.info("And variable is "+j);
-            if(j!=null)
-                setVariable(j.substring(5), j.substring(5), toSet.asText(), root);
+            if(j!=null){
+                if(setVariable(j.substring(5), j.substring(5), toSet.asText(), root))
+                    return 0;
+                else
+                    return 1;
+            }else
+                return 2;
             //}
         }else{
             if(toSet.isObject()){
                 Iterator<String> fields = toSet.fieldNames();
+                int res = 0;
                 while(fields.hasNext()){
                     String fieldName = (String)fields.next();
-                    fillVariables(toSet.get(fieldName), var+"/"+fieldName);
+                    int resc = fillVariables(toSet.get(fieldName), var+"/"+fieldName);
+                    res = (resc==0)?res:resc;
                 }
+                return res;
             }else{
                 //capire qual è la lista corrispondente
                 //without indexes
@@ -1126,14 +1134,18 @@ public class StateListenerNew extends Thread{
                     List<Object> newList = new ArrayList<>();
                     
                         Iterator<JsonNode> iter = ((ArrayNode)toSet).elements();
+                        int res = 0;
                         while(iter.hasNext()){                     
                             //insert the list element
                             JsonNode newValJava = getCorrectItem(mapper.writeValueAsString(iter.next()), varWithoutIndexes+"[]");
-                            if(newValJava!=null)
-                                setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root);
-                           
-                        }                  
+                            if(newValJava!=null){
+                                if(!setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root))
+                                    res = 1;
+                            }
+                        }   
+                        return res;
                 }
+                return 2;
             }
         }
     }
@@ -1225,14 +1237,16 @@ public class StateListenerNew extends Thread{
                 try {
                     if(var!=null){
                         ((AppComponent)root).withdrawIntercepts();
+                        int ret;
                         //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
                         if(!var.equals("root")&&state.containsKey(var.substring(5))){
                             log.info("Config a leaf "+var);
-                            setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);
+                            boolean setted = setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);
+                            ret = (setted)?0:1;
                             log.info("Leaf should be configured");
                         }else{
                             log.info("Config a complex object");
-                            setComplexObject(msg.var, (String)msg.obj);
+                            ret = setComplexObject(msg.var, (String)msg.obj);
                             log.info("complex object should be configured");
                         }
                         ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
