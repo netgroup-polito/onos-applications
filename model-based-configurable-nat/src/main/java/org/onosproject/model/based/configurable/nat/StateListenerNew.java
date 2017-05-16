@@ -1250,6 +1250,7 @@ public class StateListenerNew extends Thread{
                             log.info("complex object should be configured");
                         }
                         msg.objret = ret.toString();
+                        log.info("Result: "+ret);
                         cM.setResourceValue((new Gson()).toJson(msg));
                         ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
                         ((AppComponent)root).requestIntercepts();
