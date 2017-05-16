@@ -1237,7 +1237,7 @@ public class StateListenerNew extends Thread{
                 try {
                     if(var!=null){
                         ((AppComponent)root).withdrawIntercepts();
-                        int ret;
+                        Integer ret;
                         //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
                         if(!var.equals("root")&&state.containsKey(var.substring(5))){
                             log.info("Config a leaf "+var);
@@ -1249,6 +1249,8 @@ public class StateListenerNew extends Thread{
                             ret = setComplexObject(msg.var, (String)msg.obj);
                             log.info("complex object should be configured");
                         }
+                        msg.objret = ret.toString();
+                        cM.setResourceValue(msg);
                         ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
                         ((AppComponent)root).requestIntercepts();
                     }
