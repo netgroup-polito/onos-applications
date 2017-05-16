@@ -57,6 +57,7 @@ import org.w3c.dom.NodeList;
 import java.util.TimerTask;
 import java.util.Timer;
 import org.onlab.packet.Ip4Address;
+import org.onosproject.net.DeviceId;
 import org.onosproject.net.PortNumber;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +107,10 @@ public class StateListenerNew extends Thread{
             if(type == PortNumber.class){
                 log.info("E' un port number, the value passed is "+json+" and the type is "+type);
                 PortNumber value = PortNumber.portNumber(json);
+                return value;
+            }
+            if(type == DeviceId.class){
+                DeviceId value = DeviceId.deviceId(json);
                 return value;
             }
         }catch(Exception e){
