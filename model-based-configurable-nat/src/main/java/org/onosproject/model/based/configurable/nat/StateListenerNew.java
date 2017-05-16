@@ -1385,6 +1385,7 @@ public class StateListenerNew extends Thread{
                                     l.add(toInsert);
                             }
                             f.set(actual, l);
+                            return true;
                         } catch (InstantiationException ex) {
                             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
                             log.info(ex.getMessage());
@@ -1410,11 +1411,13 @@ public class StateListenerNew extends Thread{
                                 try{
                                     l.add((new Gson()).fromJson(newVal, itemType));
                                     l.remove(toChange);
+                                    return true;
                                 }catch(Exception e){
                                     Object toInsert = personalizedDeserialization(itemType, newVal);
                                     if(toInsert!=null){
                                         l.add(toInsert);
                                         l.remove(toChange);
+                                        return true;
                                     }
                                 }
                             }
@@ -1443,6 +1446,7 @@ public class StateListenerNew extends Thread{
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
                             m.put(k, value);
                             f.set(actual, m);
+                            return true;
                             //!!
                             //m.put((new Gson()).fromJson(newVal, Map.Entry<Object,itemType>));
                             //System.out.println("SETTED M = "+f.get(actual));
@@ -1479,6 +1483,7 @@ public class StateListenerNew extends Thread{
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
                             ((Map)f.get(actual)).put(k, value);
+                            return true;
                         } catch (IOException ex) {
                             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
                             log.info(ex.getMessage());
@@ -1542,6 +1547,7 @@ public class StateListenerNew extends Thread{
                     log.info("Translated");
                     f.set(actual, toInsert);
                     log.info("Settato!");
+                    return true;
                 }catch(Exception e){
                     log.info("Sono nel catch");
                     toInsert = personalizedDeserialization(f.getType(), newVal);
@@ -1550,7 +1556,9 @@ public class StateListenerNew extends Thread{
                         log.info("Non è null");
                         f.set(actual, toInsert);
                         log.info("Settato");
+                        return true;
                     }
+                    return false;
                 }
 //                log.info("okk settato");
             }
@@ -1570,20 +1578,20 @@ public class StateListenerNew extends Thread{
                 for(Object litem:(List)actual){
                     boolean correct = litem.getClass().getField(indice).get(litem).toString().equals(idItem);
                     if(correct)
-                        setVariable(var.substring(fs[0].length()+1), complete, newVal, litem);
+                        return setVariable(var.substring(fs[0].length()+1), complete, newVal, litem);
                 }
                 }else if(Map.class.isAssignableFrom(actual.getClass())){
                 for(Object litem:((Map)actual).keySet()){
                     boolean correct = litem.toString().equals(idItem);
                     if(correct)
-                        setVariable(var.substring(fs[0].length()+1), complete, newVal, ((Map)actual).get(litem));
+                        return setVariable(var.substring(fs[0].length()+1), complete, newVal, ((Map)actual).get(litem));
                 }
                 }
             }else{
                 Field f = actual.getClass().getField(fs[0]);
 //                log.info("Passing throug "+f.getGenericType());
                 actual = f.get(actual);
-                setVariable(var.substring(fs[0].length()+1), complete, newVal, actual);
+                return setVariable(var.substring(fs[0].length()+1), complete, newVal, actual);
             }
         }
         return false;
