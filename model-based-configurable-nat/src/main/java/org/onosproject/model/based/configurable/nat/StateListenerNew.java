@@ -1232,6 +1232,8 @@ public class StateListenerNew extends Thread{
                 if(config.containsKey(noInd) && !config.get(noInd)){
                     //no configurable
                     log.info("Not configurable");
+                    msg.objret = "2";
+                    cM.setResourceValue((new Gson()).toJson(msg));
                     return;
                 }
                 try {
