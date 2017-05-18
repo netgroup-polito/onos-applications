@@ -1715,6 +1715,7 @@ public class StateListenerNew extends Thread{
             String[] fields = id.split(Pattern.quote("/"));
             String recompose = new String();
             for(int i = 0; i<fields.length; i++){
+                log.info("Actual is "+actual);
                 if(actual==null)
                     return null;
                 recompose +="/"+fields[i];
