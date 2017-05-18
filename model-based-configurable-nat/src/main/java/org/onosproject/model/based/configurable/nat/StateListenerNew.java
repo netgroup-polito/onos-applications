@@ -1175,7 +1175,8 @@ public class StateListenerNew extends Thread{
 //                                break;
 //                            }
 //                        }
-                    }
+                    }else
+                        return 2;
                     //setVariable(jWithIndex, jWithIndex, null, root);                    
                     Iterator<JsonNode> iter = ((ArrayNode)toSet).elements();
                     int res = 0;
