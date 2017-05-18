@@ -1037,6 +1037,7 @@ public class StateListenerNew extends Thread{
     
     private int fillVariables(JsonNode toSet, String var) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
 //        log.info("In fillVariables");
+        log.info("var "+var+" to Set "+toSet);
         if(toSet.isValueNode()){
             log.info("In fillVariables - reached leaf");
             //set the corrispondent leaf
@@ -1053,15 +1054,19 @@ public class StateListenerNew extends Thread{
             //}
         }else{
             if(toSet.isObject()){
+                log.info("Sono nel isObject");
                 Iterator<String> fields = toSet.fieldNames();
                 int res = 0;
                 while(fields.hasNext()){
                     String fieldName = (String)fields.next();
+                    log.info("Setting "+fieldName);
                     int resc = fillVariables(toSet.get(fieldName), var+"/"+fieldName);
+                    log.info("resc "+resc);
                     res = (resc==0)?res:resc;
                 }
                 return res;
             }else{
+                log.info("Sono nell'else - no object");
                 //capire qual è la lista corrispondente
                 //without indexes
                 String varWithoutIndexes = new String();
