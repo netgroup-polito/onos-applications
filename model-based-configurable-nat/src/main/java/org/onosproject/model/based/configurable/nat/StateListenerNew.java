@@ -131,9 +131,9 @@ public class StateListenerNew extends Thread{
         if(type.equals("boolean"))
             return Boolean.parseBoolean(value.toString());
         if(type.equals("uint16"))
-            return (Integer)value;
+            return Integer.parseInt(value.toString());
         if(type.equals("int32"))
-            return (Integer)value;
+            return Integer.parseInt(value.toString());
         if(type.equals("inet:port-number"))
             return Long.parseLong(value.toString());
         return value.toString();
