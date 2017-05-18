@@ -773,8 +773,8 @@ public class StateListenerNew extends Thread{
             //is a leaf, but it is not present in state
             String varJava = fromYangToJava(var);
             Object value = getLeafValue(varJava.substring(5));
-            ObjectNode result = mapper.createObjectNode();
-            result.put(var.substring(var.lastIndexOf("/")+1), value.toString());
+//            ObjectNode result = mapper.createObjectNode();
+//            result.put(var.substring(var.lastIndexOf("/")+1), value.toString());
             return value;
         }
         JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
