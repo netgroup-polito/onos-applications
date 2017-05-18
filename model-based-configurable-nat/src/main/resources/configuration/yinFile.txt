@@ -85,9 +85,6 @@
           "type": {
             "@name": "string"
           },
-          "config": {
-            "@value": "false"
-          },
           "@name": "devId",
           "confnat:advertise": {
             "@advertise": "onchange"
@@ -96,9 +93,6 @@
         {
           "type": {
             "@name": "uint16"
-          },
-          "config": {
-            "@value": "true"
           },
           "@name": "interface",
           "confnat:advertise": {
@@ -135,9 +129,6 @@
         {
           "type": {
             "@name": "string"
-          },
-          "config": {
-            "@value": "false"
           },
           "@name": "macAddress"
         }
@@ -150,9 +141,6 @@
           "type": {
             "@name": "string"
           },
-          "config": {
-            "@value": "false"
-          },
           "@name": "devId",
           "confnat:advertise": {
             "@advertise": "onchange"
@@ -161,9 +149,6 @@
         {
           "type": {
             "@name": "uint16"
-          },
-          "config": {
-            "@value": "true"
           },
           "@name": "interface",
           "confnat:advertise": {
@@ -200,9 +185,6 @@
         {
           "type": {
             "@name": "string"
-          },
-          "config": {
-            "@value": "false"
           },
           "@name": "macAddress"
         }

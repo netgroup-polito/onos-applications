@@ -32,12 +32,10 @@ module nat{
     container inputInterface{
         leaf devId{
             type string;
-            config false;
             confnat:advertise onchange;
         }
         leaf interface{
             type uint16;
-            config true;
             confnat:advertise onchange;            
         }
         leaf priority{
@@ -54,19 +52,16 @@ module nat{
         }
         leaf macAddress{
             type string;
-            config false;
         }
     }
 
     container outputInterface{
         leaf devId{
             type string;
-            config false;
             confnat:advertise onchange;
         }
         leaf interface{
             type uint16;
-            config true;
             confnat:advertise onchange;            
         }
         leaf priority{
@@ -83,7 +78,6 @@ module nat{
         }
         leaf macAddress{
             type string;
-            config false;
         }
     }
 
