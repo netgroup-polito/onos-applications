@@ -848,8 +848,8 @@ public class StateListenerNew extends Thread{
                         if(value!=null){
                             log.info("Devo parsare l'oggetto "+value);
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
-                            log.info("ora parsed è di class "+parsed.getClass());
                             if(parsed != null){
+                                log.info("ora parsed è di class "+parsed.getClass());
                                 if(Boolean.class.isAssignableFrom(parsed.getClass())){  
                                     log.info("Trattato come boolean");
                                     ((ObjectNode)toRet).put(fieldName, (Boolean)parsed);}
