@@ -773,7 +773,7 @@ public class StateListenerNew extends Thread{
             //is a leaf, but it is not present in state
             String varJava = fromYangToJava(var);
             log.info("Var java "+varJava);
-            Object value = getLeafValue(varJava.substring(5));
+            Object value = getLeafValue(varJava.substring(5), var);
 //            ObjectNode result = mapper.createObjectNode();
 //            result.put(var.substring(var.lastIndexOf("/")+1), value.toString());
             return value;
@@ -819,7 +819,7 @@ public class StateListenerNew extends Thread{
                         else
                             jWithIndex+="["+yspez[i]+"]";
                     }
-                    ((ObjectNode)toRet).put(var, getLeafValue(jWithIndex.substring(5)).toString());
+                    ((ObjectNode)toRet).put(var, getLeafValue(jWithIndex.substring(5), var).toString());
                     field.next();
                 }
                 return toRet;
@@ -847,7 +847,7 @@ public class StateListenerNew extends Thread{
                             else
                                 jWithIndex+="["+yspez[i]+"]";
                         }
-                        Object value = getLeafValue(jWithIndex.substring(5));
+                        Object value = getLeafValue(jWithIndex.substring(5), var);
                         if(value!=null){
                             log.info("Devo parsare l'oggetto "+value);
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
@@ -1708,9 +1708,9 @@ public class StateListenerNew extends Thread{
     }
     
     //get the value of a specific leaf
-    public Object getLeafValue(String id){
+    public Object getLeafValue(String id, String idYang){
         if(state.containsKey(id))
-            return personalizedSerialization(id, state.get(id));
+            return personalizedSerialization(idYang, state.get(id));
         try{
             Object actual = root;
             String[] fields = id.split(Pattern.quote("/"));
