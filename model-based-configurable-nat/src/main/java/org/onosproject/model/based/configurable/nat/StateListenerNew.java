@@ -772,6 +772,7 @@ public class StateListenerNew extends Thread{
         if(ref.isValueNode()){
             //is a leaf, but it is not present in state
             String varJava = fromYangToJava(var);
+            log.info("Var java "+varJava);
             Object value = getLeafValue(varJava.substring(5));
 //            ObjectNode result = mapper.createObjectNode();
 //            result.put(var.substring(var.lastIndexOf("/")+1), value.toString());
