@@ -43,72 +43,38 @@
   "namespace": {
     "@uri": "polito.lab9.configurableNat"
   },
-  "list": [
-    {
-      "leaf": [
-        {
-          "type": {
-            "@name": "uint16"
-          },
-          "confnat:period": {
-            "@period": "5000"
-          },
-          "@name": "port",
-          "confnat:advertise": {
-            "@advertise": "periodic"
-          }
+  "list": {
+    "leaf": [
+      {
+        "type": {
+          "@name": "uint16"
         },
-        {
-          "type": {
-            "@name": "string"
-          },
-          "confnat:period": {
-            "@period": "5000"
-          },
-          "@name": "add-port",
-          "confnat:advertise": {
-            "@advertise": "periodic"
-          }
-        }
-      ],
-      "@name": "natTable",
-      "key": {
-        "@value": "port"
-      }
-    },
-    {
-      "leaf": [
-        {
-          "type": {
-            "@name": "inet:ipv4-address"
-          },
-          "confnat:period": {
-            "@period": "5000"
-          },
-          "@name": "ip",
-          "confnat:advertise": {
-            "@advertise": "periodic"
-          }
+        "confnat:period": {
+          "@period": "5000"
         },
-        {
-          "type": {
-            "@name": "mac-address"
-          },
-          "confnat:period": {
-            "@period": "5000"
-          },
-          "@name": "mac",
-          "confnat:advertise": {
-            "@advertise": "periodic"
-          }
-        }
-      ],
-      "@name": "arpTable",
-      "key": {
-        "@value": "ip"
+        "confnat:advertise": {
+          "@advertise": "periodic"
+        },
+        "@name": "port"
+      },
+      {
+        "type": {
+          "@name": "string"
+        },
+        "confnat:period": {
+          "@period": "5000"
+        },
+        "confnat:advertise": {
+          "@advertise": "periodic"
+        },
+        "@name": "add-port"
       }
+    ],
+    "@name": "natTable",
+    "key": {
+      "@value": "port"
     }
-  ],
+  },
   "prefix": {
     "@value": "confnat"
   },
@@ -117,7 +83,10 @@
       "leaf": [
         {
           "type": {
-            "@name": "inet:uri"
+            "@name": "string"
+          },
+          "config": {
+            "@value": "false"
           },
           "@name": "devId",
           "confnat:advertise": {
@@ -126,9 +95,12 @@
         },
         {
           "type": {
-            "@name": "inet:port-number"
+            "@name": "uint16"
           },
-          "@name": "port",
+          "config": {
+            "@value": "true"
+          },
+          "@name": "interface",
           "confnat:advertise": {
             "@advertise": "onchange"
           }
@@ -137,10 +109,10 @@
           "type": {
             "@name": "int32"
           },
-          "@name": "priority",
           "confnat:advertise": {
             "@advertise": "onchange"
-          }
+          },
+          "@name": "priority"
         },
         {
           "type": {
@@ -150,7 +122,7 @@
         },
         {
           "type": {
-            "@name": "inet:ipv4-address"
+            "@name": "string"
           },
           "confnat:period": {
             "@period": "10000"
@@ -162,18 +134,24 @@
         },
         {
           "type": {
-            "@name": "mac-address"
+            "@name": "string"
+          },
+          "config": {
+            "@value": "false"
           },
           "@name": "macAddress"
         }
       ],
-      "@name": "inputInfo"
+      "@name": "inputInterface"
     },
     {
       "leaf": [
         {
           "type": {
-            "@name": "inet:uri"
+            "@name": "string"
+          },
+          "config": {
+            "@value": "false"
           },
           "@name": "devId",
           "confnat:advertise": {
@@ -182,12 +160,12 @@
         },
         {
           "type": {
-            "@name": "inet:port-number"
+            "@name": "uint16"
           },
           "config": {
             "@value": "true"
           },
-          "@name": "port",
+          "@name": "interface",
           "confnat:advertise": {
             "@advertise": "onchange"
           }
@@ -196,10 +174,10 @@
           "type": {
             "@name": "int32"
           },
-          "@name": "priority",
           "confnat:advertise": {
             "@advertise": "onchange"
-          }
+          },
+          "@name": "priority"
         },
         {
           "type": {
@@ -209,7 +187,7 @@
         },
         {
           "type": {
-            "@name": "inet:ipv4-address"
+            "@name": "string"
           },
           "confnat:period": {
             "@period": "10000"
@@ -221,12 +199,15 @@
         },
         {
           "type": {
-            "@name": "mac-address"
+            "@name": "string"
+          },
+          "config": {
+            "@value": "false"
           },
           "@name": "macAddress"
         }
       ],
-      "@name": "outputInfo"
+      "@name": "outputInterface"
     }
   ],
   "import": {

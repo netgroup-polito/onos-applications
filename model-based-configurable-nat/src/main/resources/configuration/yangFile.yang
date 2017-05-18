@@ -29,13 +29,13 @@ module nat{
         }
     }
 
-    container inputInfo{
+    container inputInterface{
         leaf devId{
             type string;
             config false;
             confnat:advertise onchange;
         }
-        leaf port{
+        leaf interface{
             type uint16;
             config true;
             confnat:advertise onchange;            
@@ -58,13 +58,13 @@ module nat{
         }
     }
 
-    container outputInfo{
+    container outputInterface{
         leaf devId{
             type string;
             config false;
             confnat:advertise onchange;
         }
-        leaf port{
+        leaf interface{
             type uint16;
             config true;
             confnat:advertise onchange;            
@@ -100,18 +100,4 @@ module nat{
             confnat:period 5000;
         }
     }
-
-    list arpTable{
-        key ip;
-        leaf ip{
-            type string;
-            confnat:advertise periodic;
-            confnat:period 5000;
-        }
-        leaf mac{
-            type string;
-            confnat:advertise periodic;
-            confnat:period 5000;
-        }
-    }    
 }

@@ -1249,11 +1249,13 @@ public class StateListenerNew extends Thread{
     public void parseCommand(String msgJson) throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException, IOException{
         CommandMsg msg = ((new Gson()).fromJson(msgJson, CommandMsg.class));
         String var = fromYangToJava(msg.var);
+        log.info("Command "+msg.act);
+        log.info("Variable "+msg.var);
+        log.info("Variable in the code "+var);
         switch(msg.act){
             case GET:
                 //System.out.println("devo passare "+var);
 //                log.info("Arrived command GET of "+var);
-                log.info("Arrived from ConnectionModule the command GET for "+msg.var);
 //                log.info("Translated in "+var);
 //                if(var==null)
 //                    msg.obj=null;
@@ -1275,15 +1277,9 @@ public class StateListenerNew extends Thread{
                 result = getComplexObj(msg.var);
                 
                 msg.objret = mapper.writeValueAsString(result);
-//                log.info("Result value "+msg.objret);
-                //System.out.println("RESULT GET: "+msg.objret);
-            
-                //}
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
             case CONFIG:
-                log.info("Arrived from ConnectionModule the command CONFIG for "+msg.var);
-//                log.info("trasformed in "+var);
                 String noInd = deleteIndexes(msg.var);
                 if(config.containsKey(noInd) && !config.get(noInd)){
                     //no configurable
@@ -1294,7 +1290,7 @@ public class StateListenerNew extends Thread{
                 }
                 try {
                     Integer ret;
-                    if(var!=null){
+//                    if(var!=null){
                         ((AppComponent)root).withdrawIntercepts();
                         //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
                         if(!var.equals("root")&&state.containsKey(var.substring(5))){
@@ -1307,10 +1303,10 @@ public class StateListenerNew extends Thread{
                             ret = setComplexObject(msg.var, (String)msg.obj);
                             log.info("complex object should be configured");
                         }
-                    }else{
-                        log.info("Variable not found");
-                        ret = 2;
-                    }
+//                    }else{
+//                        log.info("Variable not found");
+//                        ret = 2;
+//                    }
                     msg.objret = ret.toString();
                     log.info("Result: "+ret);
                     cM.setResourceValue((new Gson()).toJson(msg));
@@ -1414,7 +1410,13 @@ public class StateListenerNew extends Thread{
                 return 2;
             }else{
                 Field f = actual.getClass().getField(var);
-                f.set(actual, null);
+                Class<?> type = f.getType();
+                if(Boolean.class.isAssignableFrom(type))
+                    f.set(actual, false);
+                else if(f.get(actual) instanceof Number)
+                    f.set(actual, 0);
+                else
+                    f.set(actual, null);
                 return 0;
             }
         }else{
@@ -1422,7 +1424,7 @@ public class StateListenerNew extends Thread{
             if(fs[0].contains("[")){
                 String fName = fs[0].substring(0, fs[0].indexOf("["));
                 String index = fs[0].substring(fs[0].indexOf("[")+1, fs[0].length()-1);
-                actual = actual = actual.getClass().getField(fName).get(actual);
+                actual = actual.getClass().getField(fName).get(actual);
                 String listName = complete.substring(0, complete.length()-var.length()+fName.length());
                 String indice = null;
                 listName = generalIndexes(listName);
