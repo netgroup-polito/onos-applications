@@ -1710,7 +1710,7 @@ public class StateListenerNew extends Thread{
     //get the value of a specific leaf
     public Object getLeafValue(String id){
         if(state.containsKey(id))
-            return state.get(id);
+            return personalizedSerialization(id, state.get(id));
         try{
             Object actual = root;
             String[] fields = id.split(Pattern.quote("/"));
