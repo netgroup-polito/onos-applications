@@ -1123,7 +1123,7 @@ public class StateListenerNew extends Thread{
                     for(String k:YangToJava.keySet())
                         if(YangToJava.get(k).equals(varWithoutIndexes))
                             key = k;
-                    log.info("And the key is");
+                    log.info("And the key is "+key);
                     String[] yspez = var.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
                     String[] jspez = key.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
                     String jWithIndex = new String();
@@ -1132,6 +1132,10 @@ public class StateListenerNew extends Thread{
                             jWithIndex+=jspez[i];
                         else
                             jWithIndex+="["+yspez[i]+"]";
+                    }
+                    if(jWithIndex.length()<=5){
+                        log.info("Is root.!! Can't be a list");
+                        return 2;
                     }
                     jWithIndex = jWithIndex.substring(5);
                     //crearne una nuova
