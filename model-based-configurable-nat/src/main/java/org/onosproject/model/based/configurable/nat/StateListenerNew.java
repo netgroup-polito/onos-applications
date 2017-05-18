@@ -865,7 +865,8 @@ public class StateListenerNew extends Thread{
                             else {log.info("Trattato come string");
                             ((ObjectNode)toRet).put(fieldName, parsed.toString());
                             }
-                        }
+                        }else
+                            ((ObjectNode)toRet).put(fieldName, (byte[])null);
                     }
                 }else{
                     JsonNode f = fillResult(((ObjectNode)ref).get(fieldName), var+"/"+fieldName);
@@ -1265,7 +1266,7 @@ public class StateListenerNew extends Thread{
                 break;
             case CONFIG:
                 log.info("Arrived from ConnectionModule the command CONFIG for "+msg.var);
-                log.info("trasformed in "+var);
+//                log.info("trasformed in "+var);
                 String noInd = deleteIndexes(msg.var);
                 if(config.containsKey(noInd) && !config.get(noInd)){
                     //no configurable
@@ -1314,23 +1315,31 @@ public class StateListenerNew extends Thread{
             case DELETE:
                 //delete
                 log.info("Arrived from ConnectionModule the command DELETE for "+msg.var);
+                Integer ret;
                 try{
                     if(var==null || var.equals("root")){
-                        //System.out.println("Can't delete the root obj!");
+                        log.info("Can't delete the variable");
+                        ret = 2;
                     }else
-                        deleteVariable(root, var.substring(5), var.substring(5));
+                        ret = deleteVariable(root, var.substring(5), var.substring(5));
                 } catch (NoSuchFieldException ex) {
                     Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                    ret = 1;
                 } catch (IllegalArgumentException ex) {
                     Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                    ret = 1;
                 } catch (IllegalAccessException ex) {
                     Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                    ret = 1;
                 }
-                    break;
+                msg.objret = ret.toString();
+                log.info("From delete returning "+ret);
+                cM.setResourceValue((new Gson()).toJson(msg));
+                break;
             }
     }
     
-    public void deleteVariable(Object actual, String var, String complete) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public int deleteVariable(Object actual, String var, String complete) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         String[] fs = var.split(Pattern.quote("/"));
         if(fs.length==1){
             //delete
@@ -1341,7 +1350,7 @@ public class StateListenerNew extends Thread{
                     //shouldn't do this!
                     Field f = actual.getClass().getField(var.substring(0,var.length()-2));
                     f.set(actual, null);
-                    return;
+                    return 0;
                 }
                 String listName = complete.substring(0, complete.length()-index.length()-1);
                 listName+="]";
@@ -1361,24 +1370,34 @@ public class StateListenerNew extends Thread{
                             break;
                         }
                     }
-                    if(delete!=null) ((List)actual).remove(delete);
+                    if(delete!=null){
+                        ((List)actual).remove(delete);
+                        return 0;
+                    }
                     }else if(Map.class.isAssignableFrom(actual.getClass())){
                         log.info("Is a Map!");
-                        if(((Map)actual).containsKey(index))
+                        if(((Map)actual).containsKey(index)){
                            ((Map)actual).remove(index);
+                           return 0;
+                        }
                         else{
                             log.info("Faccio il ciclo");
                             for(Object k:((Map)actual).keySet())
                                 if(k.toString().equals(index)){
                                     delete = k; break;}
-                            if(delete!=null)
+                            if(delete!=null){
                                 ((Map)actual).remove(delete);
+                                return 0;
+                            }
+                            return 2;
                         }
                     }
                 }
+                return 2;
             }else{
                 Field f = actual.getClass().getField(var);
                 f.set(actual, null);
+                return 0;
             }
         }else{
             //enter
@@ -1395,18 +1414,20 @@ public class StateListenerNew extends Thread{
                     if(List.class.isAssignableFrom(actual.getClass())){
                         for(Object item:(List)actual)
                             if(item.getClass().getField(indice).get(item).toString().equals(index))
-                                deleteVariable(item, var.substring(fs[0].length()+1), complete);
+                                return deleteVariable(item, var.substring(fs[0].length()+1), complete);
                     }else if(Map.class.isAssignableFrom(actual.getClass())){
                         for(Object k:((Map)actual).keySet())
                             if(k.toString().equals(index))
-                                deleteVariable(((Map)actual).get(k), var.substring(fs[0].length()+1), complete);
+                                return deleteVariable(((Map)actual).get(k), var.substring(fs[0].length()+1), complete);
                 
                     }
                 }
+                return 2;
             }else{
                 actual = actual.getClass().getField(fs[0]).get(actual);
                 if(actual!=null)
-                    deleteVariable(actual, var.substring(fs[0].length()+1), complete);
+                    return deleteVariable(actual, var.substring(fs[0].length()+1), complete);
+                return 2;
             }
         }
     }
