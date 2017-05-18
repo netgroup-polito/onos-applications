@@ -849,24 +849,25 @@ public class StateListenerNew extends Thread{
                             log.info("Devo parsare l'oggetto "+value);
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
                             log.info("ora parsed è di class "+parsed.getClass());
-                            if(Boolean.class.isAssignableFrom(parsed.getClass())){  
-                                log.info("Trattato come boolean");
-                                ((ObjectNode)toRet).put(fieldName, (Boolean)parsed);}
-                            else if(parsed.getClass() == Long.class){
-                                log.info("Trattato come long");
-                                ((ObjectNode)toRet).put(fieldName, (Long)parsed);
+                            if(parsed != null){
+                                if(Boolean.class.isAssignableFrom(parsed.getClass())){  
+                                    log.info("Trattato come boolean");
+                                    ((ObjectNode)toRet).put(fieldName, (Boolean)parsed);}
+                                else if(parsed.getClass() == Long.class){
+                                    log.info("Trattato come long");
+                                    ((ObjectNode)toRet).put(fieldName, (Long)parsed);
+                                }
+                                else if(Integer.class.isAssignableFrom(parsed.getClass())){
+                                    log.info("Trattato come int");
+                                    ((ObjectNode)toRet).put(fieldName, (Integer)parsed);}
+                                else if(Double.class.isAssignableFrom(parsed.getClass())){
+                                    log.info("trattato come double");
+                                    ((ObjectNode)toRet).put(fieldName, (Double)parsed);}
+                                else {log.info("Trattato come string");
+                                ((ObjectNode)toRet).put(fieldName, parsed.toString());
+                                }
                             }
-                            else if(Integer.class.isAssignableFrom(parsed.getClass())){
-                                log.info("Trattato come int");
-                                ((ObjectNode)toRet).put(fieldName, (Integer)parsed);}
-                            else if(Double.class.isAssignableFrom(parsed.getClass())){
-                                log.info("trattato come double");
-                                ((ObjectNode)toRet).put(fieldName, (Double)parsed);}
-                            else {log.info("Trattato come string");
-                            ((ObjectNode)toRet).put(fieldName, parsed.toString());
-                            }
-                        }else
-                            ((ObjectNode)toRet).put(fieldName, (byte[])null);
+                        }
                     }
                 }else{
                     JsonNode f = fillResult(((ObjectNode)ref).get(fieldName), var+"/"+fieldName);
