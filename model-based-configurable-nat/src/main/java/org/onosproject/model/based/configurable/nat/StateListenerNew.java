@@ -1116,11 +1116,14 @@ public class StateListenerNew extends Thread{
                     if(i%2==0)
                         varWithoutIndexes+=varSp[i]+"[]";
                 varWithoutIndexes = varWithoutIndexes.substring(0, varWithoutIndexes.length()-2);
+                log.info("Var without indexes "+varWithoutIndexes);
                 if(YangToJava.containsValue(varWithoutIndexes)){
+                    log.info("Yang to Java contains the value");
                     String key = null;
                     for(String k:YangToJava.keySet())
                         if(YangToJava.get(k).equals(varWithoutIndexes))
                             key = k;
+                    log.info("And the key is");
                     String[] yspez = var.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
                     String[] jspez = key.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
                     String jWithIndex = new String();
@@ -1135,7 +1138,9 @@ public class StateListenerNew extends Thread{
                     Class<?> type=null;
                     String indice = null;
                     String jgen = generalIndexes(jWithIndex);
+                    log.info("With generl indexes is "+jgen);
                     if(lists.containsKey(jgen+"[]")){
+                        log.info("The list exists");
                         indice = lists.get(jgen+"[]");
                         Object actual = root;
                         String[] fields = jWithIndex.split(Pattern.quote("/"));
@@ -1175,8 +1180,10 @@ public class StateListenerNew extends Thread{
 //                                break;
 //                            }
 //                        }
-                    }else
+                    }else{
+                        log.info("The list doesn0t exist");
                         return 2;
+                    }
                     //setVariable(jWithIndex, jWithIndex, null, root);                    
                     Iterator<JsonNode> iter = ((ArrayNode)toSet).elements();
                     int res = 0;
