@@ -773,10 +773,11 @@ public class StateListenerNew extends Thread{
             //is a leaf, but it is not present in state
             String varJava = fromYangToJava(var);
             log.info("Var java "+varJava);
-            Object value = getLeafValue(varJava.substring(5), var);
+            Object value = getLeafValue(varJava.substring(5));
+            Object serialized = personalizedSerialization(var, value);
 //            ObjectNode result = mapper.createObjectNode();
 //            result.put(var.substring(var.lastIndexOf("/")+1), value.toString());
-            return value;
+            return serialized;
         }
         JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
@@ -819,7 +820,7 @@ public class StateListenerNew extends Thread{
                         else
                             jWithIndex+="["+yspez[i]+"]";
                     }
-                    ((ObjectNode)toRet).put(var, getLeafValue(jWithIndex.substring(5), var).toString());
+                    ((ObjectNode)toRet).put(var, getLeafValue(jWithIndex.substring(5)).toString());
                     field.next();
                 }
                 return toRet;
@@ -847,7 +848,7 @@ public class StateListenerNew extends Thread{
                             else
                                 jWithIndex+="["+yspez[i]+"]";
                         }
-                        Object value = getLeafValue(jWithIndex.substring(5), var);
+                        Object value = getLeafValue(jWithIndex.substring(5));
                         if(value!=null){
                             log.info("Devo parsare l'oggetto "+value);
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
@@ -1708,9 +1709,9 @@ public class StateListenerNew extends Thread{
     }
     
     //get the value of a specific leaf
-    public Object getLeafValue(String id, String idYang){
+    public Object getLeafValue(String id){
         if(state.containsKey(id))
-            return personalizedSerialization(idYang, state.get(id));
+            return state.get(id);
         try{
             Object actual = root;
             String[] fields = id.split(Pattern.quote("/"));
