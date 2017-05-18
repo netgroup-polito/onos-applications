@@ -780,6 +780,8 @@ public class StateListenerNew extends Thread{
         JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
         res = fillResult(ref, var);
+        if(var.endsWith("]") && res.size()==0)
+            res = null;
         //System.out.println(res);
 //        log.info("The result is "+res);
         JsonNode r = mapper.createObjectNode();
