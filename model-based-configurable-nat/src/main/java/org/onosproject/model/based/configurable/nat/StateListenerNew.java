@@ -1293,7 +1293,7 @@ public class StateListenerNew extends Thread{
 //                    if(var!=null){
                         ((AppComponent)root).withdrawIntercepts();
                         //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
-                        if(!var.equals("root")&&state.containsKey(var.substring(5))){
+                        if(var!=null && !var.equals("root")&&state.containsKey(var.substring(5))){
                             log.info("Config a leaf "+var);
                             boolean setted = setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);
                             ret = (setted)?0:1;
