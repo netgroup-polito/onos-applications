@@ -1316,6 +1316,7 @@ public class StateListenerNew extends Thread{
                     cM.setResourceValue((new Gson()).toJson(msg));
                     ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
                     ((AppComponent)root).requestIntercepts();
+                    return;
                 } catch (NoSuchFieldException ex) {
                     Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IllegalArgumentException ex) {
