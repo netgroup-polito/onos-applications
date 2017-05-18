@@ -513,7 +513,7 @@ public class AppComponent {
                     .setDestinationMACAddress(MacAddress.BROADCAST)
                     .setSourceMACAddress(publicMac)
                     .setEtherType(Ethernet.TYPE_ARP);
-            if (outputApp.externalVlan.toShort() != 0)
+            if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
                 ethRequest.setVlanID(outputApp.externalVlan.toShort());
             ethRequest.setPayload(arpRequest);
 
@@ -554,7 +554,7 @@ public class AppComponent {
                 .matchIPSrc(srcAddress.toIpPrefix())
                 .matchIPProtocol(protocol)
                 .matchIPDst(outputApp.ipAddress.toIpPrefix());
-        if (outputApp.externalVlan.toShort() != 0)
+        if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
             selectorBuilder.matchVlanId(outputApp.externalVlan);
 
         switch (protocol) {
@@ -571,8 +571,8 @@ public class AppComponent {
                 .setEthSrc(publicMac)
                 .setOutput(portNumber);
         // VLAN endpoint
-        if (outputApp.externalVlan.toShort() != 0) {
-            if (inputApp.externalVlan.toShort() != 0)
+        if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0) {
+            if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
                 treatmentBuilder.setVlanId(inputApp.externalVlan);
             else
                 treatmentBuilder.popVlan();
@@ -626,7 +626,7 @@ public class AppComponent {
                 .matchIPSrc(srcAddress.toIpPrefix())
                 .matchIPProtocol(protocol)
                 .matchIPDst(dstAddress.toIpPrefix());
-        if (inputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selectorBuilder.matchVlanId(inputApp.externalVlan);
         switch (protocol) {
             case IPv4.PROTOCOL_TCP:
@@ -642,8 +642,8 @@ public class AppComponent {
                 .setEthDst(dstMac)
                 .setOutput(portNumber);
         // VLAN endpoint
-        if (inputApp.externalVlan.toShort() != 0) {
-            if (outputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0) {
+            if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
                 treatmentBuilder.setVlanId(outputApp.externalVlan);
             else
                 treatmentBuilder.popVlan();
@@ -698,13 +698,13 @@ public class AppComponent {
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
                 .setOutput(outputPort);
         // VLAN endpoint
-        if (deviceId == inputApp.deviceId && inputApp.externalVlan.toShort() != 0) {
-            if (outputApp.externalVlan.toShort() != 0) {
+        if (deviceId == inputApp.deviceId && inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0) {
+            if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0) {
                 treatmentBuilder.pushVlan();
                 treatmentBuilder.setVlanId(inputApp.externalVlan);
             }
-        } else if (deviceId == outputApp.deviceId && outputApp.externalVlan.toShort() != 0) {
-            if (inputApp.externalVlan.toShort() != 0) {
+        } else if (deviceId == outputApp.deviceId && outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0) {
+            if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0) {
                 treatmentBuilder.pushVlan();
                 treatmentBuilder.setVlanId(outputApp.externalVlan);
             }
