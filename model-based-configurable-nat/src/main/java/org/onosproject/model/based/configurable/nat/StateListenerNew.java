@@ -954,12 +954,14 @@ public class StateListenerNew extends Thread{
             return fillVariables(toSet, var);
         } catch (IOException ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+            return 1;
         }catch(NoSuchFieldException ex){
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+            return 1;
         }catch(IllegalAccessException ex){
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+            return 1;
         }
-        return 2;
     }
 
     private boolean configVariables(String var, JsonNode toSet){
@@ -1172,17 +1174,17 @@ public class StateListenerNew extends Thread{
 //                        }
                     }
                     //setVariable(jWithIndex, jWithIndex, null, root);                    
-                        Iterator<JsonNode> iter = ((ArrayNode)toSet).elements();
-                        int res = 0;
-                        while(iter.hasNext()){                     
-                            //insert the list element
-                            JsonNode newValJava = getCorrectItem(mapper.writeValueAsString(iter.next()), varWithoutIndexes+"[]");
-                            if(newValJava!=null){
-                                if(!setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root))
-                                    res = 1;
-                            }
-                        }   
-                        return res;
+                    Iterator<JsonNode> iter = ((ArrayNode)toSet).elements();
+                    int res = 0;
+                    while(iter.hasNext()){                     
+                        //insert the list element
+                        JsonNode newValJava = getCorrectItem(mapper.writeValueAsString(iter.next()), varWithoutIndexes+"[]");
+                        if(newValJava!=null){
+                            if(!setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root))
+                                res = 1;
+                        }
+                    }   
+                    return res;
                 }
                 return 2;
             }
