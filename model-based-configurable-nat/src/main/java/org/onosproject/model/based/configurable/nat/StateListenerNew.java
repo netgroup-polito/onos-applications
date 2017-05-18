@@ -1275,9 +1275,9 @@ public class StateListenerNew extends Thread{
                     return;
                 }
                 try {
+                    Integer ret;
                     if(var!=null){
                         ((AppComponent)root).withdrawIntercepts();
-                        Integer ret;
                         //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
                         if(!var.equals("root")&&state.containsKey(var.substring(5))){
                             log.info("Config a leaf "+var);
@@ -1289,12 +1289,15 @@ public class StateListenerNew extends Thread{
                             ret = setComplexObject(msg.var, (String)msg.obj);
                             log.info("complex object should be configured");
                         }
-                        msg.objret = ret.toString();
-                        log.info("Result: "+ret);
-                        cM.setResourceValue((new Gson()).toJson(msg));
-                        ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
-                        ((AppComponent)root).requestIntercepts();
+                    }else{
+                        log.info("Variable not found");
+                        ret = 2;
                     }
+                    msg.objret = ret.toString();
+                    log.info("Result: "+ret);
+                    cM.setResourceValue((new Gson()).toJson(msg));
+                    ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
+                    ((AppComponent)root).requestIntercepts();
                 } catch (NoSuchFieldException ex) {
                     Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IllegalArgumentException ex) {
@@ -1302,6 +1305,11 @@ public class StateListenerNew extends Thread{
                 } catch (IllegalAccessException ex) {
                     Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                msg.objret = (new Integer(2)).toString();
+                log.info("Result: "+msg.objret);
+                cM.setResourceValue((new Gson()).toJson(msg));
+                ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
+                ((AppComponent)root).requestIntercepts();
                 break;
             case DELETE:
                 //delete
