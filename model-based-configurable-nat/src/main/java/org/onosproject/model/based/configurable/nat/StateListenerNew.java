@@ -2138,7 +2138,7 @@ public class StateListenerNew extends Thread{
         }
         
         public void run(){
-            sl.log.info("**Periodic Task of " + var+ " running**");
+//            sl.log.info("**Periodic Task of " + var+ " running**");
             Map<String, Object> listToSave = new HashMap<>();
             try{
                 if(YangToJava.containsValue(var)){
