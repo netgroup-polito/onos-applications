@@ -1055,16 +1055,51 @@ public class StateListenerNew extends Thread{
         }else{
             if(toSet.isObject()){
                 log.info("Sono nel isObject");
-                Iterator<String> fields = toSet.fieldNames();
-                int res = 0;
-                while(fields.hasNext()){
-                    String fieldName = (String)fields.next();
-                    log.info("Setting "+fieldName);
-                    int resc = fillVariables(toSet.get(fieldName), var+"/"+fieldName);
-                    log.info("resc "+resc);
-                    res = (resc==0)?res:resc;
+                if(var.endsWith("[]")){
+                    String varWithoutIndexes = new String();
+                    String[] varSp = var.split("["+Pattern.quote("[]")+"]");
+                    for(int i=0; i<varSp.length;i++)
+                        if(i%2==0)
+                            varWithoutIndexes+=varSp[i]+"[]";
+                    varWithoutIndexes = varWithoutIndexes.substring(0, varWithoutIndexes.length()-2);
+                    if(YangToJava.containsValue(varWithoutIndexes)){
+                        String key = null;
+                        for(String k:YangToJava.keySet())
+                            if(YangToJava.get(k).equals(varWithoutIndexes))
+                                key = k;
+                        String[] yspez = var.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
+                        String[] jspez = key.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
+                        String jWithIndex = new String();
+                        for(int i=0;i<yspez.length;i++){
+                            if(i%2==0)
+                                jWithIndex+=jspez[i];
+                            else
+                                jWithIndex+="["+yspez[i]+"]";
+                        }
+                        jWithIndex = jWithIndex.substring(5);
+                    
+                        JsonNode newValJava = getCorrectItem(mapper.writeValueAsString(toSet), varWithoutIndexes+"[]");
+                        if(newValJava!=null){
+                            if(setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root))
+                                return 0;
+                            else
+                                return 1;
+                        }
+                        return 1;
+                    }else
+                        return 2;
+                }else{
+                    Iterator<String> fields = toSet.fieldNames();
+                    int res = 0;
+                    while(fields.hasNext()){
+                        String fieldName = (String)fields.next();
+                        log.info("Setting "+fieldName);
+                        int resc = fillVariables(toSet.get(fieldName), var+"/"+fieldName);
+                        log.info("resc "+resc);
+                        res = (resc==0)?res:resc;
+                    }
+                    return res;
                 }
-                return res;
             }else{
                 log.info("Sono nell'else - no object");
                 //capire qual è la lista corrispondente
@@ -1135,9 +1170,7 @@ public class StateListenerNew extends Thread{
 //                            }
 //                        }
                     }
-                    //setVariable(jWithIndex, jWithIndex, null, root);
-                    List<Object> newList = new ArrayList<>();
-                    
+                    //setVariable(jWithIndex, jWithIndex, null, root);                    
                         Iterator<JsonNode> iter = ((ArrayNode)toSet).elements();
                         int res = 0;
                         while(iter.hasNext()){                     
