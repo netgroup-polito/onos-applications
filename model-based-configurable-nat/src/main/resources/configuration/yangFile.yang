@@ -41,9 +41,11 @@ module nat{
         leaf priority{
             type int32;
             confnat:advertise onchange;
+            mandatory false;
         }
         leaf externalVlan{
             type int32;
+            mandatory false;
         }
         leaf ipAddress{
             type string;
@@ -67,9 +69,11 @@ module nat{
         leaf priority{
             confnat:advertise onchange;
             type int32;
+            mandatory false;
         }
         leaf externalVlan{
             type int32;
+            mandatory false;
         }
         leaf ipAddress{
             type string;

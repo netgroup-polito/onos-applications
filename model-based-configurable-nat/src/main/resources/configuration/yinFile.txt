@@ -85,23 +85,26 @@
           "type": {
             "@name": "string"
           },
-          "@name": "devId",
           "confnat:advertise": {
             "@advertise": "onchange"
-          }
+          },
+          "@name": "devId"
         },
         {
           "type": {
             "@name": "uint16"
           },
-          "@name": "interface",
           "confnat:advertise": {
             "@advertise": "onchange"
-          }
+          },
+          "@name": "interface"
         },
         {
           "type": {
             "@name": "int32"
+          },
+          "mandatory": {
+            "@value": "false"
           },
           "confnat:advertise": {
             "@advertise": "onchange"
@@ -111,6 +114,9 @@
         {
           "type": {
             "@name": "int32"
+          },
+          "mandatory": {
+            "@value": "false"
           },
           "@name": "externalVlan"
         },
@@ -141,23 +147,26 @@
           "type": {
             "@name": "string"
           },
-          "@name": "devId",
           "confnat:advertise": {
             "@advertise": "onchange"
-          }
+          },
+          "@name": "devId"
         },
         {
           "type": {
             "@name": "uint16"
           },
-          "@name": "interface",
           "confnat:advertise": {
             "@advertise": "onchange"
-          }
+          },
+          "@name": "interface"
         },
         {
           "type": {
             "@name": "int32"
+          },
+          "mandatory": {
+            "@value": "false"
           },
           "confnat:advertise": {
             "@advertise": "onchange"
@@ -167,6 +176,9 @@
         {
           "type": {
             "@name": "int32"
+          },
+          "mandatory": {
+            "@value": "false"
           },
           "@name": "externalVlan"
         },

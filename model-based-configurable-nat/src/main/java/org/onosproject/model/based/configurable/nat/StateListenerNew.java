@@ -1343,7 +1343,8 @@ public class StateListenerNew extends Thread{
                         log.info("Can't delete the variable");
                         ret = 1;
                     }else{
-                        if(!YangMandatory.containsKey(msg.var) || YangMandatory.get(msg.var)){
+                        String YangGeneralVar = noIndexes(msg.var);
+                        if(YangMandatory.containsKey(YangGeneralVar) && YangMandatory.get(YangGeneralVar)){
                             log.info("The variable is mandatory");
                             ret = 1;
                         }else
