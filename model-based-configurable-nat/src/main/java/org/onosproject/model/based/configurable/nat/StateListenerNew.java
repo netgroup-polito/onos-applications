@@ -84,6 +84,7 @@ public class StateListenerNew extends Thread{
     //private List<String> nullValuesToListen;
     private HashMap<String, String> YangToJava;
     private HashMap<String, String> YangType;
+    private HashMap<String, Boolean> YangMandatory;
     //private List<NotifyMsg> whatHappened;
     //private ReadLock readLock;
     //private WriteLock writeLock;
@@ -158,6 +159,7 @@ public class StateListenerNew extends Thread{
         //nullValuesToListen = new ArrayList<>();
         YangToJava = new HashMap<>();
         YangType = new HashMap<>();
+        YangMandatory = new HashMap<>();
         //whatHappened = new ArrayList<>();
         //ReentrantReadWriteLock wHLock = new ReentrantReadWriteLock();
         //readLock = wHLock.readLock();
@@ -1339,9 +1341,14 @@ public class StateListenerNew extends Thread{
                 try{
                     if(var==null || var.equals("root")){
                         log.info("Can't delete the variable");
-                        ret = 2;
-                    }else
-                        ret = deleteVariable(root, var.substring(5), var.substring(5));
+                        ret = 1;
+                    }else{
+                        if(!YangMandatory.containsKey(msg.var) || YangMandatory.get(msg.var)){
+                            log.info("The variable is mandatory");
+                            ret = 1;
+                        }else
+                            ret = deleteVariable(root, var.substring(5), var.substring(5));
+                    }
                 } catch (NoSuchFieldException ex) {
                     Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
                     ret = 1;
@@ -1931,6 +1938,11 @@ public class StateListenerNew extends Thread{
                             String type = child.get("type").get("@name").asText();
                             YangType.put(prev+"/"+child.get("@name").textValue(),type);
                         }
+                        if(child.get("mandatory")!=null){
+                            Boolean mand = child.get("mandatory").get("@value").asBoolean();
+                            YangMandatory.put(prev+"/"+child.get("@name").textValue(), mand);
+                        }else
+                            YangMandatory.put(prev+"/"+child.get("@name").textValue(), true);
                         //check advertise attribute - prefix:advertise
                         Iterator<String> searchAdv = child.fieldNames();
                         String pref=null;
