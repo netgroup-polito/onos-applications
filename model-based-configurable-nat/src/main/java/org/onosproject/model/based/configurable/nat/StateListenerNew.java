@@ -60,6 +60,8 @@ import org.onlab.packet.Ip4Address;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.PortNumber;
 import org.slf4j.LoggerFactory;
+import java.util.Properties;
+import java.io.FileInputStream;
 
 
 /**
@@ -144,7 +146,7 @@ public class StateListenerNew extends Thread{
         return value.toString();
     }
     
-    /***********-----
+    /***********END OF PERSONALIZED PART
      ******************************/
     
     public StateListenerNew(Object root){
@@ -172,7 +174,11 @@ public class StateListenerNew extends Thread{
         //PARSE YANG FILE
         ClassLoader loader = AppComponent.class.getClassLoader();
         try{
-            
+            Properties prop = new Properties();
+            InputStream propFile = new FileInputStream("configuration/appProperties.properties");
+            log.info("appId "+prop.getProperty("appId"));
+            log.info("baseUri "+prop.getProperty("baseUri"));
+            log.info("eventsUri "+prop.getProperty("eventsUri"));
             
             InputStream yangFile = loader.getResourceAsStream(YANGFILE);
             String yangString = new String();
