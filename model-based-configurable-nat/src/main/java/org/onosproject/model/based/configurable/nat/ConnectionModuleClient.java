@@ -24,16 +24,19 @@ import org.glassfish.jersey.media.sse.SseFeature;
  * @author lara
  */
 public class ConnectionModuleClient {
-    public static final String BASE_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule";
+    public static String BASE_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule";
 //    public static final String BASE_URI = "http://192.168.213.131:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule";
-    public static final String EVENTS_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events";
+    public static String EVENTS_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events";
     public static Client client;
     public static WebTarget target;
     public static EventSource eventSource;
     public static StateListenerNew l;
     public String id;
 
-    public ConnectionModuleClient(StateListenerNew l, String id){
+    public ConnectionModuleClient(StateListenerNew l, String id, String baseUri, String eventsUri){
+        BASE_URI=baseUri;
+        EVENTS_URI=eventsUri;
+        
         client = ClientBuilder.newBuilder()
                 .register(SseFeature.class)
                 .build();

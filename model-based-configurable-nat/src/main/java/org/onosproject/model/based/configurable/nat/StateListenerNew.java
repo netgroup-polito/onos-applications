@@ -72,7 +72,7 @@ public class StateListenerNew extends Thread{
     private static final String YINFILE = "configuration/yinFile.txt";
     private static final String YANGFILE = "configuration/yangFile.yang";
     private static final String MAPPINGFILE = "configuration/mappingFile.txt";  
-    private final String AppId = "natLara";
+    private String AppId;
     //protected List<String> state;
     protected HashMap<String, Object> state;
     protected HashMap<String, Object> stateThreshold;
@@ -170,16 +170,20 @@ public class StateListenerNew extends Thread{
         config = new HashMap<>();
         mapper = new ObjectMapper();
         timer = new Timer();
-        cM = new ConnectionModuleClient(this, AppId);
         //PARSE YANG FILE
         ClassLoader loader = AppComponent.class.getClassLoader();
         try{
             Properties prop = new Properties();
             InputStream propFile = loader.getResourceAsStream("configuration/appProperties.properties");
-            prop.load(propFile);
-            log.info("appId "+prop.getProperty("appId"));
-            log.info("baseUri "+prop.getProperty("baseUri"));
-            log.info("eventsUri "+prop.getProperty("eventsUri"));
+            if (propFile!=null)prop.load(propFile);
+            AppId = prop.getProperty("appId", "StateListener");
+            String baseUri = prop.getProperty("baseUri", "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule");
+            String eventsUri = prop.getProperty("eventsUri", "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events");
+            log.info("appId "+AppId);
+            log.info("baseUri "+baseUri);
+            log.info("eventsUri "+eventsUri);
+            
+            cM = new ConnectionModuleClient(this, AppId, baseUri, eventsUri);
             
             InputStream yangFile = loader.getResourceAsStream(YANGFILE);
             String yangString = new String();
