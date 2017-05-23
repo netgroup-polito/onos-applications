@@ -175,7 +175,7 @@ public class StateListenerNew extends Thread{
         ClassLoader loader = AppComponent.class.getClassLoader();
         try{
             Properties prop = new Properties();
-            InputStream propFile = new FileInputStream("configuration/appProperties.properties");
+            InputStream propFile = loader.getResourceAsStream("configuration/appProperties.properties");
             log.info("appId "+prop.getProperty("appId"));
             log.info("baseUri "+prop.getProperty("baseUri"));
             log.info("eventsUri "+prop.getProperty("eventsUri"));
