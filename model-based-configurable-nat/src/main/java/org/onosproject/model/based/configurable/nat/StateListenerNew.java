@@ -769,6 +769,7 @@ public class StateListenerNew extends Thread{
                     continue;
                 }else{
                     //System.out.println(var + " not found");
+                    log.info("var not found "+field);
                     return null;
                 }
             }else{
@@ -1294,7 +1295,7 @@ public class StateListenerNew extends Thread{
 //                log.info("IT's not a leaf");
                 //String field = (msg.var.contains("/"))?msg.var.substring(msg.var.lastIndexOf("/")+1):msg.var;
                 result = getComplexObj(msg.var);
-                
+                log.info("result "+result);
                 msg.objret = mapper.writeValueAsString(result);
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
