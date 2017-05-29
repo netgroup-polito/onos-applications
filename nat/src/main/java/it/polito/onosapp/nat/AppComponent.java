@@ -384,6 +384,23 @@ public class AppComponent {
                     log.debug(" - - Dst Port: " + tcpHeader.getDestinationPort());
 
 
+                } else if (ipHeader.getProtocol() == IPv4.PROTOCOL_UDP) {
+
+                    log.debug(" - - UDP packet");
+                    UDP udpHeader = (UDP) ipHeader.getPayload();
+                    if (udpHeader == null)
+                        return;
+                    srcPortNumber = udpHeader.getSourcePort();
+                    publicPort = getAvailableOutputPort();
+
+                    natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
+
+                    log.debug(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
+                    log.debug(" - - Src IP: " + srcAddress.toString());
+                    log.debug(" - - Dst IP: " + dstAddress.toString());
+                    log.debug(" - - Src Port: " + srcPortNumber);
+                    log.debug(" - - Dst Port: " + udpHeader.getDestinationPort());
+
                 } else if (ipHeader.getProtocol() == IPv4.PROTOCOL_ICMP) {
 
                     log.debug(" - - ICMP packet");
@@ -400,28 +417,36 @@ public class AppComponent {
 
                 ipHeader.setSourceAddress(publicAddress.toInt());
 
-                Set<Path> paths = topologyService.getPaths(topologyService.currentTopology(), inputDeviceId, outputDeviceId);
-                Path path = pickForwardPathIfPossible(paths, packetContext.inPacket().receivedFrom().port());
+                if(inputDeviceId.equals(outputDeviceId)) {
+                    // nat interfaces are on the same device
+                    installIncomingNatRule(packetContext, srcAddress.getIp4Address(), dstAddress.getIp4Address(), ipHeader.getProtocol(), srcPortNumber, publicPort, dstMac, outputInterface);
+                    installOutcomingNatRule(dstAddress.getIp4Address(), srcAddress.getIp4Address(), ipHeader.getProtocol(), publicPort, srcPortNumber, ethPkt.getSourceMAC(), inputInterface);
+                } else {
+                    // nat interfaces are on different devices, we need to find a path
+                    Set<Path> paths = topologyService.getPaths(topologyService.currentTopology(), inputDeviceId, outputDeviceId);
+                    Path path = pickForwardPathIfPossible(paths, packetContext.inPacket().receivedFrom().port());
 
-                // create flows for each link
-                for (Link link : path.links()) {
-                    if (link.src().deviceId().equals(inputDeviceId)) {
-                        log.debug("LINK: input device");
-                        installIncomingNatRule(packetContext, srcAddress.getIp4Address(), dstAddress.getIp4Address(), ipHeader.getProtocol(), srcPortNumber, publicPort, dstMac, link.src().port());
-                        installForwardingRule(link.src().deviceId(), inputInterface, dstAddress.getIp4Address(), srcAddress.getIp4Address());
-                    } else {
-                        log.debug("LINK: not input device");
-                        installForwardingRule(link.src().deviceId(), link.src().port(), publicAddress.getIp4Address(), dstAddress.getIp4Address());
-                    }
-                    if (link.dst().deviceId().equals(outputDeviceId)) {
-                        log.debug("LINK: output device");
-                        installOutcomingNatRule(dstAddress.getIp4Address(), srcAddress.getIp4Address(), ipHeader.getProtocol(), publicPort, srcPortNumber, ethPkt.getSourceMAC(), link.dst().port());
-                        installForwardingRule(link.dst().deviceId(), outputInterface, publicAddress.getIp4Address(), dstAddress.getIp4Address());
-                    } else {
-                        log.debug("LINK: not output device");
-                        installForwardingRule(link.dst().deviceId(), link.dst().port(), dstAddress.getIp4Address(), srcAddress.getIp4Address());
+                    // create flows for each link
+                    for (Link link : path.links()) {
+                        if (link.src().deviceId().equals(inputDeviceId)) {
+                            log.debug("LINK: input device");
+                            installIncomingNatRule(packetContext, srcAddress.getIp4Address(), dstAddress.getIp4Address(), ipHeader.getProtocol(), srcPortNumber, publicPort, dstMac, link.src().port());
+                            installForwardingRule(link.src().deviceId(), inputInterface, dstAddress.getIp4Address(), srcAddress.getIp4Address());
+                        } else {
+                            log.debug("LINK: not input device");
+                            installForwardingRule(link.src().deviceId(), link.src().port(), publicAddress.getIp4Address(), dstAddress.getIp4Address());
+                        }
+                        if (link.dst().deviceId().equals(outputDeviceId)) {
+                            log.debug("LINK: output device");
+                            installOutcomingNatRule(dstAddress.getIp4Address(), srcAddress.getIp4Address(), ipHeader.getProtocol(), publicPort, srcPortNumber, ethPkt.getSourceMAC(), link.dst().port());
+                            installForwardingRule(link.dst().deviceId(), outputInterface, publicAddress.getIp4Address(), dstAddress.getIp4Address());
+                        } else {
+                            log.debug("LINK: not output device");
+                            installForwardingRule(link.dst().deviceId(), link.dst().port(), dstAddress.getIp4Address(), srcAddress.getIp4Address());
+                        }
                     }
                 }
+
                 try { Thread.sleep(100); } catch (InterruptedException ignored) { }
 
                 log.info("Forwarding to Table");
@@ -524,7 +549,10 @@ public class AppComponent {
 
         switch (protocol) {
             case IPv4.PROTOCOL_TCP:
-                // selectorBuilder.matchTcpDst(TpPort.tpPort(dstPort));
+                selectorBuilder.matchTcpDst(TpPort.tpPort(dstPort));
+                break;
+            case IPv4.PROTOCOL_UDP:
+                selectorBuilder.matchUdpDst(TpPort.tpPort(dstPort));
                 break;
             case IPv4.PROTOCOL_ICMP:
                 // selectorBuilder.matchIcmpCode((byte) dstPort);
@@ -533,8 +561,7 @@ public class AppComponent {
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
                 .setIpDst(dstAddress.getIp4Address())
                 .setEthDst(dstMac)
-                .setEthSrc(publicMac)
-                .setOutput(portNumber);
+                .setEthSrc(publicMac);
         // VLAN endpoint
         if (externalOutputVlan.toShort() != 0) {
             if (externalInputVlan.toShort() != 0)
@@ -542,10 +569,13 @@ public class AppComponent {
             else
                 treatmentBuilder.popVlan();
         }
-
-        // TODO TCP port change does not work
-        //if (protocol == IPv4.PROTOCOL_TCP)
-        //    treatmentBuilder.setTcpDst(TpPort.tpPort(newDstPort));
+        // change the destination transport port
+        if (protocol == IPv4.PROTOCOL_TCP)
+            treatmentBuilder.setTcpDst(TpPort.tpPort(newDstPort));
+        else if (protocol == IPv4.PROTOCOL_UDP)
+            treatmentBuilder.setUdpDst(TpPort.tpPort(newDstPort));
+        // set output interface at the end
+        treatmentBuilder.setOutput(portNumber);
 
         ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
                 .withSelector(selectorBuilder.build())
@@ -564,8 +594,8 @@ public class AppComponent {
                 "Proto " + protocol + " | " +
                 "IpDst " + publicAddress.getIp4Address().toString());
         String tcpLogString = "";
-        if (protocol == IPv4.PROTOCOL_TCP)
-            tcpLogString = "setTcpDst " + newDstPort + " | ";
+        if (protocol == IPv4.PROTOCOL_TCP || protocol == IPv4.PROTOCOL_UDP)
+            tcpLogString = "setTpDst " + newDstPort + " | ";
         log.debug("Action: " +
                 "setIpDst " + dstAddress.getIp4Address().toString() + " | " +
                 "setEthDst " + dstMac.toString() + " | " +
@@ -595,7 +625,10 @@ public class AppComponent {
             selectorBuilder.matchVlanId(externalInputVlan);
         switch (protocol) {
             case IPv4.PROTOCOL_TCP:
-                //selectorBuilder.matchTcpSrc(TpPort.tpPort(srcPort));
+                selectorBuilder.matchTcpSrc(TpPort.tpPort(srcPort));
+                break;
+            case IPv4.PROTOCOL_UDP:
+                selectorBuilder.matchUdpSrc(TpPort.tpPort(srcPort));
                 break;
             case IPv4.PROTOCOL_ICMP:
                 //selectorBuilder.matchIcmpCode((byte) srcPort);
@@ -604,8 +637,7 @@ public class AppComponent {
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
                 .setIpSrc(publicAddress)
                 .setEthSrc(publicMac)
-                .setEthDst(dstMac)
-                .setOutput(portNumber);
+                .setEthDst(dstMac);
         // VLAN endpoint
         if (externalInputVlan.toShort() != 0) {
             if (externalOutputVlan.toShort() != 0)
@@ -613,10 +645,13 @@ public class AppComponent {
             else
                 treatmentBuilder.popVlan();
         }
-
-        // TODO TCP port change does not work
-        //if (protocol == IPv4.PROTOCOL_TCP)
-        //    treatmentBuilder.setTcpSrc(TpPort.tpPort(newSrcPort));
+        // change the source transport port
+        if (protocol == IPv4.PROTOCOL_TCP)
+            treatmentBuilder.setTcpSrc(TpPort.tpPort(newSrcPort));
+        else if (protocol == IPv4.PROTOCOL_UDP)
+            treatmentBuilder.setUdpSrc(TpPort.tpPort(newSrcPort));
+        // set output interface at the end
+        treatmentBuilder.setOutput(portNumber);
 
         ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
                 .withSelector(selectorBuilder.build())
@@ -635,8 +670,8 @@ public class AppComponent {
                 "Proto " + protocol + " | " +
                 "IpDst " + dstAddress.toString());
         String tcpLogString = "";
-        if (protocol == IPv4.PROTOCOL_TCP)
-            tcpLogString = "setTcpSrc " + newSrcPort + " | ";
+        if (protocol == IPv4.PROTOCOL_TCP || protocol == IPv4.PROTOCOL_UDP)
+            tcpLogString = "setTpSrc " + newSrcPort + " | ";
         log.debug("Action: " +
                 "setIpSrc " + publicAddress.toString() + " | " +
                 "setEthDst " + dstMac.toString() + " | " +
