@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017-present Open Networking Laboratory
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onosproject.ovsdbrest;
 
 import com.google.common.collect.Maps;
@@ -47,8 +63,11 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.Optional;
 import java.util.NoSuchElementException;
@@ -99,8 +118,12 @@ public class OvsdbBridgeManager implements OvsdbBridgeService {
 
     private Set<OvsdbNode> ovsdbNodes;
 
-    // {bridgeName: datapathId} structure to manage the creation/deletion of bridges
-    private Map<String, DeviceId> bridgeIds = Maps.newConcurrentMap();
+    // {bridgeName: datapathId} structure to manage the creation/deletion of bridges for a specific ovsdb node
+    private Map<String, DeviceId> bridgeIds;
+
+    // {Ovsdb node IP address: <bridge: datapathId>} structure to manage the creation/deletion of bridges
+    // within each ovsdb node, each one identified by its IP address
+    private Map<IpAddress, Map<String, DeviceId>> ovsdbTopology = Maps.newConcurrentMap();
 
     private Map<OvsdbNode, Set<DeviceId>> ovsdbNodeDevIdsSetMap = Maps.newConcurrentMap();
 
@@ -152,7 +175,7 @@ public class OvsdbBridgeManager implements OvsdbBridgeService {
         DeviceId dpid = getNextUniqueDatapathId(datapathId);
 
 
-        if (isBridgeCreated(bridgeName)) {
+        if (isBridgeCreated(ovsdbNode, bridgeName)) {
             log.warn("A bridge with this name already exists, aborting.");
             throw new BridgeAlreadyExistsException();
         }
@@ -176,7 +199,26 @@ public class OvsdbBridgeManager implements OvsdbBridgeService {
                         .controllers(controllers)
                         .build();
                 bridgeConfig.addBridge(bridgeDescription);
-                bridgeIds.put(bridgeName, bridgeDescription.deviceId().get());
+
+                if (ovsdbTopology.get(ovsdbNode.ovsdbIp()) == null) {
+
+
+                    bridgeIds = new HashMap<String, DeviceId>();
+
+                    bridgeIds.put(bridgeName, bridgeDescription.deviceId().get());
+
+                    ovsdbTopology.put(ovsdbNode.ovsdbIp(), bridgeIds);
+
+                } else {
+
+                    bridgeIds = ovsdbTopology.get(ovsdbNode.ovsdbIp());
+
+                    bridgeIds.put(bridgeName, bridgeDescription.deviceId().get());
+
+                    ovsdbTopology.put(ovsdbNode.ovsdbIp(), bridgeIds);
+
+                }
+
                 log.info("Correctly created bridge {} at {}", bridgeName, ovsdbAddress);
             } else {
                 log.warn("The bridging behaviour is not supported in device {}", device.id());
@@ -205,6 +247,8 @@ public class OvsdbBridgeManager implements OvsdbBridgeService {
             throw new OvsdbDeviceException(nsee.getMessage());
         }
 
+        bridgeIds = ovsdbTopology.get(ovsdbNode.ovsdbIp());
+
         DeviceId deviceId = bridgeIds.get(bridgeName);
         if (deviceId == null) {
             log.warn("No bridge with this name, aborting.");
@@ -230,6 +274,9 @@ public class OvsdbBridgeManager implements OvsdbBridgeService {
                 // remove bridge from ovsdb
                 BridgeConfig bridgeConfig = device.as(BridgeConfig.class);
                 bridgeConfig.deleteBridge(BridgeName.bridgeName(bridgeName));
+
+                // Remove a bridge from a specific ovsdb node
+                bridgeIds = ovsdbTopology.get(ovsdbNode.ovsdbIp());
                 bridgeIds.remove(bridgeName);
 
                 // remove bridge from onos devices
@@ -247,6 +294,60 @@ public class OvsdbBridgeManager implements OvsdbBridgeService {
             throw new OvsdbDeviceException("Error with ovsdb device: item not found");
         }
     }
+
+    @Override
+    public String getBridgeID(IpAddress ovsdbAddress, String bridgeName) throws OvsdbDeviceException {
+
+        OvsdbNode ovsdbNode;
+        BridgeDescription description;
+
+        log.info("Getting bridge ID");
+
+        try {
+            //  gets the target ovsdb node
+            ovsdbNode = ovsdbNodes.stream().filter(node -> node.ovsdbIp().equals(ovsdbAddress)).findFirst().get();
+        } catch (NoSuchElementException nsee) {
+            log.info(nsee.getMessage());
+            throw new OvsdbDeviceException(nsee.getMessage());
+        }
+
+        Device device = deviceService.getDevice(ovsdbNode.ovsdbId());
+        if (device == null) {
+            log.warn("Ovsdb device not found, aborting.");
+            throw new OvsdbDeviceException("Ovsdb device not found");
+        }
+
+        BridgeConfig bridgeConfig = device.as(BridgeConfig.class);
+
+        Collection<BridgeDescription> collection = bridgeConfig.getBridges();
+
+        for (Iterator iterator = collection.iterator(); iterator.hasNext();) {
+
+            description = (BridgeDescription) iterator.next();
+
+            if ((description.name()).equals(bridgeName)) {
+
+                try {
+
+                    device = deviceService.getDevice(description.deviceId().get());
+
+                } catch (NoSuchElementException exception) {
+
+                    log.warn(exception.getMessage());
+                    throw new OvsdbDeviceException(exception.getMessage());
+                }
+
+                log.info("Bridge " + description.name() + " found with ID: " + device.id().toString());
+
+                return device.id().toString();
+
+            }
+        }
+
+        log.info("Bridge not found!");
+
+        return null;
+     }
 
     @Override
     public void addPort(IpAddress ovsdbAddress, String bridgeName, String portName)
@@ -495,11 +596,16 @@ public class OvsdbBridgeManager implements OvsdbBridgeService {
     }
 
     /**
-     * Checks if the bridge exists and is available.
+     * Checks if the bridge exists and is available within a specific ovsdb node identified by its IP address.
      *
      * @return true if the bridge is available, false otherwise
      */
-    private boolean isBridgeCreated(String bridgeName) {
+    private boolean isBridgeCreated(OvsdbNode ovsdbNode, String bridgeName) {
+
+        bridgeIds = ovsdbTopology.get(ovsdbNode.ovsdbIp());
+        if (bridgeIds == null) {
+            return false;
+        }
         DeviceId deviceId = bridgeIds.get(bridgeName);
         return (deviceId != null
                 && deviceService.getDevice(deviceId) != null

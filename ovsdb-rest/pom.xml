@@ -6,9 +6,9 @@
 
     <parent>
         <groupId>org.onosproject</groupId>
-        <artifactId>onos-app-samples</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <artifactId>onos-dependencies</artifactId>
+        <version>1.9.0-rc2</version>
+        <relativePath/><!-- parent is remote -->
     </parent>
 
     <artifactId>ovsdb-rest</artifactId>
@@ -24,9 +24,10 @@
         <onos.app.url>http://onosproject.org</onos.app.url>
         <onos.app.title>REST apis for bridge and GRE port setup in ovs</onos.app.title>
         <onos.app.requires>
-        org.onosproject.ovsdb-base,
-        org.onosproject.drivers.ovsdb
+            org.onosproject.ovsdb-base,
+            org.onosproject.drivers.ovsdb
         </onos.app.requires>
+        <onos.version>1.9.0-rc2</onos.version>
     </properties>
 
     <dependencies>
@@ -49,6 +50,7 @@
         <dependency>
             <groupId>org.onosproject</groupId>
             <artifactId>onos-core-common</artifactId>
+            <version>${onos.version}</version>
         </dependency>
 
         <dependency>
@@ -122,6 +124,14 @@
                     </instructions>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-scr-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.onosproject</groupId>
+                <artifactId>onos-maven-plugin</artifactId>
+	    </plugin>
         </plugins>
     </build>
     <repositories>
