@@ -594,10 +594,12 @@ public class StateListenerNew extends Thread{
                             
                 }
             }
+        log.info("---**the value transformed is root/"+j);
         String toVerify = "root/"+j;
         for(String s:YangToJava.keySet())
             if(s.equals(toVerify))
                     y=YangToJava.get("root/"+j);
+        log.info("y is "+y);
         if(y!=null){
             String[] yparse = y.split(Pattern.quote("[]"));
             String toPub=new String();
@@ -607,6 +609,7 @@ public class StateListenerNew extends Thread{
                 else
                     toPub+="["+partsWithoutIndex[i]+"]";
             }
+            log.info("And then toPub "+toPub);
             return toPub;
         }
         return y;
