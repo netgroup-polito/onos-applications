@@ -1552,14 +1552,17 @@ public class StateListenerNew extends Thread{
                             JsonNode kNode = node.get("{key}");
                             node.remove("{key}");
                             //The key is a value node: fields length == 1
-                            Object k;
+                            Object k = null;
                             if(kNode.isValueNode())
                                 k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             else{
-                                log.info("Setting complex key "+kNode);
                                 k = itemType.newInstance();
-                                JsonNode correctFields = getCorrectItem(mapper.writeValueAsString(kNode), "root/"+complete);
-                                log.info("And now correctFields is "+correctFields);
+                                log.info("Setting complex key "+kNode);
+                                Iterator<String> kfields = kNode.fieldNames();
+                                while(kfields.hasNext()){
+                                    String fName = kfields.next();
+                                    setVariable(fName, complete+"/"+fName, mapper.writeValueAsString(kNode.get(fName)), k);
+                                }
                             }
                             Object value = valueType.newInstance();
                             Iterator<String> fields = node.fieldNames();
@@ -1570,7 +1573,16 @@ public class StateListenerNew extends Thread{
                                 if(Number.class.isAssignableFrom(fV.getType()))
                                     fV.set(value, v.asDouble());
                                 else
-                                    fV.set(value, v.asText());
+                                    try{
+                                        fV.set(value, (new Gson()).fromJson(mapper.writeValueAsString(v), fV.getType()));
+                                    }catch(Exception e){
+                                        try{
+                                            Object des = personalizedDeserialization(fV.getType(), mapper.writeValueAsString(v));
+                                            fV.set(value, des);
+                                        }catch(Exception ex){
+                                            log.info("Can't deserialize correctly!");
+                                        }
+                                    }
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
                             m.put(k, value);
