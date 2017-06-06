@@ -1437,8 +1437,10 @@ public class StateListenerNew extends Thread{
     
     //SETTING A VALUE TO A VARIABLE
     public boolean setVariable(String var, String complete, String newVal, Object actual) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
+        log.info("var -> "+var);
         String[] fs = var.split(Pattern.quote("/"));
         if(fs.length==1){
+            log.info("**we are in a leaf**");
             //LEAF!
             if(var.contains("[")){
                 //ELEMENT OF A LIST OR A MAP
@@ -1503,9 +1505,11 @@ public class StateListenerNew extends Thread{
                         }
                     }
                 }else if(Map.class.isAssignableFrom(f.getType())){
+                    log.info("**I'm in the map option");
                     if(f.get(actual)==null){
                         //THERE IS NOT THE MAP - INITIALIZE
                         try {
+                            log.info("The map is null");
                             Map<Object, Object> m = (f.getType().isInterface())?new HashMap<>():(Map)f.getType().newInstance();
                             Class<?> valueType = (Class<?>)pt.getActualTypeArguments()[1];
                             ObjectNode node = (ObjectNode)mapper.readTree(newVal);
@@ -1546,6 +1550,7 @@ public class StateListenerNew extends Thread{
                             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }else if(index.matches("")){
+                        log.info("The index is null but the map not!");
                         //INSERT A NEW ELEMENT IN THE MAP
                         try{
                             Class<?> valueType = (Class<?>)pt.getActualTypeArguments()[1];
