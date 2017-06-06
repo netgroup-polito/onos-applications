@@ -357,6 +357,7 @@ public class StateListenerNew extends Thread{
                     }else if(Map.class.isAssignableFrom(actual.getClass())){
                         log.info("Is a Map--!!");
                         log.info("subToListen is "+subToListen);
+                        log.info("and actual is: "+actual);
                         for(Object key:((Map)actual).keySet()){
                             String indexValue = key.toString();
                             String complToPass = complete.substring(0, complete.length()-subToListen.length())+lName+"["+indexValue+"]"+subToListen.substring(inter.length());
