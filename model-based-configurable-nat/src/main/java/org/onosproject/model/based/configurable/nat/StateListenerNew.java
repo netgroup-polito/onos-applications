@@ -575,11 +575,11 @@ public class StateListenerNew extends Thread{
         String[] partsWithoutIndex = var.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
         String j=partsWithoutIndex[0];
         String onlyLastOne = partsWithoutIndex[0];
-        log.info("lunghezza array1 "+partsWithoutIndex.length);
+    //    log.info("lunghezza array1 "+partsWithoutIndex.length);
         String y=null;
         if(partsWithoutIndex.length>1)
             for(int i=1;i<partsWithoutIndex.length;i++){
-                log.info("parts "+i+" value "+partsWithoutIndex[i]);
+    //            log.info("parts "+i+" value "+partsWithoutIndex[i]);
                 if(i%2==0){
                     //nome lista
                     j+=partsWithoutIndex[i];
@@ -597,7 +597,7 @@ public class StateListenerNew extends Thread{
                 }
                 log.info("j is growing "+j);
             }
-        log.info("---**the value transformed is root/"+j);
+    //    log.info("---**the value transformed is root/"+j);
         String toVerify = "root/"+j;
         for(String s:YangToJava.keySet())
             if(s.equals(toVerify))
@@ -612,7 +612,7 @@ public class StateListenerNew extends Thread{
                 else
                     toPub+="["+partsWithoutIndex[i]+"]";
             }
-            log.info("And then toPub "+toPub);
+    //        log.info("And then toPub "+toPub);
             return toPub;
         }
         return y;
@@ -1556,6 +1556,9 @@ public class StateListenerNew extends Thread{
                             Class<?> valueType = (Class<?>)pt.getActualTypeArguments()[1];
                             ObjectNode node = (ObjectNode)mapper.readTree(newVal);
                             log.info("The new value to set is: "+newVal);
+                            log.info("And the name "+complete);
+                            JsonNode valueJava = getCorrectItem(newVal, complete);
+                            log.info("valueJava is "+valueJava);
                             JsonNode kNode = node.get("{key}");
                             node.remove("{key}");
                             Object k;
@@ -2147,7 +2150,7 @@ public class StateListenerNew extends Thread{
         }
         
         public void run(){
-            sl.log.info("**Periodic Task of " + var+ " running**");
+    //        sl.log.info("**Periodic Task of " + var+ " running**");
             Map<String, Object> listToSave = new HashMap<>();
             try{
                 if(YangToJava.containsValue(var)){
@@ -2157,7 +2160,7 @@ public class StateListenerNew extends Thread{
                             j = k;
                             break;
                         }
-                    log.info("found "+j.substring(5));
+    //                log.info("found "+j.substring(5));
                     sl.saveValues(sl.root, j.substring(5), j.substring(5), listToSave);
                 }
             } catch (NoSuchFieldException ex) {
@@ -2172,7 +2175,7 @@ public class StateListenerNew extends Thread{
                 e.act = action.PERIODIC;
                 e.obj = listToSave.get(s).toString();
                 e.var = sl.trasformInPrint(s);
-                log.info("Trasformed in print "+s+" -> "+e.var);
+    //            log.info("Trasformed in print "+s+" -> "+e.var);
                 sl.cM.somethingChanged((new Gson()).toJson(e));
             }
         }
