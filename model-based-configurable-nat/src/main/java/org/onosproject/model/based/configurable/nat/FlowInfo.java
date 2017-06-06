@@ -12,9 +12,9 @@ import org.onlab.packet.IpAddress;
  * @author lara
  */
 public class FlowInfo {
-    IpAddress nattedIp;
-    Short nattedPort;
-    String connectionState;
+    public IpAddress nattedIp;
+    public Short nattedPort;
+    public String connectionState;
 
     public IpAddress getNattedIp() {
         return nattedIp;

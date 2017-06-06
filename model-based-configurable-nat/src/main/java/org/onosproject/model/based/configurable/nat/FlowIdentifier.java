@@ -12,11 +12,11 @@ import org.onlab.packet.IpAddress;
  * @author lara
  */
 public class FlowIdentifier {
-    IpAddress srcIp;
-    Short srcPort;
-    IpAddress dstIp;
-    Short dstPort;
-    byte protocol;
+    public IpAddress srcIp;
+    public Short srcPort;
+    public IpAddress dstIp;
+    public Short dstPort;
+    public byte protocol;
     
     public IpAddress getSrcIp() {
         return srcIp;

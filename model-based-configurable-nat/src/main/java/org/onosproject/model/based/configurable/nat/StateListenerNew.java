@@ -2123,6 +2123,7 @@ public class StateListenerNew extends Thread{
                             j = k;
                             break;
                         }
+                    log.info("found "+j.substring(5));
                     sl.saveValues(sl.root, j.substring(5), j.substring(5), listToSave);
                 }
             } catch (NoSuchFieldException ex) {
