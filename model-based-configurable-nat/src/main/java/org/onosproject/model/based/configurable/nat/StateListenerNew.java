@@ -391,6 +391,7 @@ public class StateListenerNew extends Thread{
             }
         }else{
             //IT'S A TERMINAL ELEMENT - LEAF
+            log.info("leaf - complete "+complete);
             if(subToListen.contains("[")){
                 //IT'S THE ELEMENT OF A MAP
                 String mapName = subToListen.substring(0, subToListen.indexOf("["));
@@ -405,6 +406,7 @@ public class StateListenerNew extends Thread{
                 if(!subToListen.equals("{value}"))
                     actual = actual.getClass().getField(subToListen).get(actual);
                 toSave.put(complete, actual);
+                log.info("-*-saved "+actual);
             }
         }
     }
