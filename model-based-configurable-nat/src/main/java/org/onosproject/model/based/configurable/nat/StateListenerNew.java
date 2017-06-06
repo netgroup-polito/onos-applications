@@ -1440,7 +1440,7 @@ public class StateListenerNew extends Thread{
         log.info("var -> "+var);
         String[] fs = var.split(Pattern.quote("/"));
         if(fs.length==1){
-            log.info("**we are in a leaf**");
+            log.info("**we are in a leaf** - complete "+complete);
             //LEAF!
             if(var.contains("[")){
                 //ELEMENT OF A LIST OR A MAP
