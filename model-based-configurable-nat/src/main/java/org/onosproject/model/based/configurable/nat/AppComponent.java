@@ -418,7 +418,7 @@ public class AppComponent {
                     flowId.protocol = ipHeader.getProtocol();
                     
                     FlowInfo flowInfo= new FlowInfo();
-                    flowInfo.nattedIp = srcAddress;
+                    flowInfo.nattedIp = srcAddress.toString();
                     flowInfo.nattedPort = (short)srcPortNumber;
                     natPortMap.put(flowId, flowInfo);
 
@@ -444,7 +444,7 @@ public class AppComponent {
                     flowId.protocol = ipHeader.getProtocol();
                     
                     FlowInfo flowInfo= new FlowInfo();
-                    flowInfo.nattedIp = srcAddress;
+                    flowInfo.nattedIp = srcAddress.toString();
                     flowInfo.nattedPort = (short)srcPortNumber;
                     natPortMap.put(flowId, flowInfo);
                     
