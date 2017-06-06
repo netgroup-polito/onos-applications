@@ -359,15 +359,16 @@ public class StateListenerNew extends Thread{
                         log.info("subToListen is "+subToListen);
                         log.info("and actual is: "+actual);
                         for(Object key:((Map)actual).keySet()){
-                            String indexValue = key.toString();
-                            String complToPass = complete.substring(0, complete.length()-subToListen.length())+lName+"["+indexValue+"]"+subToListen.substring(inter.length());
+                            Object indexValue = key;
+                            String complToPass = complete.substring(0, complete.length()-subToListen.length())+lName+"["+indexValue.toString()+"]"+subToListen.substring(inter.length());
                             if(subToListen.substring(inter.length()+1).equals("{key}")){
                                 //save the key
                                 log.info("Saving the key - simple");
                                 toSave.put(complToPass, key);
                             }else if(subToListen.substring(inter.length()+1).startsWith("{key}")){
                                 log.info("The key is complex!!");
-                                log.info("The field in the key is "+inter.length()+7);
+                                log.info("The field in the key is "+subToListen.substring(inter.length()+7));
+                                complToPass = complete.substring(0, complete.length()-subToListen.length())+lName+"["+((new Gson()).toJson(indexValue))+"]"+subToListen.substring(inter.length());
                                 saveValues(key, subToListen.substring(inter.length()+7), complToPass, toSave);
                             }
                             else
