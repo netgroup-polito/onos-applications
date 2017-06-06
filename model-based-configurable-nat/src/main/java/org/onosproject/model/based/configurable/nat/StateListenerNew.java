@@ -355,12 +355,19 @@ public class StateListenerNew extends Thread{
                             saveValues(item, subToListen.substring(inter.length()+1), complToPass, toSave);
                         }
                     }else if(Map.class.isAssignableFrom(actual.getClass())){
+                        log.info("Is a Map--!!");
+                        log.info("subToListen is "+subToListen);
                         for(Object key:((Map)actual).keySet()){
                             String indexValue = key.toString();
                             String complToPass = complete.substring(0, complete.length()-subToListen.length())+lName+"["+indexValue+"]"+subToListen.substring(inter.length());
                             if(subToListen.substring(inter.length()+1).equals("{key}")){
                                 //save the key
+                                log.info("Saving the key - simple");
                                 toSave.put(complToPass, key);
+                            }else if(subToListen.substring(inter.length()+1).startsWith("{key}")){
+                                log.info("The key is complex!!");
+                                log.info("The field in the key is "+inter.length()+7);
+                                saveValues(key, subToListen.substring(inter.length()+7), complToPass, toSave);
                             }
                             else
                                 saveValues(((Map)actual).get(key), subToListen.substring(inter.length()+1), complToPass, toSave);
@@ -1489,6 +1496,7 @@ public class StateListenerNew extends Thread{
                             //define the key - removed from the Json structure
                             JsonNode kNode = node.get("{key}");
                             node.remove("{key}");
+                            //The key is a value node: fields length == 1
                             Object k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             Object value = valueType.newInstance();
                             Iterator<String> fields = node.fieldNames();
@@ -1625,6 +1633,7 @@ public class StateListenerNew extends Thread{
             //THE LEAF IS AN ELEMENT OF A LIST OR A MAP
             if(fs[0].contains("[")){
                 //select element in the list
+                //get the type of the elements
                 String listName = complete.substring(0, complete.length()-var.length()+fs[0].length());
                 String idItem = listName.substring(listName.lastIndexOf("[")+1, listName.lastIndexOf("]"));
                 listName = listName.substring(0, listName.length()-idItem.length()-2)+"[]";
@@ -1632,7 +1641,8 @@ public class StateListenerNew extends Thread{
                 String indice = null;
                 if(lists.containsKey(listName))
                     indice = lists.get(listName);
-                actual = actual.getClass().getField(fs[0].substring(0, fs[0].length()-idItem.length()-2)).get(actual);
+                Field listMap = actual.getClass().getField(fs[0].substring(0, fs[0].length()-idItem.length()-2));
+                actual = listMap.get(actual);
                 if(List.class.isAssignableFrom(actual.getClass())){
                 for(Object litem:(List)actual){
                     boolean correct = litem.getClass().getField(indice).get(litem).toString().equals(idItem);
@@ -1640,11 +1650,42 @@ public class StateListenerNew extends Thread{
                         return setVariable(var.substring(fs[0].length()+1), complete, newVal, litem);
                 }
                 }else if(Map.class.isAssignableFrom(actual.getClass())){
-                for(Object litem:((Map)actual).keySet()){
-                    boolean correct = litem.toString().equals(idItem);
-                    if(correct)
-                        return setVariable(var.substring(fs[0].length()+1), complete, newVal, ((Map)actual).get(litem));
-                }
+                    //get the type of the key and of the value
+                    ParameterizedType pt = (ParameterizedType)listMap.getGenericType();
+                    Class<?> keyType = (Class<?>)pt.getActualTypeArguments()[0];
+                    Class<?> valueType = (Class<?>)pt.getActualTypeArguments()[1];
+                    if(actual!=null){
+                        boolean found = false;
+                        for(Object litem:((Map)actual).keySet()){
+                            boolean correct = litem.toString().equals(idItem);
+                            if(correct){
+                                found = true;
+                                return setVariable(var.substring(fs[0].length()+1), complete, newVal, ((Map)actual).get(litem));
+                            }
+
+/////////-------------------!!!!!!!!!!!FINISH THE SETTING!
+
+                            if(!found){
+                                try {
+                                    //construct the element!
+                                    JsonNode kNode = mapper.readTree(idItem);
+                                    if(kNode.isValueNode()){
+                                        
+                                    }else{
+                                        try {
+                                            Object key = keyType.newInstance();
+                                            
+                                        } catch (InstantiationException ex) {
+                                            log.info("Can't instantiate the object key");
+                                            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                                        }
+                                    }
+                                } catch (IOException ex) {
+                                    Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        }
+                    }
                 }
             }else{
                 Field f = actual.getClass().getField(fs[0]);

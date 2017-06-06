@@ -13,5 +13,5 @@ nat/outputInterface/ipAddress : root/outputApp/ipAddress;
 nat/outputInterface/macAddress : root/publicMac;
 nat/natTable : root/natPortMap;
 nat/natTable[] : root/natPortMap[{key}];
-nat/natTable[]/port : root/natPortMap[{key}]/{key};
-nat/natTable[]/add-port : root/natPortMap[{key}]/{value};
+nat/natTable[]/port : root/natPortMap[{key}]/{key}/srcPort;
+nat/natTable[]/add-port : root/natPortMap[{key}]/{value}/nattedIp;

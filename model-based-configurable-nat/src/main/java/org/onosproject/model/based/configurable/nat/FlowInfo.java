@@ -5,22 +5,22 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
-import org.onlab.packet.Ip4Address;
+import org.onlab.packet.IpAddress;
 
 /**
  *
  * @author lara
  */
 public class FlowInfo {
-    Ip4Address nattedIp;
+    IpAddress nattedIp;
     Short nattedPort;
     String connectionState;
 
-    public Ip4Address getNattedIp() {
+    public IpAddress getNattedIp() {
         return nattedIp;
     }
 
-    public void setNattedIp(Ip4Address nattedIp) {
+    public void setNattedIp(IpAddress nattedIp) {
         this.nattedIp = nattedIp;
     }
 

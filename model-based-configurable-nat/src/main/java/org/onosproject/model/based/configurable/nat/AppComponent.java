@@ -114,7 +114,8 @@ public class AppComponent {
      *  Key: output port
      *  value: "inputIP:inputPort"
      */
-    public Map<Short, String> natPortMap = new HashMap<>();
+    //public Map<Short, String> natPortMap = new HashMap<>();
+    public Map<FlowIdentifier, FlowInfo> natPortMap = new HashMap<>();
 
     /**
      *  The ARP table
@@ -410,7 +411,16 @@ public class AppComponent {
                     srcPortNumber = tcpHeader.getSourcePort();
                     publicPort = getAvailableOutputPort();
 
-                    natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
+//                    natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
+
+                    FlowIdentifier flowId = new FlowIdentifier();
+                    flowId.srcPort = (short) publicPort;
+                    flowId.protocol = ipHeader.getProtocol();
+                    
+                    FlowInfo flowInfo= new FlowInfo();
+                    flowInfo.nattedIp = srcAddress;
+                    flowInfo.nattedPort = (short)srcPortNumber;
+                    natPortMap.put(flowId, flowInfo);
 
                     log.info(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
                     log.info(" - - Src IP: " + srcAddress.toString());
@@ -427,13 +437,22 @@ public class AppComponent {
                      srcPortNumber = udpHeader.getSourcePort();
                      publicPort = getAvailableOutputPort();
  
-                     natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
+//                     natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
  
-                     log.debug(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
-                     log.debug(" - - Src IP: " + srcAddress.toString());
-                     log.debug(" - - Dst IP: " + dstAddress.toString());
-                     log.debug(" - - Src Port: " + srcPortNumber);
-                     log.debug(" - - Dst Port: " + udpHeader.getDestinationPort());
+                    FlowIdentifier flowId = new FlowIdentifier();
+                    flowId.srcPort = (short) publicPort;
+                    flowId.protocol = ipHeader.getProtocol();
+                    
+                    FlowInfo flowInfo= new FlowInfo();
+                    flowInfo.nattedIp = srcAddress;
+                    flowInfo.nattedPort = (short)srcPortNumber;
+                    natPortMap.put(flowId, flowInfo);
+                    
+                    log.debug(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
+                    log.debug(" - - Src IP: " + srcAddress.toString());
+                    log.debug(" - - Dst IP: " + dstAddress.toString());
+                    log.debug(" - - Src Port: " + srcPortNumber);
+                    log.debug(" - - Dst Port: " + udpHeader.getDestinationPort());
  
 
                 } else if (ipHeader.getProtocol() == IPv4.PROTOCOL_ICMP) {

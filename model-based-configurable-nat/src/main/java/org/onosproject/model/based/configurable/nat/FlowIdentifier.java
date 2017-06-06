@@ -5,24 +5,24 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
-import org.onlab.packet.Ip4Address;
+import org.onlab.packet.IpAddress;
 
 /**
  *
  * @author lara
  */
 public class FlowIdentifier {
-    Ip4Address srcIp;
+    IpAddress srcIp;
     Short srcPort;
-    Ip4Address srcDst;
+    IpAddress dstIp;
     Short dstPort;
     byte protocol;
     
-    public Ip4Address getSrcIp() {
+    public IpAddress getSrcIp() {
         return srcIp;
     }
 
-    public void setSrcIp(Ip4Address srcIp) {
+    public void setSrcIp(IpAddress srcIp) {
         this.srcIp = srcIp;
     }
 
@@ -34,12 +34,12 @@ public class FlowIdentifier {
         this.srcPort = srcPort;
     }
 
-    public Ip4Address getSrcDst() {
-        return srcDst;
+    public IpAddress getDstIp() {
+        return dstIp;
     }
 
-    public void setSrcDst(Ip4Address srcDst) {
-        this.srcDst = srcDst;
+    public void setDstIp(IpAddress dstIp) {
+        this.dstIp = dstIp;
     }
 
     public Short getDstPort() {
