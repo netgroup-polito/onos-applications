@@ -360,6 +360,7 @@ public class StateListenerNew extends Thread{
                         log.info("and actual is: "+actual);
                         for(Object key:((Map)actual).keySet()){
                             Object indexValue = key;
+                            log.info("indexValue "+indexValue);
                             String complToPass = complete.substring(0, complete.length()-subToListen.length())+lName+"["+((new Gson()).toJson(indexValue))+"]"+subToListen.substring(inter.length());
                             if(subToListen.substring(inter.length()+1).equals("{key}")){
                                 //save the key
