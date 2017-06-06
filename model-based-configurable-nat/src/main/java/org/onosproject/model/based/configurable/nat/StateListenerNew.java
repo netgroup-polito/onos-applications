@@ -624,17 +624,21 @@ public class StateListenerNew extends Thread{
         //newVal in Yang
         try{
             JsonNode node = mapper.readTree(newVal);
+            log.info("The value is "+newVal);
             JsonNode newNode;
             if(node.isObject()){
+                log.info("It's obviously an object");
                 newNode = mapper.createObjectNode();
                 Iterator<String> fields = node.fieldNames();
                 while(fields.hasNext()){
                     String fieldJava = null;
                     String fieldName = (String)fields.next();
+                    log.info("Processing field "+fieldName);
                     if(YangToJava.containsValue(complete+"/"+fieldName))
                         for(String k:YangToJava.keySet())
                             if(YangToJava.get(k).equals(complete+"/"+fieldName))
                                 fieldJava=k;
+                    log.info("fieldJava is "+fieldJava);
                     if(fieldJava!=null){
                         fieldJava=fieldJava.substring(fieldJava.lastIndexOf("/")+1);
                         if(node.get(fieldName).isValueNode())
@@ -644,6 +648,7 @@ public class StateListenerNew extends Thread{
                             JsonNode subItem = getCorrectItem(mapper.writeValueAsString(node.get(fieldName)),complete+"/"+fieldName);
                             ((ObjectNode)newNode).put(fieldJava, subItem);
                         }
+                        log.info("And voilà le newNode "+newNode);
                     }
                 }
             }else{
@@ -1523,7 +1528,7 @@ public class StateListenerNew extends Thread{
                             else{
                                 log.info("Setting complex key "+kNode);
                                 k = itemType.newInstance();
-                                JsonNode correctFields = getCorrectItem(mapper.writeValueAsString(kNode), complete);
+                                JsonNode correctFields = getCorrectItem(mapper.writeValueAsString(kNode), "root/"+complete);
                                 log.info("And now correctFields is "+correctFields);
                             }
                             Object value = valueType.newInstance();
