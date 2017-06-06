@@ -1598,7 +1598,13 @@ public class StateListenerNew extends Thread{
                             if(kNode!=null && kNode.isValueNode())
                                 k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             else{
+                                k = itemType.newInstance();
                                 log.info("Setting complex key "+kNode);
+                                Iterator<String> kfields = kNode.fieldNames();
+                                while(kfields.hasNext()){
+                                    String fName = kfields.next();
+                                    setVariable(fName, complete+"/"+fName, mapper.writeValueAsString(kNode.get(fName)), k);
+                                }
                             }
                             Object value = valueType.newInstance();
                             Iterator<String> fields = node.fieldNames();
