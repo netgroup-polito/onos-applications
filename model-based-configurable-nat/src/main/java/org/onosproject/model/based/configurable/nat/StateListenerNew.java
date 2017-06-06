@@ -376,10 +376,14 @@ public class StateListenerNew extends Thread{
                         return;
                 }
             }else{
-                //IT'S AN OBJECT (NOT LIST OR MAP)
-                actual = actual.getClass().getField(inter).get(actual);
-                if(actual!=null)
+                if(inter.equals("{value}"))
                     saveValues(actual, subToListen.substring(inter.length()+1), complete, toSave);
+                else{
+                    //IT'S AN OBJECT (NOT LIST OR MAP)
+                    actual = actual.getClass().getField(inter).get(actual);
+                    if(actual!=null)
+                        saveValues(actual, subToListen.substring(inter.length()+1), complete, toSave);
+                }
             }
         }else{
             //IT'S A TERMINAL ELEMENT - LEAF
@@ -2109,7 +2113,7 @@ public class StateListenerNew extends Thread{
         }
         
         public void run(){
-//            sl.log.info("**Periodic Task of " + var+ " running**");
+            sl.log.info("**Periodic Task of " + var+ " running**");
             Map<String, Object> listToSave = new HashMap<>();
             try{
                 if(YangToJava.containsValue(var)){
