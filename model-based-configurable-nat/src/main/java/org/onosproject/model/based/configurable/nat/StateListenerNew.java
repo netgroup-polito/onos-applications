@@ -575,6 +575,7 @@ public class StateListenerNew extends Thread{
         String[] partsWithoutIndex = var.split("["+Pattern.quote("[")+"," +Pattern.quote("]")+"]");
         String j=partsWithoutIndex[0];
         String onlyLastOne = partsWithoutIndex[0];
+        log.info("partsWithoutIndex" + partsWithoutIndex.toString());
         String y=null;
         if(partsWithoutIndex.length>1)
             for(int i=1;i<partsWithoutIndex.length;i++){
