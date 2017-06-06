@@ -1557,7 +1557,15 @@ public class StateListenerNew extends Thread{
                             ObjectNode node = (ObjectNode)mapper.readTree(newVal);
                             JsonNode kNode = node.get("{key}");
                             node.remove("{key}");
-                            Object k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
+                            Object k;
+                            if(kNode.isValueNode())
+                                k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
+                            else{
+                                log.info("Setting complex key "+kNode);
+                                k = itemType.newInstance();
+                                JsonNode correctFields = getCorrectItem(mapper.writeValueAsString(kNode), complete);
+                                log.info("And now correctFields is "+correctFields);
+                            }
                             Object value = valueType.newInstance();
                             Iterator<String> fields = node.fieldNames();
                             while(fields.hasNext()){
