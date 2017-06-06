@@ -2144,6 +2144,7 @@ public class StateListenerNew extends Thread{
                 e.act = action.PERIODIC;
                 e.obj = listToSave.get(s).toString();
                 e.var = sl.trasformInPrint(s);
+                log.info("Trasformed in print "+s+" -> "+e.var);
                 sl.cM.somethingChanged((new Gson()).toJson(e));
             }
         }
