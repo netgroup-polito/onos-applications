@@ -1611,7 +1611,11 @@ public class StateListenerNew extends Thread{
                                 if(Number.class.isAssignableFrom(fV.getType()))
                                     fV.set(value, v.asDouble());
                                 else
-                                    fV.set(value, v.asText());
+                                    try{
+                                        fV.set(value, (new Gson()).fromJson(mapper.writeValueAsString(v), fV.getType()));
+                                    }catch(Exception e){
+                                        log.info("To implement the personalized deserialization");
+                                    }
                                 }
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
