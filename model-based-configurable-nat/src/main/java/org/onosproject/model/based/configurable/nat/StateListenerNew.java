@@ -572,13 +572,14 @@ public class StateListenerNew extends Thread{
 
     //TRANSFORMS THE JAVA VAR IN THE CORRESPONDENT YANG ELEMENT ID
     private String trasformInPrint(String var) {
-        String[] partsWithoutIndex = var.split("["+Pattern.quote("[")+"," +Pattern.quote("]")+"]");
+        String[] partsWithoutIndex = var.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
         String j=partsWithoutIndex[0];
         String onlyLastOne = partsWithoutIndex[0];
         log.info("lunghezza array1 "+partsWithoutIndex.length);
         String y=null;
         if(partsWithoutIndex.length>1)
             for(int i=1;i<partsWithoutIndex.length;i++){
+                log.info("parts "+i+" value "+partsWithoutIndex[i]);
                 if(i%2==0){
                     //nome lista
                     j+=partsWithoutIndex[i];
