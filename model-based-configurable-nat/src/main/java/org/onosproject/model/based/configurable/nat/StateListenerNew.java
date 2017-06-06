@@ -1589,7 +1589,7 @@ public class StateListenerNew extends Thread{
                             log.info("And the name "+complete);
                             JsonNode kNode = node.get("{key}");
                             node.remove("{key}");
-                            Object k;
+                            Object k = null;
                             if(kNode!=null && kNode.isValueNode())
                                 k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             else{
