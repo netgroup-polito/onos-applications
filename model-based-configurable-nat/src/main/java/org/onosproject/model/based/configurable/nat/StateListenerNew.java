@@ -640,16 +640,37 @@ public class StateListenerNew extends Thread{
                                 fieldJava=k;
                     log.info("fieldJava is "+fieldJava);
                     if(fieldJava!=null){
-                        if(complete.endsWith("]") && fieldJava.substring(fieldJava.lastIndexOf("/")-5, fieldJava.lastIndexOf("/")).equals("{key}"))
-                            fieldJava = "{key}/"+fieldJava.substring(fieldJava.lastIndexOf("/")+1);
-                        else
+                        String subfield = null;
+                        if(complete.endsWith("]") && fieldJava.substring(fieldJava.lastIndexOf("/")-5, fieldJava.lastIndexOf("/")).equals("{key}")){
+                            subfield = fieldJava.substring(fieldJava.lastIndexOf("/")+1);
+                            fieldJava = "{key}";
+                        }else
                             fieldJava=fieldJava.substring(fieldJava.lastIndexOf("/")+1);
                         if(node.get(fieldName).isValueNode())
-                            ((ObjectNode)newNode).put(fieldJava, node.get(fieldName));
+                            if(!fieldJava.equals("{key}"))
+                                ((ObjectNode)newNode).put(fieldJava, node.get(fieldName));
+                            else
+                                if(((ObjectNode)newNode).has("{key}"))
+                                    ((ObjectNode)((ObjectNode)newNode).get("{key}")).put(subfield, node.get(fieldName));
+                                else{
+                                    ObjectNode kf = mapper.createObjectNode();
+                                    kf.put(subfield, node.get(fieldName));
+                                    ((ObjectNode)newNode).put("{key}", kf);
+                                }
                         else{
                             String newCampo = (node.get(fieldName).isObject())?complete+"/"+fieldName:complete+"/"+fieldName+"[]";
                             JsonNode subItem = getCorrectItem(mapper.writeValueAsString(node.get(fieldName)),complete+"/"+fieldName);
-                            ((ObjectNode)newNode).put(fieldJava, subItem);
+                            if(!fieldName.equals("{key}"))
+                                ((ObjectNode)newNode).put(fieldJava, subItem);
+                            else{
+                                if((((ObjectNode)newNode).has("{key}")))
+                                    ((ObjectNode)((ObjectNode)newNode).get("{key}")).put(subfield, subItem);
+                                else{
+                                    ObjectNode kf = mapper.createObjectNode();
+                                    kf.put(subfield, subItem);
+                                    ((ObjectNode)newNode).put("{key}", kf);
+                                }
+                            }
                         }
                         log.info("And voilà le newNode "+newNode);
                     }
@@ -1569,13 +1590,10 @@ public class StateListenerNew extends Thread{
                             JsonNode kNode = node.get("{key}");
                             node.remove("{key}");
                             Object k;
-                            if(kNode.isValueNode())
+                            if(kNode!=null && kNode.isValueNode())
                                 k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             else{
                                 log.info("Setting complex key "+kNode);
-                                k = itemType.newInstance();
-                                JsonNode correctFields = getCorrectItem(mapper.writeValueAsString(kNode), complete);
-                                log.info("And now correctFields is "+correctFields);
                             }
                             Object value = valueType.newInstance();
                             Iterator<String> fields = node.fieldNames();
