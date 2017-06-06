@@ -1555,6 +1555,7 @@ public class StateListenerNew extends Thread{
                         try{
                             Class<?> valueType = (Class<?>)pt.getActualTypeArguments()[1];
                             ObjectNode node = (ObjectNode)mapper.readTree(newVal);
+                            log.info("The new value to set is: "+newVal);
                             JsonNode kNode = node.get("{key}");
                             node.remove("{key}");
                             Object k;
