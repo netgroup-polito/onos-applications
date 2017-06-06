@@ -62,6 +62,7 @@ import org.onosproject.net.PortNumber;
 import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.io.FileInputStream;
+import org.onlab.packet.IpAddress;
 
 
 /**
@@ -105,6 +106,10 @@ public class StateListenerNew extends Thread{
         try{
             if(type == Ip4Address.class){
                 Ip4Address value = Ip4Address.valueOf(json);
+                return value;
+            }
+            if(type == IpAddress.class){
+                IpAddress value = IpAddress.valueOf(json);
                 return value;
             }
             if(type == PortNumber.class){
@@ -1614,7 +1619,12 @@ public class StateListenerNew extends Thread{
                                     try{
                                         fV.set(value, (new Gson()).fromJson(mapper.writeValueAsString(v), fV.getType()));
                                     }catch(Exception e){
-                                        log.info("To implement the personalized deserialization");
+                                        try{
+                                            Object des = personalizedDeserialization(fV.getType(), mapper.writeValueAsString(v));
+                                            fV.set(value, des);
+                                        }catch(Exception ex){
+                                            log.info("Can't deserialize correctly!");
+                                        }
                                     }
                                 }
                             }
