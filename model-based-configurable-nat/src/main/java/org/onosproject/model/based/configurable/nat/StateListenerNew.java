@@ -640,7 +640,10 @@ public class StateListenerNew extends Thread{
                                 fieldJava=k;
                     log.info("fieldJava is "+fieldJava);
                     if(fieldJava!=null){
-                        fieldJava=fieldJava.substring(fieldJava.lastIndexOf("/")+1);
+                        if(complete.endsWith("]") && fieldJava.substring(fieldJava.lastIndexOf("/")-5, fieldJava.lastIndexOf("/")).equals("{key}"))
+                            fieldJava = "{key}/"+fieldJava.substring(fieldJava.lastIndexOf("/")+1);
+                        else
+                            fieldJava=fieldJava.substring(fieldJava.lastIndexOf("/")+1);
                         if(node.get(fieldName).isValueNode())
                             ((ObjectNode)newNode).put(fieldJava, node.get(fieldName));
                         else{
@@ -1067,6 +1070,7 @@ public class StateListenerNew extends Thread{
                         }
                         jWithIndex = jWithIndex.substring(5);
                     
+                        log.info("**Prima che inizi tutto -> "+toSet);
                         //transform the list's elements from the Yang denomination to the Java
                         JsonNode newValJava = getCorrectItem(mapper.writeValueAsString(toSet), varWithoutIndexes+"[]");
                         if(newValJava!=null){
@@ -1562,8 +1566,6 @@ public class StateListenerNew extends Thread{
                             ObjectNode node = (ObjectNode)mapper.readTree(newVal);
                             log.info("The new value to set is: "+newVal);
                             log.info("And the name "+complete);
-                            JsonNode valueJava = getCorrectItem(newVal, complete);
-                            log.info("valueJava is "+valueJava);
                             JsonNode kNode = node.get("{key}");
                             node.remove("{key}");
                             Object k;
