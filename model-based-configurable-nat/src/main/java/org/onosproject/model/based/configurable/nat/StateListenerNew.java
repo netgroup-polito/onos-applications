@@ -1846,7 +1846,7 @@ public class StateListenerNew extends Thread{
                             boolean found = false;
                             for(Object k:((Map)actual).keySet()){
                                 if(k.toString().equals(index)){
-                                    actual= index;
+                                    actual= k;
                                     found = true;
                                     break;
                                 }
