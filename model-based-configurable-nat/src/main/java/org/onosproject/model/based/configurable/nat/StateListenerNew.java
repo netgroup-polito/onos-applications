@@ -1878,7 +1878,7 @@ public class StateListenerNew extends Thread{
                     log.info("Getting in "+actual+" the field "+fields[i]+" -> "+actual.getClass());
                     Field[] listing = actual.getClass().getFields();
                     for(int j=0; j<listing.length;j++)
-                        log.info("Say hello to the field "+listing[j].getName()+" : "+listing[j].getType());
+                        log.info("Say hello to the field "+listing[j].getName()+" : "+listing[j].getType()+" in actual its value is "+listing[i].get(actual));
                     actual = actual.getClass().getField(fields[i]).get(actual);
                 }
             }
