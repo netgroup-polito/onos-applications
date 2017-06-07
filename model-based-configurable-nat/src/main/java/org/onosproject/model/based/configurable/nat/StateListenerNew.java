@@ -818,9 +818,12 @@ public class StateListenerNew extends Thread{
             Object serialized = personalizedSerialization(var, value);
             return serialized;
         }
-        
+               
         JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
+        
+        log.info("To fill the result -> "+var);
+        
         res = fillResult(ref, var);
         
         if(var.endsWith("]") && res.size()==0)
