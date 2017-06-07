@@ -90,6 +90,3 @@ The app will start contacting the ovsdb nodes and you should see some related lo
     **POST http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre/{local-ip}/{remote-ip}/{key}**
 
     **DELETE http://{onos-address}:8181/onos/ovsdb/{ovsdb-ip}/bridge/{bridge-name}/port/{port-name}/gre**
-    
-    
-    /{ovsdb-ip}/bridge/{bridge-name}
