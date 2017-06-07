@@ -1264,6 +1264,16 @@ public class StateListenerNew extends Thread{
         return res;
     }
     
+    //-------------------FOR THE NAT
+    private boolean natTableModified(String var, String json){
+        if(var.contains("natPortMap"))
+            return true;
+        if(json.contains("natTable"))
+            return true;
+        return false;
+    }
+    //------------------------------
+    
     
     //COMMAND CALLED FROM THE CONNECTIONMODULECLIENT - MESSAGE FROM THE SERVICE LAYER
     public void parseCommand(String msgJson) throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException, IOException{
@@ -1314,6 +1324,13 @@ public class StateListenerNew extends Thread{
                     //-------ADDED FOR THE NAT!
                     ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
                     ((AppComponent)root).requestIntercepts();
+                    
+                    if(natTableModified(var, (String)msg.obj)){
+                        //ACTIONS
+                        log.info("Modified nat table");
+                        JsonNode table = (JsonNode)getComplexObj("nat/natTable");
+                        log.info("the nat table is "+table);
+                    }
                     //-------
                     return;
                 } catch (NoSuchFieldException ex) {
