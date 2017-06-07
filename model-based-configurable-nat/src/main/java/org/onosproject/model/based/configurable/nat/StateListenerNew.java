@@ -1824,15 +1824,23 @@ public class StateListenerNew extends Thread{
         return idLista;
     }
     
-    private boolean allDefault(String index, Object obj){
+    private boolean allDefault(String index, Object obj, String tillHereJava){
         try {
+            log.info("tillHereJava is "+tillHereJava);
+            tillHereJava = generalIndexes(tillHereJava);
             JsonNode indexObj = mapper.readTree(index);
             log.info("Comparing "+mapper.writeValueAsString(obj)+" and "+indexObj);
             Field[] fields = obj.getClass().getFields();
             for(int i=0; i<fields.length;i++){
                 String fieldName = fields[i].getName();
                 log.info("field : "+fieldName);
-                if(indexObj.has(fieldName) && !indexObj.get(fieldName).equals(fields[i].get(obj)))
+                String fYang = null;
+                if(YangToJava.containsKey("root"+tillHereJava+"/{key}/"+fieldName))
+                    fYang = YangToJava.get("root"+tillHereJava+"/{key}/"+fieldName);
+                log.info("fYang "+fYang);
+                fYang = fYang.substring(fYang.lastIndexOf("/")+1);
+                log.info("Ovvero "+fYang);
+                if(indexObj.has(fYang) && !indexObj.get(fYang).equals(fields[i].get(obj)))
                     return false;
             }
             return true;
@@ -1876,7 +1884,7 @@ public class StateListenerNew extends Thread{
 //                                log.info("recompose is "+noIndexes(recompose.substring(1)));
 //                                JsonNode res = getCorrectItem(index, noIndexes(recompose.substring(1)));
 //                                log.info("perché res è null? -> "+res);
-                                if(jsonKey.equals(index) || ((index.startsWith("{")||index.startsWith("["))&&allDefault(index, k))){
+                                if(jsonKey.equals(index) || ((index.startsWith("{")||index.startsWith("["))&&allDefault(index, k, recompose))){
                                     actual= k;
                                     log.info("found k "+k);
                                     found = true;
