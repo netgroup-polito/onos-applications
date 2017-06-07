@@ -1845,7 +1845,7 @@ public class StateListenerNew extends Thread{
                         if(i<fields.length-1 && fields[i+1].equals("{key}")){
                             boolean found = false;
                             for(Object k:((Map)actual).keySet()){
-                                if(k.toString().equals(index)){
+                                if((new Gson()).toJson(k).equals(index)){
                                     actual= k;
                                     found = true;
                                     break;
@@ -1857,7 +1857,7 @@ public class StateListenerNew extends Thread{
                         else{
                             boolean found = false;
                             for(Object k:((Map)actual).keySet()){
-                                if(k.toString().equals(index)){
+                                if((new Gson()).toJson(k).equals(index)){
                                     actual= ((Map)actual).get(k);
                                     found = true;
                                     break;
