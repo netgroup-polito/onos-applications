@@ -1827,7 +1827,7 @@ public class StateListenerNew extends Thread{
     private boolean allDefault(String index, Object obj, String tillHereJava){
         try {
             log.info("tillHereJava is "+tillHereJava);
-            tillHereJava = generalIndexes(tillHereJava);
+            tillHereJava = generalIndexes(tillHereJava.substring(1));
             log.info("trasformed in "+tillHereJava);
             JsonNode indexObj = mapper.readTree(index);
             log.info("Comparing "+mapper.writeValueAsString(obj)+" and "+indexObj);
