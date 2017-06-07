@@ -1413,9 +1413,12 @@ public class StateListenerNew extends Thread{
                            return 0;
                         }
                         else{
-                            for(Object k:((Map)actual).keySet())
-                                if(k.toString().equals(index)){
-                                    delete = k; break;}
+                            log.info("Nb in delete : complete is "+complete);
+                            for(Object k:((Map)actual).keySet()){
+                                String jsonKey = (new Gson()).toJson(k);
+                                if(jsonKey.equals(index) || ((index.startsWith("{")||index.startsWith("["))&&allDefault(index, k, complete))){
+                                delete = k; break;}
+                                }
                             if(delete!=null){
                                 ((Map)actual).remove(delete);
                                 return 0;
