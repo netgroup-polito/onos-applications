@@ -1838,10 +1838,12 @@ public class StateListenerNew extends Thread{
                 if(YangToJava.containsKey("root"+tillHereJava+"/{key}/"+fieldName))
                     fYang = YangToJava.get("root"+tillHereJava+"/{key}/"+fieldName);
                 log.info("fYang "+fYang);
+                if(fYang!=null){
                 fYang = fYang.substring(fYang.lastIndexOf("/")+1);
                 log.info("Ovvero "+fYang);
                 if(indexObj.has(fYang) && !indexObj.get(fYang).equals(fields[i].get(obj)))
                     return false;
+                }
             }
             return true;
         } catch (IOException ex) {
