@@ -1872,8 +1872,8 @@ public class StateListenerNew extends Thread{
                             for(Object k:((Map)actual).keySet()){
                                 String jsonKey = (new Gson()).toJson(k);
                                 log.info("The k is "+(new Gson()).toJson(k));
-                                log.info("recompose is "+recompose);
-                                JsonNode res = getCorrectItem(index, recompose);
+                                log.info("recompose is "+noIndexes(recompose.substring(1)));
+                                JsonNode res = getCorrectItem(index, noIndexes(recompose.substring(1)));
                                 log.info("perché res è null? -> "+res);
                                 if(jsonKey.equals(index) || ((index.startsWith("{")||index.startsWith("["))&&allDefault(res, k))){
                                     actual= k;
