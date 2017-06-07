@@ -1875,6 +1875,7 @@ public class StateListenerNew extends Thread{
                                 log.info("The k is "+(new Gson()).toJson(k));
                                 if(jsonKey.equals(index) || allDefault(index, k)){
                                     actual= k;
+                                    log.info("found k "+k);
                                     found = true;
                                     break;
                                 }
