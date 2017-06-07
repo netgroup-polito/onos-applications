@@ -1905,7 +1905,8 @@ public class StateListenerNew extends Thread{
                         else{
                             boolean found = false;
                             for(Object k:((Map)actual).keySet()){
-                                if((new Gson()).toJson(k).equals(index)){
+                                String jsonKey = (new Gson()).toJson(k);
+                                if(jsonKey.equals(index) || ((index.startsWith("{")||index.startsWith("["))&&allDefault(index, k, recompose))){
                                     actual= ((Map)actual).get(k);
                                     found = true;
                                     break;
