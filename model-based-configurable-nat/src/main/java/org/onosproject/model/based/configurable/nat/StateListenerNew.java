@@ -1836,8 +1836,9 @@ public class StateListenerNew extends Thread{
                 String fieldName = fields[i].getName();
                 log.info("field : "+fieldName);
                 String fYang = null;
-                if(YangToJava.containsKey("root"+tillHereJava+"/{key}/"+fieldName))
-                    fYang = YangToJava.get("root"+tillHereJava+"/{key}/"+fieldName);
+                log.info("roba da cercare "+"root/"+tillHereJava+"/{key}/"+fieldName);
+                if(YangToJava.containsKey("root/"+tillHereJava+"/{key}/"+fieldName))
+                    fYang = YangToJava.get("root/"+tillHereJava+"/{key}/"+fieldName);
                 log.info("fYang "+fYang);
                 if(fYang!=null){
                 fYang = fYang.substring(fYang.lastIndexOf("/")+1);
