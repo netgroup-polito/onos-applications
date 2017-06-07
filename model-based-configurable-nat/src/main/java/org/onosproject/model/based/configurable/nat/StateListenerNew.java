@@ -980,7 +980,7 @@ public class StateListenerNew extends Thread{
                     elems.putAll((Map)list);
                     for(Object k:elems.keySet()){
                         //for all the elements - inster in the json
-                        JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+k+"]");
+                        JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+(new Gson().toJson(k))+"]");
                         if(child.size()!=0)
                             ((ArrayNode)toRet).add(child);
                     }
