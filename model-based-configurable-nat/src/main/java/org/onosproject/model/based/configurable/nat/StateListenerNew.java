@@ -360,13 +360,13 @@ public class StateListenerNew extends Thread{
                             saveValues(item, subToListen.substring(inter.length()+1), complToPass, toSave);
                         }
                     }else if(Map.class.isAssignableFrom(actual.getClass())){
-                        log.info("Is a Map--!!");
-                        log.info("subToListen is "+subToListen);
-                        log.info("and actual is: "+actual);
+//                        log.info("Is a Map--!!");
+//                        log.info("subToListen is "+subToListen);
+//                        log.info("and actual is: "+actual);
                         for(Object key:((Map)actual).keySet()){
                             Object indexValue = key;
-                            log.info("indexValue "+indexValue);
-                            log.info("E il json: "+(new Gson()).toJson(indexValue));
+//                            log.info("indexValue "+indexValue);
+//                            log.info("E il json: "+(new Gson()).toJson(indexValue));
                             String complToPass = complete.substring(0, complete.length()-subToListen.length())+lName+"["+((new Gson()).toJson(indexValue))+"]"+subToListen.substring(inter.length());
                             if(subToListen.substring(inter.length()+1).equals("{key}")){
                                 //save the key
@@ -396,7 +396,7 @@ public class StateListenerNew extends Thread{
             }
         }else{
             //IT'S A TERMINAL ELEMENT - LEAF
-            log.info("leaf - complete "+complete);
+//            log.info("leaf - complete "+complete);
             if(subToListen.contains("[")){
                 //IT'S THE ELEMENT OF A MAP
                 String mapName = subToListen.substring(0, subToListen.indexOf("["));
@@ -411,7 +411,7 @@ public class StateListenerNew extends Thread{
                 if(!subToListen.equals("{value}"))
                     actual = actual.getClass().getField(subToListen).get(actual);
                 toSave.put(complete, actual);
-                log.info("-*-saved "+actual);
+//                log.info("-*-saved "+actual);
             }
         }
     }
@@ -863,6 +863,7 @@ public class StateListenerNew extends Thread{
                         else
                             jWithIndex+="["+yspez[i]+"]";
                     }
+                    log.info("Getting thw value of "+jWithIndex);
                     //jWithIndex is the name of the variable in the Java cose (preceeded by "root."
                     ((ObjectNode)toRet).put(var, getLeafValue(jWithIndex.substring(5)).toString());
                     field.next();
@@ -872,6 +873,7 @@ public class StateListenerNew extends Thread{
             while(field.hasNext()){
                 //INSERT THE VALUES OF THE FIELDS OF THE OBJECT
                 String fieldName = field.next();
+                log.info("Getting the value of the field "+fieldName+" in the object "+ref);
                 if(((ObjectNode)ref).get(fieldName).isValueNode()){
                     //IT'S A LEAF
                     //code for the transformation from the Yang to the Java
@@ -897,9 +899,11 @@ public class StateListenerNew extends Thread{
                         }
                         //jWithIndex is the name of hte variable in Java (preceeded by "root.")
                         Object value = getLeafValue(jWithIndex.substring(5));
+                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
                         if(value!=null){
                             //PERSONALIZED SERIALIZATION
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
+                            log.info("..parsed in "+parsed);
                             if(parsed != null){
                                 if(Boolean.class.isAssignableFrom(parsed.getClass())){  
 //                                    log.info("Trattato come boolean");
