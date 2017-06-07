@@ -1824,15 +1824,14 @@ public class StateListenerNew extends Thread{
         return idLista;
     }
     
-    private boolean allDefault(String index, Object obj){
+    private boolean allDefault(JsonNode index, Object obj){
         try {
-            ObjectNode indexObj = (ObjectNode)mapper.readValue(index, obj.getClass());
-            log.info("Comparing "+mapper.writeValueAsString(obj)+" and "+indexObj);
+            log.info("Comparing "+mapper.writeValueAsString(obj)+" and "+index);
             Field[] fields = obj.getClass().getFields();
             for(int i=0; i<fields.length;i++){
                 String fieldName = fields[i].getName();
                 log.info("field : "+fieldName);
-                if(indexObj.has(fieldName) && !indexObj.get(fieldName).equals(fields[i].get(obj)))
+                if(index.has(fieldName) && !index.get(fieldName).equals(fields[i].get(obj)))
                     return false;
             }
             return true;
@@ -1873,7 +1872,7 @@ public class StateListenerNew extends Thread{
                             for(Object k:((Map)actual).keySet()){
                                 String jsonKey = (new Gson()).toJson(k);
                                 log.info("The k is "+(new Gson()).toJson(k));
-                                if(jsonKey.equals(index) || allDefault(index, k)){
+                                if(jsonKey.equals(index) || ((index.startsWith("{")||index.startsWith("["))&&allDefault(getCorrectItem(index, recompose), k))){
                                     actual= k;
                                     log.info("found k "+k);
                                     found = true;
