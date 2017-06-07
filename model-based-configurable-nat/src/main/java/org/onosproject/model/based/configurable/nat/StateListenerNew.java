@@ -1453,9 +1453,12 @@ public class StateListenerNew extends Thread{
                                 return deleteVariable(item, var.substring(fs[0].length()+1), complete);
                     }else if(Map.class.isAssignableFrom(actual.getClass())){
                         for(Object k:((Map)actual).keySet())
-                            if(k.toString().equals(index))
-                                return deleteVariable(((Map)actual).get(k), var.substring(fs[0].length()+1), complete);
-                
+                            if(k.toString().equals(index)){
+                                if((var.substring(fs[0].length()+1)).startsWith("{key}"))
+                                    return deleteVariable(k, var.substring(fs[0].length()+1), complete);
+                                else
+                                    return deleteVariable(((Map)actual).get(k), var.substring(fs[0].length()+1), complete);
+                            }
                     }
                 }
                 return 2;
@@ -1585,7 +1588,8 @@ public class StateListenerNew extends Thread{
                                     }
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
-                            m.put(k, value);
+                            if(k!=null)
+                                m.put(k, value);
                             f.set(actual, m);
                             return true;
                             //!!
@@ -1647,7 +1651,8 @@ public class StateListenerNew extends Thread{
                                 }
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
-                            ((Map)f.get(actual)).put(k, value);
+                            if(k!=null)
+                                ((Map)f.get(actual)).put(k, value);
                             return true;
                         } catch (IOException ex) {
                             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
