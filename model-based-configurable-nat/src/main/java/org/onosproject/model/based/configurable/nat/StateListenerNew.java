@@ -1824,14 +1824,15 @@ public class StateListenerNew extends Thread{
         return idLista;
     }
     
-    private boolean allDefault(JsonNode index, Object obj){
+    private boolean allDefault(String index, Object obj){
         try {
-            log.info("Comparing "+mapper.writeValueAsString(obj)+" and "+index);
+            JsonNode indexObj = mapper.readTree(index);
+            log.info("Comparing "+mapper.writeValueAsString(obj)+" and "+indexObj);
             Field[] fields = obj.getClass().getFields();
             for(int i=0; i<fields.length;i++){
                 String fieldName = fields[i].getName();
                 log.info("field : "+fieldName);
-                if(index.has(fieldName) && !index.get(fieldName).equals(fields[i].get(obj)))
+                if(indexObj.has(fieldName) && !indexObj.get(fieldName).equals(fields[i].get(obj)))
                     return false;
             }
             return true;
@@ -1872,10 +1873,10 @@ public class StateListenerNew extends Thread{
                             for(Object k:((Map)actual).keySet()){
                                 String jsonKey = (new Gson()).toJson(k);
                                 log.info("The k is "+(new Gson()).toJson(k));
-                                log.info("recompose is "+noIndexes(recompose.substring(1)));
-                                JsonNode res = getCorrectItem(index, noIndexes(recompose.substring(1)));
-                                log.info("perché res è null? -> "+res);
-                                if(jsonKey.equals(index) || ((index.startsWith("{")||index.startsWith("["))&&allDefault(res, k))){
+//                                log.info("recompose is "+noIndexes(recompose.substring(1)));
+//                                JsonNode res = getCorrectItem(index, noIndexes(recompose.substring(1)));
+//                                log.info("perché res è null? -> "+res);
+                                if(jsonKey.equals(index) || ((index.startsWith("{")||index.startsWith("["))&&allDefault(index, k))){
                                     actual= k;
                                     log.info("found k "+k);
                                     found = true;
@@ -1945,11 +1946,25 @@ public class StateListenerNew extends Thread{
             return j;
         String[] java = j.split("["+Pattern.quote("[")+"," +Pattern.quote("]")+"]");
         j=new String();
+        yang = new String();
         for(int i=0; i<java.length; i++){
-            if(i%2==0)
+            if(i%2==0){
                 j+=java[i];
-            else{
-                j+="["+separated[i]+"]";
+                yang +=separated[i];
+            }else{
+                if(!separated[i].equals("")&&(separated[i].startsWith("{")|| separated[i].startsWith("["))){
+                    try {
+                        yang+="[]";
+                        log.info("Passo yang = "+yang+" e separated[i] = "+separated[i]);
+                        JsonNode newIndex = getCorrectItem(separated[i], yang);
+                        log.info("Et voilà -> newIndex "+newIndex);
+                        j+="["+mapper.writeValueAsString(newIndex)+"]";
+                    } catch (JsonProcessingException ex) {
+                        log.info("Errrrrrror");
+                        Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }else    
+                    j+="["+separated[i]+"]";
             }
         }
         if(y.endsWith("[]"))
