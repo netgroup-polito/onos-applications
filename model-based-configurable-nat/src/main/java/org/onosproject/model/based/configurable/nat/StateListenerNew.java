@@ -160,8 +160,22 @@ public class StateListenerNew extends Thread{
         return value.toString();
     }
     
+    
     /***********END OF PERSONALIZED PART
      ******************************/
+    
+    private String personalizedJson(String var, Object obj){
+        try {
+            JsonNode node = mapper.valueToTree(obj);
+            log.info("var.. "+var);
+            log.info("**node "+node);
+            String res = mapper.writeValueAsString(node);
+            return res;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
     
     public StateListenerNew(Object root){
         this.root = root;
@@ -999,7 +1013,7 @@ public class StateListenerNew extends Thread{
                     for(Object k:elems.keySet()){
                         //for all the elements - inster in the json
                         log.info("the k in the keyset is "+k);
-                        JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+(new Gson().toJson(k))+"]");
+                        JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+personalizedJson(var, k)+"]");
                         log.info("and the child.."+child);
                         if(child.size()!=0)
                             ((ArrayNode)toRet).add(child);
