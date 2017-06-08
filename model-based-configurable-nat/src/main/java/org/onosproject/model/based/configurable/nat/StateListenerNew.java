@@ -1698,7 +1698,7 @@ public class StateListenerNew extends Thread{
                                     if(Double.class.isAssignableFrom(fV.getType()))
                                         fV.set(value, v.asDouble());
                                     else
-                                        fV.set(value, v.asLong());
+                                        fV.set(value, v.numberValue());
                                 }
                                 else
                                     try{
