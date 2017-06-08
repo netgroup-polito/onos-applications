@@ -1339,6 +1339,7 @@ public class StateListenerNew extends Thread{
                         Iterator<JsonNode> tableEntries = table.elements();
                         while(tableEntries.hasNext()){
                             ObjectNode entry = (ObjectNode)tableEntries.next();
+                            log.info("entry "+entry);
                             Ip4Address inIp=null, outIp=null, natIp=null;
                             Short inPort=null, outPort=null, natPort=null;
                             byte proto=0;
