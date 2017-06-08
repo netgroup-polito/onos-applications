@@ -1353,8 +1353,14 @@ public class StateListenerNew extends Thread{
                                 natPort = entry.get("newPort").shortValue();
                             if(entry.has("proto"))
                                 proto = entry.get("proto").binaryValue()[0];
-                            
-                            ((AppComponent)root).installOutcomingNatRule(inIp, outIp, proto, inPort, natPort, MacAddress.NONE, PortNumber.portNumber(outPort));
+                            log.info("input address "+inIp);
+                            log.info("input port "+inPort);
+                            log.info("output address "+outIp);
+                            log.info("output port "+outPort);
+                            log.info("nat address "+natIp);
+                            log.info("nat port "+natPort);
+                            log.info("proto "+proto);
+//                            ((AppComponent)root).installOutcomingNatRule(inIp, outIp, proto, inPort, natPort, MacAddress.NONE, PortNumber.portNumber(outPort));
                         }
                     }
                     //-------
