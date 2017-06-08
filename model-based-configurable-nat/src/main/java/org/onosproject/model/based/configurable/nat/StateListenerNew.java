@@ -1729,9 +1729,14 @@ public class StateListenerNew extends Thread{
                             
                             log.info("And k is.."+k);
                             if(k!=null){
+                                log.info("k is != null");
+                                log.info("actual is "+actual);
+                                log.info("f is "+f);
                                 Map m = (Map)f.get(actual);
                                 m.put(k, value);
+                                log.info("new map is "+m);
                                 f.set(actual, m);
+                                log.info("Is setted!!");
                             }
                             return true;
                         } catch (IOException ex) {
