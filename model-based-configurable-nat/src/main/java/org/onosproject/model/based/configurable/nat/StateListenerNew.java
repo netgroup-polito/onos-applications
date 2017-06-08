@@ -1695,6 +1695,7 @@ public class StateListenerNew extends Thread{
                                 }else{
                                 Field fV = value.getClass().getField(fieldName);
                                 if(Number.class.isAssignableFrom(fV.getType())){
+                                    log.info("number value..."+v.numberValue());
                                     if(Double.class.isAssignableFrom(fV.getType()))
                                         fV.set(value, v.asDouble());
                                     else
