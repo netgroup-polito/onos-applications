@@ -958,6 +958,7 @@ public class StateListenerNew extends Thread{
                             listInJava = l;
                 }
             }
+            log.info("The list in java is "+l);
             String[] yspez = var.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
             String[] jspez = listInJava.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
             String jWithIndex = new String();
@@ -968,8 +969,11 @@ public class StateListenerNew extends Thread{
                     jWithIndex+="["+yspez[i]+"]";
             }
             //ListValues e = stateList.get(jWithIndex.substring(5)+"[]");
+            log.info("jWithIndex "+jWithIndex);
             String lN = generalIndexes(jWithIndex.substring(5))+"[]";
+            log.info("lN "+lN);
             String e = (lists.containsKey(lN))?lists.get(lN):null;
+            log.info("..ed e "+e);
             if(e!=null){
                 //the list is contained in the list collection and the index is e
                 String indice=e;
