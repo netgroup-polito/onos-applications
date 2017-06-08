@@ -978,6 +978,7 @@ public class StateListenerNew extends Thread{
                 //the list is contained in the list collection and the index is e
                 String indice=e;
                 Object list = getLists(root, jWithIndex.substring(5)+"[]", jWithIndex.substring(5)+"[]");
+                log.info("list.."+list);
                 if(list!=null && List.class.isAssignableFrom(list.getClass())){
                     List<Object> elems = new ArrayList<>();
                     elems.addAll((List)list);
@@ -989,11 +990,14 @@ public class StateListenerNew extends Thread{
                             ((ArrayNode)toRet).add(child);
                     }
                 }else if(list!=null && Map.class.isAssignableFrom(list.getClass())){
+                    log.info("is a map and it is not null");
                     Map<Object, Object> elems = new HashMap<>();
                     elems.putAll((Map)list);
                     for(Object k:elems.keySet()){
                         //for all the elements - inster in the json
+                        log.info("the k in the keyset is "+k);
                         JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+(new Gson().toJson(k))+"]");
+                        log.info("and the child.."+child);
                         if(child.size()!=0)
                             ((ArrayNode)toRet).add(child);
                     }
