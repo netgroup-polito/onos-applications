@@ -104,6 +104,7 @@ public class StateListenerNew extends Thread{
     /*****PERSONALIZABLE FUNCTIONS*******/
     
     private Object personalizedDeserialization(Class<?> type, String json){
+        log.info("In personalized Deserialization the json is "+json);
         try{
             if(type == Ip4Address.class){
                 Ip4Address value = Ip4Address.valueOf(json);
