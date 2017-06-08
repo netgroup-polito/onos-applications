@@ -63,6 +63,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.io.FileInputStream;
 import org.onlab.packet.IpAddress;
+import org.onlab.packet.MacAddress;
 
 
 /**
@@ -1330,6 +1331,31 @@ public class StateListenerNew extends Thread{
                         log.info("Modified nat table");
                         ArrayNode table = (ArrayNode)getComplexObj("nat/natTable");
                         log.info("the nat table is "+table);
+                        
+                        Iterator<JsonNode> tableEntries = table.elements();
+                        while(tableEntries.hasNext()){
+                            ObjectNode entry = (ObjectNode)tableEntries.next();
+                            Ip4Address inIp=null, outIp=null, natIp=null;
+                            Short inPort=null, outPort=null, natPort=null;
+                            byte proto=0;
+                            
+                            if(entry.has("inputAddress"))
+                                inIp = Ip4Address.valueOf(entry.get("inputAddress").asText());
+                            if(entry.has("outputAddress"))
+                                outIp = Ip4Address.valueOf(entry.get("outputAddress").asText());
+                            if(entry.has("newAddress"))
+                                natIp = Ip4Address.valueOf(entry.get("newAddress").asText());   
+                            if(entry.has("inputPort"))
+                                inPort = entry.get("inputPort").shortValue();
+                            if(entry.has("outputPort"))
+                                outPort = entry.get("outputPort").shortValue();
+                            if(entry.has("newPort"))
+                                natPort = entry.get("newPort").shortValue();
+                            if(entry.has("proto"))
+                                proto = entry.get("proto").binaryValue()[0];
+                            
+                            ((AppComponent)root).installOutcomingNatRule(inIp, outIp, proto, inPort, natPort, MacAddress.NONE, PortNumber.portNumber(outPort));
+                        }
                     }
                     //-------
                     return;

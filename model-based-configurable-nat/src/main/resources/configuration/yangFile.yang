@@ -87,15 +87,37 @@ module nat{
 
     list natTable{
         key port;
-        leaf port{
+        leaf inputPort{
             type uint16;
-            confnat:advertise periodic;
-            confnat:period 5000;
+            confnat:advertise onchange;
         }
-        leaf add-port{
+        leaf inputAddress{
             type string;
-            confnat:advertise periodic;
-            confnat:period 5000;
+            confnat:advertise onchange;
+        }
+        leaf outputPort{
+            type uint16;
+            confnat:advertise onchange;
+        }
+        leaf outputAddress{
+            type string;
+            confnat:advertise onchange;
+        }
+        leaf newPort{
+            type uint16;
+            confnat:advertise onchange;
+        }
+        leaf newAddress{
+            type string;
+            confnat:advertise onchange;
+        }
+        leaf proto{
+            type uint8;
+            confnat:advertise onchange;
+        }
+        leaf state{
+            type string;
+            confnat:advertise onchange;
         }
     }
 }

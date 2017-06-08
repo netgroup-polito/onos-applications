@@ -586,7 +586,7 @@ public class AppComponent {
     }
 
     // Install a rule in the last switch applying the NAT reverse function
-    private void installOutcomingNatRule(Ip4Address srcAddress, Ip4Address dstAddress, byte protocol, int dstPort,
+    public void installOutcomingNatRule(Ip4Address srcAddress, Ip4Address dstAddress, byte protocol, int dstPort,
                                         int newDstPort, MacAddress dstMac, PortNumber portNumber) {
 
         log.debug(" - Install outcoming nat Rule");

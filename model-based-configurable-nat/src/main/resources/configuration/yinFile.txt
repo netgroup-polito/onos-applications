@@ -49,25 +49,73 @@
         "type": {
           "@name": "uint16"
         },
-        "confnat:period": {
-          "@period": "5000"
-        },
         "confnat:advertise": {
-          "@advertise": "periodic"
+          "@advertise": "onchange"
         },
-        "@name": "port"
+        "@name": "inputPort"
       },
       {
         "type": {
           "@name": "string"
         },
-        "confnat:period": {
-          "@period": "5000"
+        "confnat:advertise": {
+          "@advertise": "onchange"
+        },
+        "@name": "inputAddress"
+      },
+      {
+        "type": {
+          "@name": "uint16"
         },
         "confnat:advertise": {
-          "@advertise": "periodic"
+          "@advertise": "onchange"
         },
-        "@name": "add-port"
+        "@name": "outputPort"
+      },
+      {
+        "type": {
+          "@name": "string"
+        },
+        "confnat:advertise": {
+          "@advertise": "onchange"
+        },
+        "@name": "outputAddress"
+      },
+      {
+        "type": {
+          "@name": "uint16"
+        },
+        "confnat:advertise": {
+          "@advertise": "onchange"
+        },
+        "@name": "newPort"
+      },
+      {
+        "type": {
+          "@name": "string"
+        },
+        "confnat:advertise": {
+          "@advertise": "onchange"
+        },
+        "@name": "newAddress"
+      },
+      {
+        "type": {
+          "@name": "uint8"
+        },
+        "confnat:advertise": {
+          "@advertise": "onchange"
+        },
+        "@name": "proto"
+      },
+      {
+        "type": {
+          "@name": "string"
+        },
+        "confnat:advertise": {
+          "@advertise": "onchange"
+        },
+        "@name": "state"
       }
     ],
     "@name": "natTable",
