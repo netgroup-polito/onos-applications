@@ -113,6 +113,10 @@ public class StateListenerNew extends Thread{
                 IpAddress value = IpAddress.valueOf(json);
                 return value;
             }
+            if(type == Short.class){
+                Short value = Short.parseShort(json);
+                return value;
+            }
             if(type == PortNumber.class){
 //                log.info("E' un port number, the value passed is "+json+" and the type is "+type);
                 PortNumber value = PortNumber.portNumber(json);
@@ -1693,21 +1697,21 @@ public class StateListenerNew extends Thread{
                                     else
                                         value = v.asText();
                                 }else{
-                                Field fV = value.getClass().getField(fieldName);
-                                if(Number.class.isAssignableFrom(fV.getType())){
-                                    log.info("number value..."+v.numberValue());
-                                    if(Double.class.isAssignableFrom(fV.getType()))
-                                        fV.set(value, v.asDouble());
-                                    else
-                                        fV.set(value, v.numberValue());
-                                }
-                                else
+                                    Field fV = value.getClass().getField(fieldName);
                                     try{
-                                        fV.set(value, (new Gson()).fromJson(mapper.writeValueAsString(v), fV.getType()));
+                                        if(Number.class.isAssignableFrom(fV.getType())){
+                                            log.info("number value..."+v.numberValue());
+                                            if(Double.class.isAssignableFrom(fV.getType()))
+                                                fV.set(value, v.asDouble());
+                                            else
+                                                fV.set(value, v.numberValue());
+                                        }
+                                        else
+                                            fV.set(value, (new Gson()).fromJson(mapper.writeValueAsString(v), fV.getType()));
                                     }catch(Exception e){
                                         try{
                                             Object des = personalizedDeserialization(fV.getType(), mapper.writeValueAsString(v));
-                                            fV.set(value, des);
+                                               fV.set(value, des);
                                         }catch(Exception ex){
                                             log.info("Can't deserialize correctly!");
                                         }
