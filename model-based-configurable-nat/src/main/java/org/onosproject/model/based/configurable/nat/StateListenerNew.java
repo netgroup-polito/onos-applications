@@ -1331,10 +1331,10 @@ public class StateListenerNew extends Thread{
                     cM.setResourceValue((new Gson()).toJson(msg));
                     
                     //-------ADDED FOR THE NAT!
-                    ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
-                    ((AppComponent)root).requestIntercepts();
+//                    ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
+//                    ((AppComponent)root).requestIntercepts();
                     
-                    if(natTableModified(var, (String)msg.obj)){
+//                    if(natTableModified(var, (String)msg.obj)){
                         //ACTIONS
                         log.info("Modified nat table");
                         ArrayNode table = (ArrayNode)getComplexObj("nat/natTable");
@@ -1371,7 +1371,7 @@ public class StateListenerNew extends Thread{
                             log.info("proto "+proto);
 //                            ((AppComponent)root).installOutcomingNatRule(inIp, outIp, proto, inPort, natPort, MacAddress.NONE, PortNumber.portNumber(outPort));
                         }
-                    }
+//                    }
                     //-------
                     return;
                 } catch (NoSuchFieldException ex) {
