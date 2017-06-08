@@ -166,8 +166,8 @@ public class StateListenerNew extends Thread{
     
     private String personalizedJson(String var, Object obj){
         try {
-            JsonNode node = mapper.valueToTree(obj);
             log.info("var.. "+var);
+            JsonNode node = mapper.valueToTree(obj);
             log.info("**node "+node);
             String res = mapper.writeValueAsString(node);
             return res;
