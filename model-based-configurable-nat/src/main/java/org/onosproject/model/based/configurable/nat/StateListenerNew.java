@@ -106,25 +106,26 @@ public class StateListenerNew extends Thread{
     private Object personalizedDeserialization(Class<?> type, String json){
         log.info("In personalized Deserialization the json is "+json);
         try{
+            JsonNode jsonValue = mapper.readTree(json);
             if(type == Ip4Address.class){
-                Ip4Address value = Ip4Address.valueOf(json);
+                Ip4Address value = Ip4Address.valueOf(jsonValue.asText());
                 return value;
             }
             if(type == IpAddress.class){
-                IpAddress value = IpAddress.valueOf(json);
+                IpAddress value = IpAddress.valueOf(jsonValue.asText());
                 return value;
             }
             if(type == Short.class){
-                Short value = Short.parseShort(json);
+                Short value = Short.parseShort(jsonValue.asText());
                 return value;
             }
             if(type == PortNumber.class){
 //                log.info("E' un port number, the value passed is "+json+" and the type is "+type);
-                PortNumber value = PortNumber.portNumber(json);
+                PortNumber value = PortNumber.portNumber(jsonValue.asLong());
                 return value;
             }
             if(type == DeviceId.class){
-                DeviceId value = DeviceId.deviceId(json);
+                DeviceId value = DeviceId.deviceId(jsonValue.asText());
                 return value;
             }
         }catch(Exception e){
