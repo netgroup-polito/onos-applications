@@ -895,6 +895,7 @@ public class StateListenerNew extends Thread{
                         if(i%2==0)
                             varWithoutIndexes+=varSp[i]+"[]";
                     varWithoutIndexes = varWithoutIndexes.substring(0, varWithoutIndexes.length()-2);
+                    log.info("varWithoutIndexes is correct? "+varWithoutIndexes);
                     if(YangToJava.containsValue(varWithoutIndexes)){
                         String key = null;
                         for(String k:YangToJava.keySet())
@@ -936,6 +937,8 @@ public class StateListenerNew extends Thread{
                             }
                         }
                     }
+                    else
+                        log.info("It's not correct..");
                 }else{
                     //IT'S NOT A LEAF - GO DEEPER
                     JsonNode f = fillResult(((ObjectNode)ref).get(fieldName), var+"/"+fieldName);
