@@ -1331,8 +1331,8 @@ public class StateListenerNew extends Thread{
                     cM.setResourceValue((new Gson()).toJson(msg));
                     
                     //-------ADDED FOR THE NAT!
-                    //((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
-                    //((AppComponent)root).requestIntercepts();
+                    ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
+                    ((AppComponent)root).requestIntercepts();
                     
                     if(natTableModified(var, (String)msg.obj)){
                         //ACTIONS
@@ -1387,8 +1387,8 @@ public class StateListenerNew extends Thread{
                 cM.setResourceValue((new Gson()).toJson(msg));
 
                 //-------ADDED FOR THE NAT!
-                ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
-                ((AppComponent)root).requestIntercepts();
+//                ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
+//                ((AppComponent)root).requestIntercepts();
                 //-------
                 break;
             case DELETE:
