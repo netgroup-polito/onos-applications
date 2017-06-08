@@ -903,11 +903,11 @@ public class StateListenerNew extends Thread{
                         }
                         //jWithIndex is the name of hte variable in Java (preceeded by "root.")
                         Object value = getLeafValue(jWithIndex.substring(5));
-//                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
+                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
                         if(value!=null){
                             //PERSONALIZED SERIALIZATION
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
-//                            log.info("..parsed in "+parsed);
+                            log.info("..parsed in "+parsed);
                             if(parsed != null){
                                 if(Boolean.class.isAssignableFrom(parsed.getClass())){  
 //                                    log.info("Trattato come boolean");
@@ -1981,8 +1981,8 @@ public class StateListenerNew extends Thread{
                         continue;
                     log.info("Getting in "+actual+" the field "+fields[i]+" -> "+actual.getClass());
                     Field[] listing = actual.getClass().getFields();
-                    for(int j=0; j<listing.length;j++)
-                        log.info("Say hello to the field "+listing[j].getName()+" : "+listing[j].getType()+" in actual its value is "+listing[j].get(actual));
+//                    for(int j=0; j<listing.length;j++)
+//                        log.info("Say hello to the field "+listing[j].getName()+" : "+listing[j].getType()+" in actual its value is "+listing[j].get(actual));
                     actual = actual.getClass().getField(fields[i]).get(actual);
                 }
             }
