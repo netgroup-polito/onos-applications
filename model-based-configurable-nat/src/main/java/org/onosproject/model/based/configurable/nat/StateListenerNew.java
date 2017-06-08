@@ -831,7 +831,7 @@ public class StateListenerNew extends Thread{
         JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
         
-//        log.info("To fill the result -> "+var);
+        log.info("To fill the result -> "+var);
         
         res = fillResult(ref, var);
         
@@ -885,7 +885,7 @@ public class StateListenerNew extends Thread{
             while(field.hasNext()){
                 //INSERT THE VALUES OF THE FIELDS OF THE OBJECT
                 String fieldName = field.next();
-//                log.info("Getting the value of the field "+fieldName+" in the object "+ref);
+                log.info("Getting the value of the field "+fieldName+" in the object "+ref);
                 if(((ObjectNode)ref).get(fieldName).isValueNode()){
                     //IT'S A LEAF
                     //code for the transformation from the Yang to the Java
@@ -911,7 +911,7 @@ public class StateListenerNew extends Thread{
                         }
                         //jWithIndex is the name of hte variable in Java (preceeded by "root.")
                         Object value = getLeafValue(jWithIndex.substring(5));
-//                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
+                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
                         if(value!=null){
                             //PERSONALIZED SERIALIZATION
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
