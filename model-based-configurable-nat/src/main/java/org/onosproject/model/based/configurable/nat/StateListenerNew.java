@@ -1694,8 +1694,12 @@ public class StateListenerNew extends Thread{
                                         value = v.asText();
                                 }else{
                                 Field fV = value.getClass().getField(fieldName);
-                                if(Number.class.isAssignableFrom(fV.getType()))
-                                    fV.set(value, v.asDouble());
+                                if(Number.class.isAssignableFrom(fV.getType())){
+                                    if(Double.class.isAssignableFrom(fV.getType()))
+                                        fV.set(value, v.asDouble());
+                                    else
+                                        fV.set(value, v.asLong());
+                                }
                                 else
                                     try{
                                         fV.set(value, (new Gson()).fromJson(mapper.writeValueAsString(v), fV.getType()));
