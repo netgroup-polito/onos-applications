@@ -1728,8 +1728,11 @@ public class StateListenerNew extends Thread{
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
                             
                             log.info("And k is.."+k);
-                            if(k!=null)
-                                ((Map)f.get(actual)).put(k, value);
+                            if(k!=null){
+                                Map m = (Map)f.get(actual);
+                                m.put(k, value);
+                                f.set(actual, m);
+                            }
                             return true;
                         } catch (IOException ex) {
                             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
