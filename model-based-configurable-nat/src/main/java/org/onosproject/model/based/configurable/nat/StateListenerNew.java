@@ -885,7 +885,7 @@ public class StateListenerNew extends Thread{
             while(field.hasNext()){
                 //INSERT THE VALUES OF THE FIELDS OF THE OBJECT
                 String fieldName = field.next();
-                log.info("Getting the value of the field "+fieldName+" in the object "+ref);
+                log.info("Getting the value of the field "+var+"/"+fieldName+" in the object "+ref);
                 if(((ObjectNode)ref).get(fieldName).isValueNode()){
                     //IT'S A LEAF
                     //code for the transformation from the Yang to the Java
