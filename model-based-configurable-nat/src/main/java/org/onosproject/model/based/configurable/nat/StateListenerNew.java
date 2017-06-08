@@ -958,7 +958,7 @@ public class StateListenerNew extends Thread{
                             listInJava = l;
                 }
             }
-            log.info("The list in java is "+l);
+            log.info("The list in java is "+listInJava);
             String[] yspez = var.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
             String[] jspez = listInJava.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
             String jWithIndex = new String();
