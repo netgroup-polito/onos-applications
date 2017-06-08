@@ -110,6 +110,7 @@ public class StateListenerNew extends Thread{
             log.info("jsonValue is "+jsonValue);
             if(type == Ip4Address.class){
                 Ip4Address value = Ip4Address.valueOf(jsonValue.asText());
+                log.info("value is.."+value);
                 return value;
             }
             if(type == IpAddress.class){
@@ -1627,7 +1628,7 @@ public class StateListenerNew extends Thread{
                                 k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             else{
                                 k = itemType.newInstance();
-//                                log.info("Setting complex key "+kNode);
+                                log.info("Setting complex key "+kNode);
                                 Iterator<String> kfields = kNode.fieldNames();
                                 while(kfields.hasNext()){
                                     String fName = kfields.next();
@@ -1640,21 +1641,23 @@ public class StateListenerNew extends Thread{
                                 String fieldName = fields.next();
                                 JsonNode v = node.get(fieldName);
                                 Field fV = value.getClass().getField(fieldName);
-                                if(Number.class.isAssignableFrom(fV.getType()))
-                                    fV.set(value, v.asDouble());
-                                else
-                                    try{
+                                
+                                try{
+                                    if(Number.class.isAssignableFrom(fV.getType()))
+                                        fV.set(value, v.asDouble());
+                                    else
                                         fV.set(value, (new Gson()).fromJson(mapper.writeValueAsString(v), fV.getType()));
-                                    }catch(Exception e){
-                                        try{
-                                            Object des = personalizedDeserialization(fV.getType(), mapper.writeValueAsString(v));
-                                            fV.set(value, des);
-                                        }catch(Exception ex){
-                                            log.info("Can't deserialize correctly!");
-                                        }
+                                }catch(Exception e){
+                                    try{
+                                        Object des = personalizedDeserialization(fV.getType(), mapper.writeValueAsString(v));
+                                        fV.set(value, des);
+                                    }catch(Exception ex){
+                                        log.info("Can't deserialize correctly!");
                                     }
+                                }
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
+                            log.info("And k is.."+k);
                             if(k!=null)
                                 m.put(k, value);
                             f.set(actual, m);
@@ -1682,7 +1685,7 @@ public class StateListenerNew extends Thread{
                                 k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             else{
                                 k = itemType.newInstance();
-//                                log.info("Setting complex key "+kNode);
+                                log.info("Setting complex key "+kNode);
                                 Iterator<String> kfields = kNode.fieldNames();
                                 while(kfields.hasNext()){
                                     String fName = kfields.next();
@@ -1723,6 +1726,8 @@ public class StateListenerNew extends Thread{
                                 }
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
+                            
+                            log.info("And k is.."+k);
                             if(k!=null)
                                 ((Map)f.get(actual)).put(k, value);
                             return true;
