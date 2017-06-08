@@ -107,6 +107,7 @@ public class StateListenerNew extends Thread{
         log.info("In personalized Deserialization the json is "+json);
         try{
             JsonNode jsonValue = mapper.readTree(json);
+            log.info("jsonValue is "+jsonValue);
             if(type == Ip4Address.class){
                 Ip4Address value = Ip4Address.valueOf(jsonValue.asText());
                 return value;
