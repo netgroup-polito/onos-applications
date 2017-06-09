@@ -1971,27 +1971,30 @@ public class StateListenerNew extends Thread{
     
     private boolean allDefault(String index, Object obj, String tillHereJava){
         try {
-//            log.info("tillHereJava is "+tillHereJava);
+            log.info("tillHereJava is "+tillHereJava);
             tillHereJava = generalIndexes(tillHereJava.substring(1));
-//            log.info("trasformed in "+tillHereJava);
+            log.info("trasformed in "+tillHereJava);
             JsonNode indexObj = mapper.readTree(index);
-//            log.info("Comparing "+mapper.writeValueAsString(obj)+" and "+indexObj);
+            log.info("Comparing "+mapper.writeValueAsString(obj)+" and "+indexObj);
             Field[] fields = obj.getClass().getFields();
             for(int i=0; i<fields.length;i++){
                 String fieldName = fields[i].getName();
-//                log.info("field : "+fieldName);
+                log.info("field : "+fieldName);
                 String fYang = null;
-//                log.info("roba da cercare "+"root/"+tillHereJava+"/{key}/"+fieldName);
+                log.info("roba da cercare "+"root/"+tillHereJava+"/{key}/"+fieldName);
                 if(YangToJava.containsKey("root/"+tillHereJava+"/{key}/"+fieldName))
                     fYang = YangToJava.get("root/"+tillHereJava+"/{key}/"+fieldName);
-//                log.info("fYang "+fYang);
+                log.info("fYang "+fYang);
                 if(fYang!=null){
                     fYang = fYang.substring(fYang.lastIndexOf("/")+1);
-//                    log.info("Ovvero "+fYang);
-//                    log.info("oggetto nella chiave "+fields[i].get(obj));
-//                    log.info("oggetto nell'index "+indexObj.get(fYang));
+                    log.info("Ovvero "+fYang);
+                    log.info("oggetto nella chiave "+fields[i].get(obj));
+                    log.info("oggetto nell'index "+indexObj.get(fYang));
+                    log.info("indexObje ha il campo? "+indexObj.has(fYang));
+                    log.info("The value in indexObj "+indexObj.get(fYang));
+                    log.info("And in obj "+fields[i].get(obj));
                     if(indexObj.has(fYang) && !indexObj.get(fYang).toString().equals(fields[i].get(obj).toString())){
-//                        log.info("****torno comunque FALSE****");
+                        log.info("****torno comunque FALSE****");
                         return false;
                     }
                 }
@@ -2039,7 +2042,7 @@ public class StateListenerNew extends Thread{
 //                                log.info("perché res è null? -> "+res);
                                 if(jsonKey.equals(index) || ((index.startsWith("{")||index.startsWith("["))&&allDefault(index, k, recompose))){
                                     actual= k;
-//                                    log.info("found k "+k);
+                                    log.info("found k "+k);
                                     found = true;
                                     break;
                                 }
