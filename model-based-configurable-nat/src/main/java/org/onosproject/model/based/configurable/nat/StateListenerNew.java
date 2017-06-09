@@ -104,13 +104,13 @@ public class StateListenerNew extends Thread{
     /*****PERSONALIZABLE FUNCTIONS*******/
     
     private Object personalizedDeserialization(Class<?> type, String json){
-        log.info("In personalized Deserialization the json is "+json);
+//        log.info("In personalized Deserialization the json is "+json);
         try{
             JsonNode jsonValue = mapper.readTree(json);
-            log.info("jsonValue is "+jsonValue);
+//            log.info("jsonValue is "+jsonValue);
             if(type == Ip4Address.class){
                 Ip4Address value = Ip4Address.valueOf(jsonValue.asText());
-                log.info("value is.."+value);
+//                log.info("value is.."+value);
                 return value;
             }
             if(type == IpAddress.class){
@@ -139,14 +139,14 @@ public class StateListenerNew extends Thread{
     }
     
     private Object personalizedSerialization(String field, Object value){
-        log.info("Il campo è "+field+" il valore "+value);
+//        log.info("Il campo è "+field+" il valore "+value);
         if(value==null){
-            log.info("il valore è null");
+//            log.info("il valore è null");
             return null;
         }
-        log.info("Il tipo originale è "+value.getClass());
+//        log.info("Il tipo originale è "+value.getClass());
         String type = YangType.get(field);
-        log.info("Il tipo è "+type);
+//        log.info("Il tipo è "+type);
         if(type==null)
             return null;
         if(type.equals("boolean"))
@@ -166,8 +166,8 @@ public class StateListenerNew extends Thread{
     
     private String personalizedKeyJson(String var, String javaVar, Object obj){
         try {
-            log.info("var.. "+var);
-            log.info("javaVar "+javaVar);
+//            log.info("var.. "+var);
+//            log.info("javaVar "+javaVar);
             Field[] objFields = obj.getClass().getFields();
             ObjectNode objJson = mapper.createObjectNode();
             for(int i=0; i<objFields.length; i++){
@@ -198,7 +198,7 @@ public class StateListenerNew extends Thread{
                             }
                         }
                     }
-                    log.info("the jsonObj now "+objJson);
+//                    log.info("the jsonObj now "+objJson);
                 }
                     
             }
@@ -332,7 +332,7 @@ public class StateListenerNew extends Thread{
     public void run(){
         while(!stopCondition){
             try {
-//                saveNewValues();
+                saveNewValues();
                 sleep(5000);
             } catch (InterruptedException ex) {
                 stopCondition = true;
@@ -866,23 +866,23 @@ public class StateListenerNew extends Thread{
  
         if(ref.isValueNode()){
             //IT'S A LEAF
-            log.info("the variable in yang "+var);
+//            log.info("the variable in yang "+var);
             String varJava = fromYangToJava(var);
-            log.info("the  variable in java "+varJava);
+//            log.info("the  variable in java "+varJava);
 //            log.info("Var java "+varJava);
             Object value = getLeafValue(varJava.substring(5));
-            log.info("..and the value "+value);
+//            log.info("..and the value "+value);
             //SERIALIZE CORRECTLY THE JSON VALUE
             var = noIndexes(var);
             Object serialized = personalizedSerialization(var, value);
-            log.info("maybe not well serialized? "+serialized);
+//            log.info("maybe not well serialized? "+serialized);
             return serialized;
         }
                
         JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
         
-        log.info("To fill the result -> "+var);
+//        log.info("To fill the result -> "+var);
         
         res = fillResult(ref, var);
         
@@ -936,7 +936,7 @@ public class StateListenerNew extends Thread{
             while(field.hasNext()){
                 //INSERT THE VALUES OF THE FIELDS OF THE OBJECT
                 String fieldName = field.next();
-                log.info("Getting the value of the field "+var+"/"+fieldName+" in the object "+ref);
+//                log.info("Getting the value of the field "+var+"/"+fieldName+" in the object "+ref);
                 if(((ObjectNode)ref).get(fieldName).isValueNode()){
                     //IT'S A LEAF
                     //code for the transformation from the Yang to the Java
@@ -946,7 +946,7 @@ public class StateListenerNew extends Thread{
                         if(i%2==0)
                             varWithoutIndexes+=varSp[i]+"[]";
                     varWithoutIndexes = varWithoutIndexes.substring(0, varWithoutIndexes.length()-2);
-                    log.info("varWithoutIndexes is correct? "+varWithoutIndexes);
+//                    log.info("varWithoutIndexes is correct? "+varWithoutIndexes);
                     if(YangToJava.containsValue(varWithoutIndexes)){
                         String key = null;
                         for(String k:YangToJava.keySet())
@@ -963,7 +963,7 @@ public class StateListenerNew extends Thread{
                         }
                         //jWithIndex is the name of hte variable in Java (preceeded by "root.")
                         Object value = getLeafValue(jWithIndex.substring(5));
-                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
+//                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
                         if(value!=null){
                             //PERSONALIZED SERIALIZATION
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
@@ -1012,7 +1012,7 @@ public class StateListenerNew extends Thread{
                             listInJava = l;
                 }
             }
-            log.info("The list in java is "+listInJava);
+//            log.info("The list in java is "+listInJava);
             String[] yspez = var.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
             String[] jspez = listInJava.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
             String jWithIndex = new String();
@@ -1023,16 +1023,16 @@ public class StateListenerNew extends Thread{
                     jWithIndex+="["+yspez[i]+"]";
             }
             //ListValues e = stateList.get(jWithIndex.substring(5)+"[]");
-            log.info("jWithIndex "+jWithIndex);
+//            log.info("jWithIndex "+jWithIndex);
             String lN = generalIndexes(jWithIndex.substring(5))+"[]";
-            log.info("lN "+lN);
+//            log.info("lN "+lN);
             String e = (lists.containsKey(lN))?lists.get(lN):null;
-            log.info("..ed e "+e);
+//            log.info("..ed e "+e);
             if(e!=null){
                 //the list is contained in the list collection and the index is e
                 String indice=e;
                 Object list = getLists(root, jWithIndex.substring(5)+"[]", jWithIndex.substring(5)+"[]");
-                log.info("list.."+list);
+//                log.info("list.."+list);
                 if(list!=null && List.class.isAssignableFrom(list.getClass())){
                     List<Object> elems = new ArrayList<>();
                     elems.addAll((List)list);
@@ -1044,14 +1044,14 @@ public class StateListenerNew extends Thread{
                             ((ArrayNode)toRet).add(child);
                     }
                 }else if(list!=null && Map.class.isAssignableFrom(list.getClass())){
-                    log.info("is a map and it is not null");
+//                    log.info("is a map and it is not null");
                     Map<Object, Object> elems = new HashMap<>();
                     elems.putAll((Map)list);
                     for(Object k:elems.keySet()){
                         //for all the elements - inster in the json
-                        log.info("the k in the keyset is "+k);
+//                        log.info("the k in the keyset is "+k);
                         JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+personalizedKeyJson(var,jWithIndex+"[{key}]/{key}", k)+"]");
-                        log.info("and the child.."+child);
+//                        log.info("and the child.."+child);
                         if(child.size()!=0)
                             ((ArrayNode)toRet).add(child);
                     }
@@ -1358,10 +1358,10 @@ public class StateListenerNew extends Thread{
                 //get the object
                 Object result = getComplexObj(msg.var);
 //                log.info("result "+result);
-                log.info("result.."+result);
+//                log.info("result.."+result);
                 msg.objret = mapper.writeValueAsString(result);
                 //pass the result to the connection module
-                log.info("Result of the get "+msg.objret);
+//                log.info("Result of the get "+msg.objret);
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
                 
@@ -1411,7 +1411,7 @@ public class StateListenerNew extends Thread{
                             Ip4Address inIp=null, outIp=null, natIp=null;
                             Short inPort=null, outPort=null, natPort=null;
                             byte proto=0;
-                            
+                            log.info("prima di prendere i valori");
                             if(entry.has("inputAddress"))
                                 inIp = Ip4Address.valueOf(entry.get("inputAddress").asText());
                             if(entry.has("outputAddress"))
@@ -1692,7 +1692,7 @@ public class StateListenerNew extends Thread{
                                 k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             else{
                                 k = itemType.newInstance();
-                                log.info("Setting complex key "+kNode);
+//                                log.info("Setting complex key "+kNode);
                                 Iterator<String> kfields = kNode.fieldNames();
                                 while(kfields.hasNext()){
                                     String fName = kfields.next();
@@ -1721,7 +1721,7 @@ public class StateListenerNew extends Thread{
                                 }
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
-                            log.info("And k is.."+k);
+//                            log.info("And k is.."+k);
                             if(k!=null)
                                 m.put(k, value);
                             f.set(actual, m);
@@ -1749,7 +1749,7 @@ public class StateListenerNew extends Thread{
                                 k = (Number.class.isAssignableFrom(itemType))?kNode.asLong():kNode.asText();
                             else{
                                 k = itemType.newInstance();
-                                log.info("Setting complex key "+kNode);
+//                                log.info("Setting complex key "+kNode);
                                 Iterator<String> kfields = kNode.fieldNames();
                                 while(kfields.hasNext()){
                                     String fName = kfields.next();
@@ -1771,7 +1771,7 @@ public class StateListenerNew extends Thread{
                                     Field fV = value.getClass().getField(fieldName);
                                     try{
                                         if(Number.class.isAssignableFrom(fV.getType())){
-                                            log.info("number value..."+v.numberValue());
+//                                            log.info("number value..."+v.numberValue());
                                             if(Double.class.isAssignableFrom(fV.getType()))
                                                 fV.set(value, v.asDouble());
                                             else
@@ -1791,16 +1791,16 @@ public class StateListenerNew extends Thread{
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
                             
-                            log.info("And k is.."+k);
+//                            log.info("And k is.."+k);
                             if(k!=null){
-                                log.info("k is != null");
-                                log.info("actual is "+actual);
-                                log.info("f is "+f);
+//                                log.info("k is != null");
+//                                log.info("actual is "+actual);
+//                                log.info("f is "+f);
                                 Map m = (Map)f.get(actual);
                                 m.put(k, value);
-                                log.info("new map is "+m);
+//                                log.info("new map is "+m);
                                 f.set(actual, m);
-                                log.info("Is setted!!");
+//                                log.info("Is setted!!");
                             }
                             return true;
                         } catch (IOException ex) {
@@ -1971,30 +1971,29 @@ public class StateListenerNew extends Thread{
     
     private boolean allDefault(String index, Object obj, String tillHereJava){
         try {
-            log.info("tillHereJava is "+tillHereJava);
+//            log.info("tillHereJava is "+tillHereJava);
             tillHereJava = generalIndexes(tillHereJava.substring(1));
-            log.info("trasformed in "+tillHereJava);
+//            log.info("trasformed in "+tillHereJava);
             JsonNode indexObj = mapper.readTree(index);
-//            log.info("Comparing "+mapper.writeValueAsString(obj)+" and "+indexObj);
             Field[] fields = obj.getClass().getFields();
             for(int i=0; i<fields.length;i++){
                 String fieldName = fields[i].getName();
-                log.info("field : "+fieldName);
+//                log.info("field : "+fieldName);
                 String fYang = null;
-                log.info("roba da cercare "+"root/"+tillHereJava+"/{key}/"+fieldName);
+//                log.info("roba da cercare "+"root/"+tillHereJava+"/{key}/"+fieldName);
                 if(YangToJava.containsKey("root/"+tillHereJava+"/{key}/"+fieldName))
                     fYang = YangToJava.get("root/"+tillHereJava+"/{key}/"+fieldName);
-                log.info("fYang "+fYang);
+//                log.info("fYang "+fYang);
                 if(fYang!=null){
                     fYang = fYang.substring(fYang.lastIndexOf("/")+1);
-                    log.info("Ovvero "+fYang);
-                    log.info("oggetto nella chiave "+fields[i].get(obj));
-                    log.info("oggetto nell'index "+indexObj.get(fYang));
-                    log.info("indexObje ha il campo? "+indexObj.has(fYang));
-                    log.info("The value in indexObj "+indexObj.get(fYang).asText());
-                    log.info("And in obj "+fields[i].get(obj));
+//                    log.info("Ovvero "+fYang);
+//                    log.info("oggetto nella chiave "+fields[i].get(obj));
+//                    log.info("oggetto nell'index "+indexObj.get(fYang));
+//                    log.info("indexObje ha il campo? "+indexObj.has(fYang));
+//                    log.info("The value in indexObj "+indexObj.get(fYang).asText());
+//                    log.info("And in obj "+fields[i].get(obj));
                     if(indexObj.has(fYang) && !indexObj.get(fYang).asText().equals(fields[i].get(obj).toString())){
-                        log.info("****torno comunque FALSE****");
+//                        log.info("****torno comunque FALSE****");
                         return false;
                     }
                 }
@@ -2042,7 +2041,7 @@ public class StateListenerNew extends Thread{
 //                                log.info("perché res è null? -> "+res);
                                 if(jsonKey.equals(index) || ((index.startsWith("{")||index.startsWith("["))&&allDefault(index, k, recompose))){
                                     actual= k;
-                                    log.info("found k "+k);
+//                                    log.info("found k "+k);
                                     found = true;
                                     break;
                                 }
@@ -2102,13 +2101,13 @@ public class StateListenerNew extends Thread{
                 yang+=separated[i]+"[]";
         if(separated.length%2==1)
             yang+=separated[separated.length-1];
-        log.info("yang "+yang);
+//        log.info("yang "+yang);
         String j =null;
         if(YangToJava.containsValue(yang))
             for(String s:YangToJava.keySet())
                 if(YangToJava.get(s).equals(yang))
                     j=s;
-        log.info("j "+j);
+//        log.info("j "+j);
         if(j==null)
             return j;
         String[] java = j.split("["+Pattern.quote("[")+"," +Pattern.quote("]")+"]");
@@ -2134,7 +2133,7 @@ public class StateListenerNew extends Thread{
                     j+="["+separated[i]+"]";
             }
         }
-        log.info("j di nuovo "+j);
+//        log.info("j di nuovo "+j);
         if(y.endsWith("[]"))
             j+="[]";
         return j;
