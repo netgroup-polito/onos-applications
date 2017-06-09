@@ -2095,11 +2095,13 @@ public class StateListenerNew extends Thread{
                 yang+=separated[i]+"[]";
         if(separated.length%2==1)
             yang+=separated[separated.length-1];
+        log.info("yang "+yang);
         String j =null;
         if(YangToJava.containsValue(yang))
             for(String s:YangToJava.keySet())
                 if(YangToJava.get(s).equals(yang))
                     j=s;
+        log.info("j "+j);
         if(j==null)
             return j;
         String[] java = j.split("["+Pattern.quote("[")+"," +Pattern.quote("]")+"]");
@@ -2125,6 +2127,7 @@ public class StateListenerNew extends Thread{
                     j+="["+separated[i]+"]";
             }
         }
+        log.info("j di nuovo "+j);
         if(y.endsWith("[]"))
             j+="[]";
         return j;
