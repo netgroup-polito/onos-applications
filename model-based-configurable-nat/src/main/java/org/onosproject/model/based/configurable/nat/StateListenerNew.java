@@ -164,14 +164,23 @@ public class StateListenerNew extends Thread{
     /***********END OF PERSONALIZED PART
      ******************************/
     
-    private String personalizedJson(String var, Object obj){
+    private String personalizedKeyJson(String var, String javaVar, Object obj){
         try {
             log.info("var.. "+var);
-            JsonNode node = mapper.valueToTree(obj);
-            log.info("**node "+node);
-            String res = mapper.writeValueAsString(node);
-            return res;
-        } catch (JsonProcessingException ex) {
+            log.info("javaVar "+javaVar);
+            javaVar = generalIndexes(javaVar);
+            log.info("general indexes "+javaVar);
+            Field[] objFields = obj.getClass().getFields();
+            for(int i=0; i<objFields.length; i++){
+                if(YangToJava.containsKey(javaVar+"/"+objFields[i].getName())){
+                    log.info("Voilà le field "+objFields[i].getName());
+                    log.info("The info about.."+ objFields[i].getType().getPackage());
+                    log.info("Synthetic ? "+objFields[i].getClass().isSynthetic());
+                }
+                    
+            }
+            return (new Gson()).toJson(obj);
+        } catch (Exception ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
@@ -1013,7 +1022,7 @@ public class StateListenerNew extends Thread{
                     for(Object k:elems.keySet()){
                         //for all the elements - inster in the json
                         log.info("the k in the keyset is "+k);
-                        JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+personalizedJson(var, k)+"]");
+                        JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+personalizedKeyJson(var,jWithIndex+"[]", k)+"]");
                         log.info("and the child.."+child);
                         if(child.size()!=0)
                             ((ArrayNode)toRet).add(child);
