@@ -1358,6 +1358,7 @@ public class StateListenerNew extends Thread{
 //                log.info("result "+result);
                 msg.objret = mapper.writeValueAsString(result);
                 //pass the result to the connection module
+                log.info("Result of the get "+msg.objret);
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
                 
