@@ -1435,7 +1435,7 @@ public class StateListenerNew extends Thread{
                                 natPort = entry.get("newPort").shortValue();
                             log.info("p3 "+natPort);
                             if(entry.has("proto"))
-                                proto = Byte.parseByte(entry.get("proto").textValue());
+                                proto = Byte.valueOf(entry.get("proto").textValue());
                             log.info("input address "+inIp);
                             log.info("input port "+inPort);
                             log.info("output address "+outIp);
