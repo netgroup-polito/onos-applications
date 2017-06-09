@@ -874,6 +874,7 @@ public class StateListenerNew extends Thread{
             log.info("..and the value "+value);
             //SERIALIZE CORRECTLY THE JSON VALUE
             Object serialized = personalizedSerialization(var, value);
+            log.info("maybe not well serialized? "+serialized);
             return serialized;
         }
                
@@ -1356,6 +1357,7 @@ public class StateListenerNew extends Thread{
                 //get the object
                 Object result = getComplexObj(msg.var);
 //                log.info("result "+result);
+                log.info("result.."+result);
                 msg.objret = mapper.writeValueAsString(result);
                 //pass the result to the connection module
                 log.info("Result of the get "+msg.objret);
