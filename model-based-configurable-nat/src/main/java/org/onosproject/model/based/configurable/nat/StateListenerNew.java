@@ -1400,7 +1400,7 @@ public class StateListenerNew extends Thread{
                     ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
                     ((AppComponent)root).requestIntercepts();
                     
-//                    if(natTableModified(var, (String)msg.obj)){
+                    if(natTableModified(var, (String)msg.obj)){
                         //ACTIONS
                         log.info("Modified nat table");
                         ArrayNode table = (ArrayNode)getComplexObj("nat/natTable");
@@ -1415,26 +1415,19 @@ public class StateListenerNew extends Thread{
                             int proto=0;
                             log.info("prima di prendere i valori");
                             if(entry.has("inputAddress")){
-                                log.info("si, esiste : "+entry.get("inputAddress"));
                                 inIp = Ip4Address.valueOf(entry.get("inputAddress").textValue());
-                                log.info("ip "+inIp);
                             }
                             if(entry.has("outputAddress"))
                                 outIp = Ip4Address.valueOf(entry.get("outputAddress").textValue());
-                            log.info("outIP "+outIp);
                             if(entry.has("newAddress"))
                                 natIp = Ip4Address.valueOf(entry.get("newAddress").textValue()); 
-                            log.info("new ip "+natIp);
                             if(entry.has("inputPort"))
                                 inPort = entry.get("inputPort").shortValue();
-                            log.info("p1 "+inPort);
                             if(entry.has("outputPort"))
                                 outPort = entry.get("outputPort").shortValue();
-                            log.info("p2 "+outPort);
                             if(entry.has("newPort"))
                                 natPort = entry.get("newPort").shortValue();
                             log.info("p3 "+natPort);
-                            if(entry.has("proto"))
                                 proto = entry.get("proto").asInt();
                             log.info("input address "+inIp);
                             log.info("input port "+inPort);
@@ -1445,7 +1438,7 @@ public class StateListenerNew extends Thread{
                             log.info("proto "+proto);
 //                            ((AppComponent)root).installOutcomingNatRule(inIp, outIp, proto, inPort, natPort, MacAddress.NONE, PortNumber.portNumber(outPort));
                         }
-//                    }
+                    }
                     //-------
                     return;
                 } catch (NoSuchFieldException ex) {
