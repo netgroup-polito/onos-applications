@@ -873,6 +873,7 @@ public class StateListenerNew extends Thread{
             Object value = getLeafValue(varJava.substring(5));
             log.info("..and the value "+value);
             //SERIALIZE CORRECTLY THE JSON VALUE
+            var = generalIndexes(var);
             Object serialized = personalizedSerialization(var, value);
             log.info("maybe not well serialized? "+serialized);
             return serialized;
@@ -1307,7 +1308,7 @@ public class StateListenerNew extends Thread{
         
     //THE NAME OF THE LIST CONTAINS BETWEEN THE SQUARED THE NAME OF THE INDEX
     private String generalIndexes(String s){
-        String[] split = s.split("["+Pattern.quote("[")+"," +Pattern.quote("]")+"]");
+        String[] split = s.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
         String l = new String();
         for(int i=0;i<split.length;i++){
             if(i%2==0){
