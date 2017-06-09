@@ -1308,7 +1308,7 @@ public class StateListenerNew extends Thread{
         
     //THE NAME OF THE LIST CONTAINS BETWEEN THE SQUARED THE NAME OF THE INDEX
     private String generalIndexes(String s){
-        String[] split = s.split("["+Pattern.quote("[")+","+Pattern.quote("]")+"]");
+        String[] split = s.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
         String l = new String();
         for(int i=0;i<split.length;i++){
             if(i%2==0){
