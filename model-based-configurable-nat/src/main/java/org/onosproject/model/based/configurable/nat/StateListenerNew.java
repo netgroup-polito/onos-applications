@@ -1991,7 +1991,7 @@ public class StateListenerNew extends Thread{
                     log.info("oggetto nella chiave "+fields[i].get(obj));
                     log.info("oggetto nell'index "+indexObj.get(fYang));
                     log.info("indexObje ha il campo? "+indexObj.has(fYang));
-                    log.info("The value in indexObj "+indexObj.get(fYang));
+                    log.info("The value in indexObj "+indexObj.get(fYang).textValue());
                     log.info("And in obj "+fields[i].get(obj));
                     if(indexObj.has(fYang) && !indexObj.get(fYang).toString().equals(fields[i].get(obj).toString())){
                         log.info("****torno comunque FALSE****");
