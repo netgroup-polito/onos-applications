@@ -151,6 +151,8 @@ public class StateListenerNew extends Thread{
             return null;
         if(type.equals("boolean"))
             return Boolean.parseBoolean(value.toString());
+        if(type.equals("uint8"))
+            return Integer.parseInt(value.toString());
         if(type.equals("uint16"))
             return Integer.parseInt(value.toString());
         if(type.equals("int32"))
