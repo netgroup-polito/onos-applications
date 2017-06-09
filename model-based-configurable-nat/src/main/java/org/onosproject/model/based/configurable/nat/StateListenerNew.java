@@ -866,9 +866,12 @@ public class StateListenerNew extends Thread{
  
         if(ref.isValueNode()){
             //IT'S A LEAF
+            log.info("the variable in yang "+var);
             String varJava = fromYangToJava(var);
+            log.info("the  variable in java "+varJava);
 //            log.info("Var java "+varJava);
             Object value = getLeafValue(varJava.substring(5));
+            log.info("..and the value "+value);
             //SERIALIZE CORRECTLY THE JSON VALUE
             Object serialized = personalizedSerialization(var, value);
             return serialized;
