@@ -168,8 +168,6 @@ public class StateListenerNew extends Thread{
         try {
             log.info("var.. "+var);
             log.info("javaVar "+javaVar);
-            javaVar = generalIndexes(javaVar);
-            log.info("general indexes "+javaVar);
             Field[] objFields = obj.getClass().getFields();
             for(int i=0; i<objFields.length; i++){
                 if(YangToJava.containsKey(javaVar+"/"+objFields[i].getName())){
@@ -1022,7 +1020,7 @@ public class StateListenerNew extends Thread{
                     for(Object k:elems.keySet()){
                         //for all the elements - inster in the json
                         log.info("the k in the keyset is "+k);
-                        JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+personalizedKeyJson(var,jWithIndex+"[]", k)+"]");
+                        JsonNode child = fillResult(((ArrayNode)ref).get(0), var+"["+personalizedKeyJson(var,jWithIndex+"[{key}]/{key}", k)+"]");
                         log.info("and the child.."+child);
                         if(child.size()!=0)
                             ((ArrayNode)toRet).add(child);
