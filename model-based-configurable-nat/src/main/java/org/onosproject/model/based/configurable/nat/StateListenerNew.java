@@ -1419,14 +1419,19 @@ public class StateListenerNew extends Thread{
                             }
                             if(entry.has("outputAddress"))
                                 outIp = Ip4Address.valueOf(entry.get("outputAddress").textValue());
+                            log.info("outIP "+outIp);
                             if(entry.has("newAddress"))
-                                natIp = Ip4Address.valueOf(entry.get("newAddress").textValue());   
+                                natIp = Ip4Address.valueOf(entry.get("newAddress").textValue()); 
+                            log.info("new ip "+natIp);
                             if(entry.has("inputPort"))
                                 inPort = entry.get("inputPort").shortValue();
+                            log.info("p1 "+inPort);
                             if(entry.has("outputPort"))
                                 outPort = entry.get("outputPort").shortValue();
+                            log.info("p2 "+outPort);
                             if(entry.has("newPort"))
                                 natPort = entry.get("newPort").shortValue();
+                            log.info("p3 "+natPort);
                             if(entry.has("proto"))
                                 proto = entry.get("proto").binaryValue()[0];
                             log.info("input address "+inIp);
