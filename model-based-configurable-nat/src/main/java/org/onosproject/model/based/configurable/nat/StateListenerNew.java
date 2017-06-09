@@ -2088,7 +2088,7 @@ public class StateListenerNew extends Thread{
     
     //TRANSLATION FROM THE YANG NAME TO THE JAVA NAME
     public String fromYangToJava(String y){
-        String[] separated = y.split("["+Pattern.quote("[")+"," +Pattern.quote("]")+"]");
+        String[] separated = y.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
         String yang = new String();
         for(int i=0; i<separated.length;i++)
             if(i%2==0 && i!=separated.length-1)
