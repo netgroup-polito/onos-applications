@@ -332,7 +332,7 @@ public class StateListenerNew extends Thread{
     public void run(){
         while(!stopCondition){
             try {
-                saveNewValues();
+//                saveNewValues();
                 sleep(5000);
             } catch (InterruptedException ex) {
                 stopCondition = true;
