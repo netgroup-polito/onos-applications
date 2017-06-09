@@ -1418,9 +1418,9 @@ public class StateListenerNew extends Thread{
                                 log.info("ip "+inIp);
                             }
                             if(entry.has("outputAddress"))
-                                outIp = Ip4Address.valueOf(entry.get("outputAddress").asText());
+                                outIp = Ip4Address.valueOf(entry.get("outputAddress").textValue());
                             if(entry.has("newAddress"))
-                                natIp = Ip4Address.valueOf(entry.get("newAddress").asText());   
+                                natIp = Ip4Address.valueOf(entry.get("newAddress").textValue());   
                             if(entry.has("inputPort"))
                                 inPort = entry.get("inputPort").shortValue();
                             if(entry.has("outputPort"))
