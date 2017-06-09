@@ -1397,8 +1397,8 @@ public class StateListenerNew extends Thread{
                     cM.setResourceValue((new Gson()).toJson(msg));
                     
                     //-------ADDED FOR THE NAT!
-//                    ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
-//                    ((AppComponent)root).requestIntercepts();
+                    ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
+                    ((AppComponent)root).requestIntercepts();
                     
 //                    if(natTableModified(var, (String)msg.obj)){
                         //ACTIONS
@@ -1412,7 +1412,7 @@ public class StateListenerNew extends Thread{
                             log.info("entry "+entry);
                             Ip4Address inIp=null, outIp=null, natIp=null;
                             Short inPort=null, outPort=null, natPort=null;
-                            byte proto=0;
+                            int proto=0;
                             log.info("prima di prendere i valori");
                             if(entry.has("inputAddress")){
                                 log.info("si, esiste : "+entry.get("inputAddress"));
@@ -1435,7 +1435,7 @@ public class StateListenerNew extends Thread{
                                 natPort = entry.get("newPort").shortValue();
                             log.info("p3 "+natPort);
                             if(entry.has("proto"))
-                                proto = Byte.valueOf(entry.get("proto").textValue());
+                                proto = entry.get("proto").asInt();
                             log.info("input address "+inIp);
                             log.info("input port "+inPort);
                             log.info("output address "+outIp);
