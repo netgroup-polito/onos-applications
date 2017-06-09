@@ -169,15 +169,40 @@ public class StateListenerNew extends Thread{
             log.info("var.. "+var);
             log.info("javaVar "+javaVar);
             Field[] objFields = obj.getClass().getFields();
+            ObjectNode objJson = mapper.createObjectNode();
             for(int i=0; i<objFields.length; i++){
-                if(YangToJava.containsKey(javaVar+"/"+objFields[i].getName())){
-                    log.info("Voilà le field "+objFields[i].getName());
-                    log.info("The info about.."+ objFields[i].getType().getPackage());
-                    log.info("Synthetic ? "+objFields[i].getClass().isSynthetic());
+                String javaField = javaVar+"/"+objFields[i].getName();
+                if(YangToJava.containsKey(javaField)){
+                    String fieldName = YangToJava.get(javaField).substring(YangToJava.get(javaField).lastIndexOf("/")+1);
+                    if(objFields[i].getClass().getPackage()==root.getClass().getPackage()){
+                        String value = personalizedKeyJson(YangToJava.get(javaField), javaField, objFields[i].get(obj));   
+                        objJson.put(fieldName, value);
+                    }else{
+                        Object parsed = personalizedSerialization(YangToJava.get(javaField), objFields[i].get(obj));
+                        if(parsed != null){
+                            if(Boolean.class.isAssignableFrom(parsed.getClass())){  
+//                                    log.info("Trattato come boolean");
+                                ((ObjectNode)objJson).put(fieldName, (Boolean)parsed);}
+                            else if(parsed.getClass() == Long.class){
+//                                    log.info("Trattato come long");
+                                ((ObjectNode)objJson).put(fieldName, (Long)parsed);
+                            }
+                            else if(Integer.class.isAssignableFrom(parsed.getClass())){
+//                                    log.info("Trattato come int");
+                                ((ObjectNode)objJson).put(fieldName, (Integer)parsed);}
+                            else if(Double.class.isAssignableFrom(parsed.getClass())){
+//                                    log.info("trattato come double");
+                                ((ObjectNode)objJson).put(fieldName, (Double)parsed);}
+                            else {//log.info("Trattato come string");
+                            ((ObjectNode)objJson).put(fieldName, parsed.toString());
+                            }
+                        }
+                    }
+                    log.info("the jsonObj now "+objJson);
                 }
                     
             }
-            return (new Gson()).toJson(obj);
+            return mapper.writeValueAsString(objJson);
         } catch (Exception ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
         }
