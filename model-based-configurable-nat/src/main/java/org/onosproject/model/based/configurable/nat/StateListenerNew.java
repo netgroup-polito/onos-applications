@@ -139,14 +139,14 @@ public class StateListenerNew extends Thread{
     }
     
     private Object personalizedSerialization(String field, Object value){
-//        log.info("Il campo è "+field+" il valore "+value);
+        log.info("Il campo è "+field+" il valore "+value);
         if(value==null){
-//            log.info("il valore è null");
+            log.info("il valore è null");
             return null;
         }
-//        log.info("Il tipo originale è "+value.getClass());
+        log.info("Il tipo originale è "+value.getClass());
         String type = YangType.get(field);
-//        log.info("Il tipo è "+type);
+        log.info("Il tipo è "+type);
         if(type==null)
             return null;
         if(type.equals("boolean"))
