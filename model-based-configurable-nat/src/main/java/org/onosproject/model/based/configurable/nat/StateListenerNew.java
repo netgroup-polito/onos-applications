@@ -1412,8 +1412,11 @@ public class StateListenerNew extends Thread{
                             Short inPort=null, outPort=null, natPort=null;
                             byte proto=0;
                             log.info("prima di prendere i valori");
-                            if(entry.has("inputAddress"))
-                                inIp = Ip4Address.valueOf(entry.get("inputAddress").asText());
+                            if(entry.has("inputAddress")){
+                                log.info("si, esiste : "+entry.get("inputAddress"));
+                                inIp = Ip4Address.valueOf(entry.get("inputAddress").textValue());
+                                log.info("ip "+inIp);
+                            }
                             if(entry.has("outputAddress"))
                                 outIp = Ip4Address.valueOf(entry.get("outputAddress").asText());
                             if(entry.has("newAddress"))
