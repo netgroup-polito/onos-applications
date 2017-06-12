@@ -19,6 +19,7 @@ To install the application on a running onos instance run the following steps.
 
 - download and build the source code through maven:
 
+        sudo apt-get install maven
         git clone https://github.com/netgroup-polito/onos-applications
         cd onos-applications/apps-capabilities
         mvn clean install
