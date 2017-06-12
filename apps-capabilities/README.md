@@ -34,7 +34,7 @@ To install the application on a running onos instance run the following steps.
 ## Activate
 After installing the application, you can activate it through the onos cli by typing:
 
-        app activate org.onosproject.apps-capabilities
+        app activate it.polito.onosapp.apps-capabilities
 
 To check that the app has been activated type log:tail from the onos cli.
 
