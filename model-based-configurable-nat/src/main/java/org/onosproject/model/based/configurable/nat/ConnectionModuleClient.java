@@ -24,14 +24,19 @@ import org.glassfish.jersey.media.sse.SseFeature;
  * @author lara
  */
 public class ConnectionModuleClient {
-    public static final String BASE_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule";
+    public static String BASE_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule";
+//    public static final String BASE_URI = "http://192.168.213.131:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule";
+    public static String EVENTS_URI = "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events";
     public static Client client;
     public static WebTarget target;
     public static EventSource eventSource;
     public static StateListenerNew l;
     public String id;
 
-    public ConnectionModuleClient(StateListenerNew l, String id){
+    public ConnectionModuleClient(StateListenerNew l, String id, String baseUri, String eventsUri){
+        BASE_URI=baseUri;
+        EVENTS_URI=eventsUri;
+        
         client = ClientBuilder.newBuilder()
                 .register(SseFeature.class)
                 .build();
@@ -51,15 +56,15 @@ public class ConnectionModuleClient {
     }
     
     private void startSSE(String id){
-        WebTarget endpoint = client.target("http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events").path(id);
+        WebTarget endpoint = client.target(EVENTS_URI).path(id);
         //WebTarget endpoint;
         eventSource = EventSource.target(endpoint).build();
-//        l.log.info("Ho costruito l'eventSource");
+        l.log.info("Ho costruito l'eventSource");
         EventListener listener = new EventListener() {
             
             @Override
             public void onEvent(InboundEvent ie) {
-                System.out.println("received SSE");
+//                System.out.println("received SSE");
                 //try {
                     System.out.println(ie.getName() + " data is " +ie.readData());
                         l.log.info("++Received SSE data "+ie.readData());
@@ -98,10 +103,10 @@ public class ConnectionModuleClient {
     }
     
     public void setResourceValue(String msg){
-        System.out.println("Passo al web service il valore "+msg);
+        //l.log.info("Passo al web service il valore "+msg);
         Response r = target.path(id.toString()).path("response").request().post(Entity.entity(msg, MediaType.TEXT_PLAIN), Response.class);
-        if(r.getStatus()!=200){
-            System.out.print("!!Error in the passage of a requested value");
+        if(r.getStatus()!=204){
+            l.log.info("!!Error in the passage of a requested value "+r.getStatus());
         }
     }
     
@@ -125,11 +130,13 @@ public class ConnectionModuleClient {
     }
     
     public void SetDataModel(String input){
+        l.log.info("Setting DM");
         Response cr = target.path(id).path("dataModel").request().post(Entity.entity(input, MediaType.TEXT_PLAIN), Response.class);
         if(cr.getStatus()!=204){
             System.out.println("Error in the post");
             System.out.println(cr.getStatus());
         }
+        l.log.info(cr.getStatusInfo().toString());
     }
     
 //    public boolean SetVariableCorrispondence(String x, String c){

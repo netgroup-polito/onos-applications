@@ -59,6 +59,7 @@ public class AppComponent {
     private static final String PUBLIC_PORT_ID = "WAN:0";
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
+    private boolean first = true;
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected CoreService coreService;
@@ -84,7 +85,7 @@ public class AppComponent {
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected NetworkConfigRegistry configRegistry;
 
-    private ApplicationId appId;
+    public ApplicationId appId;
 
     private NatPacketProcessor processor = new NatPacketProcessor();
 
@@ -113,7 +114,8 @@ public class AppComponent {
      *  Key: output port
      *  value: "inputIP:inputPort"
      */
-    public Map<Short, String> natPortMap = new HashMap<>();
+    //public Map<Short, String> natPortMap = new HashMap<>();
+    public Map<FlowIdentifier, FlowInfo> natPortMap = new HashMap<>();
 
     /**
      *  The ARP table
@@ -164,6 +166,8 @@ public class AppComponent {
 
     @Deactivate
     protected void deactivate() {
+        
+        log.info("Deactivate");
 
         sl.stopSL();
         
@@ -255,71 +259,74 @@ public class AppComponent {
     /**
      * Request packet in via packet service.
      */
-    private void requestIntercepts() {
+    public void requestIntercepts() {
 //        log.info("starting request Intercepts");
-        TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
-        selector.matchEthType(Ethernet.TYPE_IPV4);
-        selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
-            selector.matchVlanId(inputApp.externalVlan);
-        log.info("appId "+appId);
-        log.info("Selector "+selector);
-        log.info("inputApp "+inputApp);
-        log.info("E al suo interno deviceId "+inputApp.deviceId);
-        TrafficSelector s = selector.build();
-        log.info("Selector built");
-        packetService.requestPackets(s, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
-//        log.info("Traffic selector for ipv4 in input setted");
-        
-        selector = DefaultTrafficSelector.builder();
-        selector.matchEthType(Ethernet.TYPE_ARP);
-        selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
-            selector.matchVlanId(inputApp.externalVlan);
-        packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
-//        log.info("Traffic selector for ethernet in input setted");
-        
-        selector = DefaultTrafficSelector.builder();
-        selector.matchEthType(Ethernet.TYPE_ARP);
-        selector.matchInPort(outputApp.portNumber);
-        if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
-            selector.matchVlanId(outputApp.externalVlan);
-        packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
-//        log.info("Traffic selector for ethernet in output setted");
+        try{
+            TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
+            selector.matchEthType(Ethernet.TYPE_IPV4);
+            selector.matchInPort(inputApp.portNumber);
+            if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
+                selector.matchVlanId(inputApp.externalVlan);
+            TrafficSelector s = selector.build();
+            packetService.requestPackets(s, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
+//            log.info("Traffic selector for ipv4 in input setted");
+
+            selector = DefaultTrafficSelector.builder();
+            selector.matchEthType(Ethernet.TYPE_ARP);
+            selector.matchInPort(inputApp.portNumber);
+            if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
+                selector.matchVlanId(inputApp.externalVlan);
+            packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
+//            log.info("Traffic selector for ethernet in input setted");
+
+            selector = DefaultTrafficSelector.builder();
+            selector.matchEthType(Ethernet.TYPE_ARP);
+            selector.matchInPort(outputApp.portNumber);
+            if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
+                selector.matchVlanId(outputApp.externalVlan);
+            packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
+//            log.info("Traffic selector for ethernet in output setted");
+        }catch(Exception ex){
+            log.error(ex.getMessage());
+            withdrawIntercepts();
+        }
     }
 
-    private void withdrawIntercepts() {
-        log.info("In withdrawIntercepts!");
-        TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
-        selector.matchEthType(Ethernet.TYPE_IPV4);
-        selector.matchInPort(inputApp.portNumber);
-//        log.info("externalVlan "+inputApp.externalVlan);
-        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
-            selector.matchVlanId(inputApp.externalVlan);
-//        log.info("Siamo dopo l'if e appId "+appId+" e devId "+inputApp.deviceId);
-        TrafficSelector sel = selector.build();
-//        log.info("build the selector");
-        packetService.cancelPackets(sel, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
+    public void withdrawIntercepts() {
+        try{
+            TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
+            selector.matchEthType(Ethernet.TYPE_IPV4);
+            selector.matchInPort(inputApp.portNumber);
+//            log.info("externalVlan "+inputApp.externalVlan);
+            if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
+                selector.matchVlanId(inputApp.externalVlan);
+//            log.info("Siamo dopo l'if e appId "+appId+" e devId "+inputApp.deviceId);
+            TrafficSelector sel = selector.build();
+//            log.info("build the selector");
+            packetService.cancelPackets(sel, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
-//        log.info("Stop input ipv4");
-        
-        selector = DefaultTrafficSelector.builder();
-        selector.matchEthType(Ethernet.TYPE_ARP);
-        selector.matchInPort(inputApp.portNumber);
-        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
-            selector.matchVlanId(inputApp.externalVlan);
-        packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
+//            log.info("Stop input ipv4");
 
-//        log.info("Stop input arp");
-        
-        selector = DefaultTrafficSelector.builder();
-        selector.matchEthType(Ethernet.TYPE_ARP);
-        selector.matchInPort(outputApp.portNumber);
-        if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
-            selector.matchVlanId(outputApp.externalVlan);
-        packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
-    
-//        log.info("stop output");
+            selector = DefaultTrafficSelector.builder();
+            selector.matchEthType(Ethernet.TYPE_ARP);
+            selector.matchInPort(inputApp.portNumber);
+            if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
+                selector.matchVlanId(inputApp.externalVlan);
+            packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
+
+//            log.info("Stop input arp");
+
+            selector = DefaultTrafficSelector.builder();
+            selector.matchEthType(Ethernet.TYPE_ARP);
+            selector.matchInPort(outputApp.portNumber);
+            if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
+                selector.matchVlanId(outputApp.externalVlan);
+            packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
+
+//            log.info("stop output");
+        }catch(Exception ex){
+            log.error(ex.getMessage());
+        }
     }
 
     private class NatPacketProcessor implements PacketProcessor {
@@ -404,7 +411,16 @@ public class AppComponent {
                     srcPortNumber = tcpHeader.getSourcePort();
                     publicPort = getAvailableOutputPort();
 
-                    natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
+//                    natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
+
+                    FlowIdentifier flowId = new FlowIdentifier();
+                    flowId.srcPort = (short) publicPort;
+                    flowId.protocol = ipHeader.getProtocol();
+                    
+                    FlowInfo flowInfo= new FlowInfo();
+                    flowInfo.nattedIp = srcAddress.toString();
+                    flowInfo.nattedPort = (short)srcPortNumber;
+                    natPortMap.put(flowId, flowInfo);
 
                     log.info(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
                     log.info(" - - Src IP: " + srcAddress.toString());
@@ -412,6 +428,32 @@ public class AppComponent {
                     log.info(" - - Src Port: " + srcPortNumber);
                     log.info(" - - Dst Port: " + tcpHeader.getDestinationPort());
 
+                    } else if (ipHeader.getProtocol() == IPv4.PROTOCOL_UDP) {
+ 
+                     log.debug(" - - UDP packet");
+                     UDP udpHeader = (UDP) ipHeader.getPayload();
+                     if (udpHeader == null)
+                         return;
+                     srcPortNumber = udpHeader.getSourcePort();
+                     publicPort = getAvailableOutputPort();
+ 
+//                     natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
+ 
+                    FlowIdentifier flowId = new FlowIdentifier();
+                    flowId.srcPort = (short) publicPort;
+                    flowId.protocol = ipHeader.getProtocol();
+                    
+                    FlowInfo flowInfo= new FlowInfo();
+                    flowInfo.nattedIp = srcAddress.toString();
+                    flowInfo.nattedPort = (short)srcPortNumber;
+                    natPortMap.put(flowId, flowInfo);
+                    
+                    log.debug(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
+                    log.debug(" - - Src IP: " + srcAddress.toString());
+                    log.debug(" - - Dst IP: " + dstAddress.toString());
+                    log.debug(" - - Src Port: " + srcPortNumber);
+                    log.debug(" - - Dst Port: " + udpHeader.getDestinationPort());
+ 
 
                 } else if (ipHeader.getProtocol() == IPv4.PROTOCOL_ICMP) {
 
@@ -429,28 +471,36 @@ public class AppComponent {
 
                 ipHeader.setSourceAddress(outputApp.ipAddress.toInt());
 
-                Set<Path> paths = topologyService.getPaths(topologyService.currentTopology(), inputApp.deviceId, outputApp.deviceId);
-                Path path = pickForwardPathIfPossible(paths, packetContext.inPacket().receivedFrom().port());
-
-                // create flows for each link
-                for (Link link : path.links()) {
-                    if (link.src().deviceId().equals(inputApp.deviceId)) {
-                        log.info("LINK: input device");
-                        installIncomingNatRule(packetContext, srcAddress.getIp4Address(), dstAddress.getIp4Address(), ipHeader.getProtocol(), srcPortNumber, publicPort, dstMac, link.src().port());
-                        installForwardingRule(link.src().deviceId(), inputApp.portNumber, dstAddress.getIp4Address(), srcAddress.getIp4Address());
-                    } else {
-                        log.info("LINK: not input device");
-                        installForwardingRule(link.src().deviceId(), link.src().port(), outputApp.ipAddress.getIp4Address(), dstAddress.getIp4Address());
-                    }
-                    if (link.dst().deviceId().equals(outputApp.deviceId)) {
-                        log.info("LINK: output device");
-                        installOutcomingNatRule(dstAddress.getIp4Address(), srcAddress.getIp4Address(), ipHeader.getProtocol(), publicPort, srcPortNumber, ethPkt.getSourceMAC(), link.dst().port());
-                        installForwardingRule(link.dst().deviceId(), outputApp.portNumber, outputApp.ipAddress.getIp4Address(), dstAddress.getIp4Address());
-                    } else {
-                        log.info("LINK: not output device");
-                        installForwardingRule(link.dst().deviceId(), link.dst().port(), dstAddress.getIp4Address(), srcAddress.getIp4Address());
-                    }
+                if(inputApp.deviceId.equals(outputApp.deviceId)) {
+                     // nat interfaces are on the same device
+                     installIncomingNatRule(packetContext, srcAddress.getIp4Address(), dstAddress.getIp4Address(), ipHeader.getProtocol(), srcPortNumber, publicPort, dstMac, outputApp.portNumber);
+                     installOutcomingNatRule(dstAddress.getIp4Address(), srcAddress.getIp4Address(), ipHeader.getProtocol(), publicPort, srcPortNumber, ethPkt.getSourceMAC(), inputApp.portNumber);
+                 } else {
+                     // nat interfaces are on different devices, we need to find a path
+                     Set<Path> paths = topologyService.getPaths(topologyService.currentTopology(), inputApp.deviceId, outputApp.deviceId);
+                     Path path = pickForwardPathIfPossible(paths, packetContext.inPacket().receivedFrom().port());
+ 
+                     // create flows for each link
+                     for (Link link : path.links()) {
+                         if (link.src().deviceId().equals(inputApp.deviceId)) {
+                             log.debug("LINK: input device");
+                             installIncomingNatRule(packetContext, srcAddress.getIp4Address(), dstAddress.getIp4Address(), ipHeader.getProtocol(), srcPortNumber, publicPort, dstMac, link.src().port());
+                             installForwardingRule(link.src().deviceId(), inputApp.portNumber, dstAddress.getIp4Address(), srcAddress.getIp4Address());
+                         } else {
+                             log.debug("LINK: not input device");
+                             installForwardingRule(link.src().deviceId(), link.src().port(), outputApp.ipAddress.getIp4Address(), dstAddress.getIp4Address());
+                         }
+                         if (link.dst().deviceId().equals(outputApp.deviceId)) {
+                             log.debug("LINK: output device");
+                             installOutcomingNatRule(dstAddress.getIp4Address(), srcAddress.getIp4Address(), ipHeader.getProtocol(), publicPort, srcPortNumber, ethPkt.getSourceMAC(), link.dst().port());
+                             installForwardingRule(link.dst().deviceId(), outputApp.portNumber, outputApp.ipAddress.getIp4Address(), dstAddress.getIp4Address());
+                         } else {
+                             log.debug("LINK: not output device");
+                             installForwardingRule(link.dst().deviceId(), link.dst().port(), dstAddress.getIp4Address(), srcAddress.getIp4Address());
+                         }
+                     }
                 }
+                
                 try { Thread.sleep(100); } catch (InterruptedException ignored) { }
 
                 log.info("Forwarding to Table");
@@ -507,7 +557,7 @@ public class AppComponent {
                     .setDestinationMACAddress(MacAddress.BROADCAST)
                     .setSourceMACAddress(publicMac)
                     .setEtherType(Ethernet.TYPE_ARP);
-            if (outputApp.externalVlan.toShort() != 0)
+            if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
                 ethRequest.setVlanID(outputApp.externalVlan.toShort());
             ethRequest.setPayload(arpRequest);
 
@@ -536,7 +586,7 @@ public class AppComponent {
     }
 
     // Install a rule in the last switch applying the NAT reverse function
-    private void installOutcomingNatRule(Ip4Address srcAddress, Ip4Address dstAddress, byte protocol, int dstPort,
+    public void installOutcomingNatRule(Ip4Address srcAddress, Ip4Address dstAddress, byte protocol, int dstPort,
                                         int newDstPort, MacAddress dstMac, PortNumber portNumber) {
 
         log.debug(" - Install outcoming nat Rule");
@@ -548,13 +598,16 @@ public class AppComponent {
                 .matchIPSrc(srcAddress.toIpPrefix())
                 .matchIPProtocol(protocol)
                 .matchIPDst(outputApp.ipAddress.toIpPrefix());
-        if (outputApp.externalVlan.toShort() != 0)
+        if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
             selectorBuilder.matchVlanId(outputApp.externalVlan);
 
         switch (protocol) {
             case IPv4.PROTOCOL_TCP:
-                // selectorBuilder.matchTcpDst(TpPort.tpPort(dstPort));
+                selectorBuilder.matchTcpDst(TpPort.tpPort(dstPort));
                 break;
+            case IPv4.PROTOCOL_UDP:
+                 selectorBuilder.matchUdpDst(TpPort.tpPort(dstPort));
+                  break;
             case IPv4.PROTOCOL_ICMP:
                 // selectorBuilder.matchIcmpCode((byte) dstPort);
         }
@@ -562,19 +615,22 @@ public class AppComponent {
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
                 .setIpDst(dstAddress.getIp4Address())
                 .setEthDst(dstMac)
-                .setEthSrc(publicMac)
-                .setOutput(portNumber);
+                .setEthSrc(publicMac);
         // VLAN endpoint
-        if (outputApp.externalVlan.toShort() != 0) {
-            if (inputApp.externalVlan.toShort() != 0)
+        if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0) {
+            if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
                 treatmentBuilder.setVlanId(inputApp.externalVlan);
             else
                 treatmentBuilder.popVlan();
         }
 
-        // TODO TCP port change does not work
-        //if (protocol == IPv4.PROTOCOL_TCP)
-        //    treatmentBuilder.setTcpDst(TpPort.tpPort(newDstPort));
+        // change the destination transport port
+         if (protocol == IPv4.PROTOCOL_TCP)
+             treatmentBuilder.setTcpDst(TpPort.tpPort(newDstPort));
+         else if (protocol == IPv4.PROTOCOL_UDP)
+             treatmentBuilder.setUdpDst(TpPort.tpPort(newDstPort));
+         // set output interface at the end
+         treatmentBuilder.setOutput(portNumber);
 
         ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
                 .withSelector(selectorBuilder.build())
@@ -593,8 +649,8 @@ public class AppComponent {
                 "Proto " + protocol + " | " +
                 "IpDst " + outputApp.ipAddress.getIp4Address().toString());
         String tcpLogString = "";
-        if (protocol == IPv4.PROTOCOL_TCP)
-            tcpLogString = "setTcpDst " + newDstPort + " | ";
+        if (protocol == IPv4.PROTOCOL_TCP || protocol == IPv4.PROTOCOL_UDP)
+             tcpLogString = "setTpDst " + newDstPort + " | ";
         log.info("Action: " +
                 "setIpDst " + dstAddress.getIp4Address().toString() + " | " +
                 "setEthDst " + dstMac.toString() + " | " +
@@ -620,11 +676,14 @@ public class AppComponent {
                 .matchIPSrc(srcAddress.toIpPrefix())
                 .matchIPProtocol(protocol)
                 .matchIPDst(dstAddress.toIpPrefix());
-        if (inputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
             selectorBuilder.matchVlanId(inputApp.externalVlan);
         switch (protocol) {
             case IPv4.PROTOCOL_TCP:
-                //selectorBuilder.matchTcpSrc(TpPort.tpPort(srcPort));
+                selectorBuilder.matchTcpSrc(TpPort.tpPort(srcPort));
+                break;
+            case IPv4.PROTOCOL_UDP:
+                selectorBuilder.matchUdpSrc(TpPort.tpPort(srcPort));
                 break;
             case IPv4.PROTOCOL_ICMP:
                 //selectorBuilder.matchIcmpCode((byte) srcPort);
@@ -633,19 +692,22 @@ public class AppComponent {
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
                 .setIpSrc(outputApp.ipAddress)
                 .setEthSrc(publicMac)
-                .setEthDst(dstMac)
-                .setOutput(portNumber);
+                .setEthDst(dstMac);
         // VLAN endpoint
-        if (inputApp.externalVlan.toShort() != 0) {
-            if (outputApp.externalVlan.toShort() != 0)
+        if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0) {
+            if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
                 treatmentBuilder.setVlanId(outputApp.externalVlan);
             else
                 treatmentBuilder.popVlan();
         }
 
-        // TODO TCP port change does not work
-        //if (protocol == IPv4.PROTOCOL_TCP)
-        //    treatmentBuilder.setTcpSrc(TpPort.tpPort(newSrcPort));
+        // change the source transport port
+        if (protocol == IPv4.PROTOCOL_TCP)
+            treatmentBuilder.setTcpSrc(TpPort.tpPort(newSrcPort));
+        else if (protocol == IPv4.PROTOCOL_UDP)
+            treatmentBuilder.setUdpSrc(TpPort.tpPort(newSrcPort));
+        // set output interface at the end
+        treatmentBuilder.setOutput(portNumber);
 
         ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
                 .withSelector(selectorBuilder.build())
@@ -664,8 +726,8 @@ public class AppComponent {
                 "Proto " + protocol + " | " +
                 "IpDst " + dstAddress.toString());
         String tcpLogString = "";
-        if (protocol == IPv4.PROTOCOL_TCP)
-            tcpLogString = "setTcpSrc " + newSrcPort + " | ";
+        if (protocol == IPv4.PROTOCOL_TCP || protocol == IPv4.PROTOCOL_UDP)
+             tcpLogString = "setTpSrc " + newSrcPort + " | ";
         log.info("Action: " +
                 "setIpSrc " + outputApp.ipAddress.toString() + " | " +
                 "setEthDst " + dstMac.toString() + " | " +
@@ -692,13 +754,13 @@ public class AppComponent {
         TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder()
                 .setOutput(outputPort);
         // VLAN endpoint
-        if (deviceId == inputApp.deviceId && inputApp.externalVlan.toShort() != 0) {
-            if (outputApp.externalVlan.toShort() != 0) {
+        if (deviceId == inputApp.deviceId && inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0) {
+            if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0) {
                 treatmentBuilder.pushVlan();
                 treatmentBuilder.setVlanId(inputApp.externalVlan);
             }
-        } else if (deviceId == outputApp.deviceId && outputApp.externalVlan.toShort() != 0) {
-            if (inputApp.externalVlan.toShort() != 0) {
+        } else if (deviceId == outputApp.deviceId && outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0) {
+            if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0) {
                 treatmentBuilder.pushVlan();
                 treatmentBuilder.setVlanId(outputApp.externalVlan);
             }
