@@ -43,7 +43,7 @@ After activating the application you need to configure functional ports that it 
           "nat": {
             "ports":
               {
-                "USER:1": {
+                "USER:0": {
                   "device-id": "of:0000000000000002",
                   "port-number": 4,
                   "flow-priority": 10
