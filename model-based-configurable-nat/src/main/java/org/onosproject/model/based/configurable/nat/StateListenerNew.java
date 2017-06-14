@@ -71,7 +71,7 @@ import org.onlab.packet.MacAddress;
  * @author lara
  */
 public class StateListenerNew extends Thread{
-    private static final String YINFILE = "configuration/yinFile.txt";
+    private static final String YINFILE = "configuration/yinFile.json";
     private static final String YANGFILE = "configuration/yangFile.yang";
     private static final String MAPPINGFILE = "configuration/mappingFile.txt";  
     private String AppId;
