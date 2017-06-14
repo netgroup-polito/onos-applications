@@ -59,6 +59,6 @@ After activating the application you need to configure functional ports that it 
       }
     }
     ```
-WAN:0 is the private port of the NAT, while USER:1 is the public one.
+WAN:0 is the private port of the NAT, while USER:0 is the public one.
 
 After pushing the configuration, you can check the log by typing log:tail on the onos cli.
