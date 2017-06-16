@@ -56,7 +56,10 @@ After activating the application you need to configure the ovsdb node IP. This i
     }
   ```
 
-Check your ovsdb configuration to get the correct ip and port for the ovsdb node.
+Check your ovsdb configuration to get the correct ip and port for the ovsdb node. If you have not configured the ovsdb-manager, run first:
+
+        $ sudo ovs-vsctl set-manager ptcp:6640
+
 The request uses basic HTTP authentication, so you need to provide onos username and password.
 To verify that the configuration has been correctly pushed you can type log:tail from the onos cli.
 The app will start contacting the ovsdb nodes and you should see some related logs from the onos cli.
