@@ -5,15 +5,12 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.deser.std.StringArrayDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
@@ -50,11 +47,6 @@ import java.util.Map.Entry;
 //import jyang.parser.YangTreeNode;
 //import jyang.parser.yang;
 //import jyang.tools.Yang2Yin;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import java.util.TimerTask;
 import java.util.Timer;
 import org.onlab.packet.Ip4Address;
@@ -64,7 +56,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.io.FileInputStream;
 import org.onlab.packet.IpAddress;
-import org.onlab.packet.MacAddress;
 
 
 /**
@@ -86,7 +77,7 @@ public class StateListenerNew extends Thread{
     private List<PeriodicVariableTask> toListenTimer;
     private HashMap<String, String> YangToJava;
     /**
-        staticListKeys contains well known keys of a YANG list, they are used to localize information that
+        staticListIndexes contains well known keys of a YANG list, they are used to localize information that
         are modelled as part of a list in the YANG model but are standalone objects in the Java code
         KEY: string that represents the YANG element referring to the well known key
         VALUE: value of the well known key in the YANG compliant JSON
@@ -95,15 +86,15 @@ public class StateListenerNew extends Thread{
             The mapping file may contain the following row
             nat/interfaces[nat/public-interface]/address : root.wanInterface.ipv4.address
 
-            nat/public-interface will be saved as a key of staticListKeys, it should be modeled in a YANG as a keyref
+            nat/public-interface will be saved as a key of staticListIndexes, it should be modeled in a YANG as a keyref
             It's value may be either an ID or the interface name, according to what the YANG model states
 
      **/
-    private HashMap<String, String> staticListKeys;
+    private HashMap<String, String> staticListIndexes;
     /**
-     * allowedStaticKeysInList contains, per each list, what are the static keys that can be associated to it
+     * allowedStaticIndexesInList contains, per each list, what are the static keys that can be associated to it
      */
-    private HashMap<String, List<String>> allowedStaticKeysInList;
+    private HashMap<String, List<String>> allowedStaticIndexesInList;
     /**
      * keyOfYangLists contains the leaf name of a list element that is actually used as key of the list
      * Example:
@@ -265,8 +256,8 @@ public class StateListenerNew extends Thread{
         config = new HashMap<>();
         mapper = new ObjectMapper();
         timer = new Timer();
-        allowedStaticKeysInList = new HashMap<String, List<String>>();
-        staticListKeys = new HashMap<String, String>();
+        allowedStaticIndexesInList = new HashMap<String, List<String>>();
+        staticListIndexes = new HashMap<String, String>();
         keyOfYangLists = new HashMap<String, String>();
         //stateList = new HashMap<>();
         //nullValuesToListen = new ArrayList<>();
@@ -400,23 +391,23 @@ public class StateListenerNew extends Thread{
                     throw Exception(message);
                 }
 
-                //If any static list keys are found inside the YANG path, they are stored into staticListKeys map
-                //Then, allowedStaticKeysInList stores, for each YANG list analyzed, the list of static keys found until now
+                //If any static list keys are found inside the YANG path, they are stored into staticListIndexes map
+                //Then, allowedStaticIndexesInList stores, for each YANG list analyzed, the list of static keys found until now
                 for(String key : findListKeys(informationMapping[0].trim())){
-                    if(! staticListKeys.keys().contains(key))
-                        staticListKeys.put(key, null);
+                    if(! staticListIndexes.keys().contains(key))
+                        staticListIndexes.put(key, null);
                         String listPath = informationMapping[0].substring(0, informationMapping.lastIndexOf("["));
-                        if(allowedStaticKeysInList.contains(listPath)){
+                        if(allowedStaticIndexesInList.contains(listPath)){
                             List<String> currentListAllowedKeys = allowedListKeys.getValue(listPath);
                             if(! currentListAllowedKeys.contains(key)) {
                                 currentListAllowedKeys.add(key);
-                                allowedStaticKeysInList.replace(listPath, currentListAllowedKeys);
+                                allowedStaticIndexesInList.replace(listPath, currentListAllowedKeys);
                             }
                         }
                         else{
                             List<String> currentListAllowedKeys = new List<String>();
                             currentListAllowedKeys.add(key);
-                            allowedStaticKeysInList.put(listPath, currentListAllowedKeys);
+                            allowedStaticIndexesInList.put(listPath, currentListAllowedKeys);
                         }
                 }
 
@@ -1245,8 +1236,8 @@ public class StateListenerNew extends Thread{
 
                     //Check if the current value is a static list key
                     String currentKey = var + "/" + field.getKey();
-                    if(staticListKeys.containsKey(currentKey))
-                        staticListKeys.replace(currentKey, field.getValue());
+                    if(staticListIndexes.containsKey(currentKey))
+                        staticListIndexes.replace(currentKey, field.getValue());
                 }else
                     ok = ok && configVariables(var+"/"+field.getKey(), field.getValue());
             }
