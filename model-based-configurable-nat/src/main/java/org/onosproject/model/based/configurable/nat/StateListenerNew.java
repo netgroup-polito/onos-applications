@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.StringArrayDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
@@ -84,6 +85,25 @@ public class StateListenerNew extends Thread{
     private HashMap<String, Threshold> toListenThreshold;
     private List<PeriodicVariableTask> toListenTimer;
     private HashMap<String, String> YangToJava;
+    /**
+        staticListKeys contains well known keys of a YANG list, they are used to localize information that
+        are modelled as part of a list in the YANG model but are standalone objects in the Java code
+        KEY: string that represents the YANG element referring to the well known key
+        VALUE: value of the well known key in the YANG compliant JSON
+
+        Example:
+            The mapping file may contain the following row
+            nat/interfaces[nat/public-interface]/address : root.wanInterface.ipv4.address
+
+            nat/public-interface will be saved as a key of staticListKeys, it should be modeled in a YANG as a keyref
+            It's value may be either an ID or the interface name, according to what the YANG model states
+
+     **/
+    private HashMap<String, String> staticListKeys;
+    /**
+     * allowedStaticKeysInList contains, per each list, what are the static keys that can be associated to it
+     */
+    private HashMap<String, List<String>> allowedStaticKeysInList;
     private HashMap<String, String> YangType;
     private HashMap<String, Boolean> YangMandatory;
     private ConnectionModuleClient cM;
@@ -225,6 +245,8 @@ public class StateListenerNew extends Thread{
         config = new HashMap<>();
         mapper = new ObjectMapper();
         timer = new Timer();
+        allowedStaticKeysInList = new HashMap<String, List<String>>();
+        staticListKeys = new HashMap<String, String>();
         //stateList = new HashMap<>();
         //nullValuesToListen = new ArrayList<>();
         //whatHappened = new ArrayList<>();
@@ -287,18 +309,11 @@ public class StateListenerNew extends Thread{
 //        log.info("--toListenTimer "+toListenTimer);
         
         //PARSE MAPPING FILE
-            InputStream mapFile = loader.getResourceAsStream(MAPPINGFILE);
-            try(Scanner s = new Scanner(mapFile)){
-                while(s.hasNextLine()){
-                    String line = s.nextLine();
-                    String[] couples = line.split(Pattern.quote(";"));
-                    for(int i=0; i<couples.length;i++){
-                        String[] yj = couples[i].split(Pattern.quote(":"));
-                        if(yj.length==2)
-                            YangToJava.put(yj[1].trim(), yj[0].trim());
-                    }
-                }
-            }
+        try{
+            readMappingFile(loader);
+        }catch(Exception e){
+            log.error("Error during the parsing of the mapping file\nError report: " + e.getMessage());
+        }
             
             //ADD VARIABLES TO LISTEN
             Collection<String> all = YangToJava.keySet();
@@ -329,8 +344,98 @@ public class StateListenerNew extends Thread{
             //START MONITORING
             this.start();
     }
-    
-    
+
+    /**
+     * readMappingFile parse the file that maps the information founded in a YANG compliant JSON into the Java variable
+     * of the ONOS NAT application code.
+     * The formalism of each line of the mapping file is the following:
+     * yang/path/to/the/information : java/path/to/the/information ;
+     * @throws Exception
+     */
+    private void readMappingFile(ClassLoader loader) throws Exception{
+        InputStream mapFile = loader.getResourceAsStream(MAPPINGFILE);
+        Scanner s = new Scanner(mapFile);
+
+        while(s.hasNextLine()) {
+            String line = s.nextLine();
+
+            //Check if the line ends with a ';' character
+            if(! line.endsWith(";")) {
+                String message = "Bad formed line in mapping file. ';' is expected at the end of the line (" + line +
+                ")";
+                throw Exception(message);
+            }
+
+            //If a line contains multiple mappings separated by ';', consider mappings separately
+            String[] mappings = line.split(Pattern.quote(";"));
+            for(String mapping : mappings) {
+                mapping = mapping.substring(0, line.length() - 1);
+
+                //Split the mapping information and check if the line is well formed
+                String[] informationMapping = mapping.split(Pattern.quote(":"));
+                if (informationMapping.length != 2) {
+                    String message = "Bad formed line in mapping file. Two mapping information separated by a ':' are expected (" +
+                            mapping + ")";
+                    throw Exception(message);
+                }
+
+                //If any static list keys are found inside the YANG path, they are stored into staticListKeys map
+                //Then, allowedStaticKeysInList stores, for each YANG list analyzed, the list of static keys found until now
+                for(String key : findListKeys(informationMapping[0].trim())){
+                    if(! staticListKeys.keys().contains(key))
+                        staticListKeys.put(key, null);
+                        String listPath = informationMapping[0].substring(0, informationMapping.lastIndexOf("["));
+                        if(allowedStaticKeysInList.contains(listPath)){
+                            List<String> currentListAllowedKeys = allowedListKeys.getValue(listPath);
+                            if(! currentListAllowedKeys.contains(key)) {
+                                currentListAllowedKeys.add(key);
+                                allowedStaticKeysInList.replace(listPath, currentListAllowedKeys);
+                            }
+                        }
+                        else{
+                            List<String> currentListAllowedKeys = new List<String>();
+                            currentListAllowedKeys.add(key);
+                            allowedStaticKeysInList.put(listPath, currentListAllowedKeys);
+                        }
+                }
+
+                YangToJava.put(informationMapping[1].trim(), informationMapping[0].trim());
+            }
+        }
+    }
+
+    /**
+     * findListKeys analyze the path of an information stored in a YANG model
+     * The path is described through the state listener mapping file formalism
+     * The methods returns all the static keys of a list
+     * Examples:
+     *      yangPath = "nat/interfaces[nat/public]/address"
+     *      returned value = ["nat/public"]
+     *
+     *      yangPath = "nat/interfaces[nat/public]/ip[nat/ipv4]/address"
+     *      returned value = ["nat/public", "nat/ipv4"]
+     *
+     *      yangPath = "nat/interfaces/address"
+     *      returned value = []
+     * @param yangPath
+     * @return
+     */
+    private ArrayList<String> findListKeys(String yangPath){
+        String[] values = yangPath.split(Pattern.quote("/"));
+        ArrayList<String> keyList = new ArrayList();
+
+        for (String value : values){
+            int startBracketIndex = value.indexOf("[");
+            int endBracketIndex = value.indexOf("]");
+            if(startBracketIndex != -1 && endBracketIndex != -1 && startBracketIndex < endBracketIndex){
+                String key = value.substring(startBracketIndex + 1, endBracketIndex);
+                keyList.add(key);
+            }
+        }
+
+        return keyList;
+    }
+
     public void run(){
         while(!stopCondition){
             try {
@@ -1116,6 +1221,11 @@ public class StateListenerNew extends Thread{
 //                        log.info("Config non contiene "+var+"/"+field.getKey());
                         ok = true;
                     }
+
+                    //Check if the current value is a static list key
+                    String currentKey = var + "/" + field.getKey();
+                    if(staticListKeys.containsKey(currentKey))
+                        staticListKeys.replace(currentKey, field.getValue());
                 }else
                     ok = ok && configVariables(var+"/"+field.getKey(), field.getValue());
             }
