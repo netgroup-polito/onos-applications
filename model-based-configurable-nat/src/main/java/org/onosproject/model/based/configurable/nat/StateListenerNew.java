@@ -303,12 +303,12 @@ public class StateListenerNew extends Thread{
             /***
              * Debug INFO
              */
-            log.debug("***KEY LEAF OF YANG LISTS***");
+            log.info("***KEY LEAF OF YANG LISTS***");
             for (String name: keyOfYangLists.keySet()){
                 String value = keyOfYangLists.get(name);
-                log.debug(name + " -> " + value);
+                log.info(name + " -> " + value);
             }
-            log.debug("*** ***");
+            log.info("*** ***");
 
         } catch (Exception ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -336,20 +336,20 @@ public class StateListenerNew extends Thread{
             /***
              * Debug INFO
              */
-            log.debug("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
+            log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
             for (String name: staticListIndexes.keySet()){
-                String value = allowedStaticIndexesInList.get(name);
-                log.debug(name + " -> " + value);
+                String value = staticListIndexes.get(name);
+                log.info(name + " -> " + value);
             }
-            log.debug("*** ***");
+            log.info("*** ***");
 
-            log.debug("***ALLOWED STATIC INDEXES PER EACH YANG LIST***");
+            log.info("***ALLOWED STATIC INDEXES PER EACH YANG LIST***");
             for (String name: allowedStaticIndexesInList.keySet()){
                 List<String> value = allowedStaticIndexesInList.get(name);
                 for(String index : value)
-                    log.debug(name + " -> " + index);
+                    log.info(name + " -> " + index);
             }
-            log.debug("*** ***");
+            log.info("*** ***");
         }catch(Exception e){
             log.error("Error during the parsing of the mapping file\nError report: " + e.getMessage());
         }
@@ -402,7 +402,7 @@ public class StateListenerNew extends Thread{
             if(! line.endsWith(";")) {
                 String message = "Bad formed line in mapping file. ';' is expected at the end of the line (" + line +
                 ")";
-                throw Exception(message);
+                throw new Exception(message);
             }
 
             //If a line contains multiple mappings separated by ';', consider mappings separately
@@ -415,26 +415,26 @@ public class StateListenerNew extends Thread{
                 if (informationMapping.length != 2) {
                     String message = "Bad formed line in mapping file. Two mapping information separated by a ':' are expected (" +
                             mapping + ")";
-                    throw Exception(message);
+                    throw new Exception(message);
                 }
 
                 //If any static list keys are found inside the YANG path, they are stored into staticListIndexes map
                 //Then, allowedStaticIndexesInList stores, for each YANG list analyzed, the list of static keys found until now
                 for(String key : findListKeys(informationMapping[0].trim())){
-                    if(! staticListIndexes.keys().contains(key))
+                    if(! staticListIndexes.keySet().contains(key))
                         staticListIndexes.put(key, null);
-                        String listPath = informationMapping[0].substring(0, informationMapping.lastIndexOf("["));
-                        if(allowedStaticIndexesInList.contains(listPath)){
-                            List<String> currentListAllowedKeys = allowedListKeys.getValue(listPath);
-                            if(! currentListAllowedKeys.contains(key)) {
-                                currentListAllowedKeys.add(key);
-                                allowedStaticIndexesInList.replace(listPath, currentListAllowedKeys);
+                        String listPath = informationMapping[0].substring(0, informationMapping[0].lastIndexOf("["));
+                        if(allowedStaticIndexesInList.containsKey(listPath)){
+                            List<String> currentListAllowedIndexes = allowedStaticIndexesInList.get(listPath);
+                            if(! currentListAllowedIndexes.contains(key)) {
+                                currentListAllowedIndexes.add(key);
+                                allowedStaticIndexesInList.replace(listPath, currentListAllowedIndexes);
                             }
                         }
                         else{
-                            List<String> currentListAllowedKeys = new List<String>();
-                            currentListAllowedKeys.add(key);
-                            allowedStaticIndexesInList.put(listPath, currentListAllowedKeys);
+                            List<String> currentListAllowedIndexes = new ArrayList<String>();
+                            currentListAllowedIndexes.add(key);
+                            allowedStaticIndexesInList.put(listPath, currentListAllowedIndexes);
                         }
                 }
 
@@ -1264,7 +1264,7 @@ public class StateListenerNew extends Thread{
                     //Check if the current value is a static list key
                     String currentKey = var + "/" + field.getKey();
                     if(staticListIndexes.containsKey(currentKey))
-                        staticListIndexes.replace(currentKey, field.getValue());
+                        staticListIndexes.replace(currentKey, field.getValue().toString());
                 }else
                     ok = ok && configVariables(var+"/"+field.getKey(), field.getValue());
             }
@@ -2342,11 +2342,19 @@ public class StateListenerNew extends Thread{
     //DIVIDE THE LEAFS IN THE DIFFERENT STRUCTURES BASED ON THE ADVERTISE VALUE
     //IF PERIODIC -> START TE NEW THREAD
     private void findYinLeafs(JsonNode y, String prev) {
+	ObjectMapper mapper = new ObjectMapper();
+	String pretty = new String();
+	try{
+	pretty = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(y);
+	}catch(Exception e){
+	}
+	log.info("JsonNode: " + pretty + "\n\n\n");
         Iterator<Entry<String, JsonNode>> iter = y.fields();
         while(iter.hasNext()){
             Entry<String, JsonNode> value = iter.next();
             String fieldName = value.getKey();
             JsonNode valueNode = value.getValue();
+	    log.info("Child i fieldName: " + fieldName + " valueNode");
             if(fieldName.equals("leaf")){
                 //can be an array
                 if(valueNode.isArray()){
@@ -2458,39 +2466,48 @@ public class StateListenerNew extends Thread{
                     }
                     //default:never
                 }
-            }else{
+            }else if(fieldName.equals("key")){
+		    if(valueNode.has("@value")){
+			    String key = new String();
+			    key = valueNode.get("@value").textValue();
+			    log.info("key found! " + prev +  " -> " + key);
+			    keyOfYangLists.put(prev, key);
+		    }
+	    }else{
                 //traverse
                     if(valueNode.isArray()){
                         Iterator<JsonNode> objs = ((ArrayNode)valueNode).elements();
                         String name = new String();
                         JsonNode nameNode = null;
-                        String key = new String();
+			JsonNode keyNode = null;
                         while(objs.hasNext()){
                             /**
-                             * Currently supported only 'name' and 'key'
+                             * Currently the only relevant field for this loop is name. If name == 'list', I have to append a '[]' to the second paramenter of findYinLeafs method
                              */
                             JsonNode next = objs.next();
                             if(next.has("@name")) {
                                 name = fieldName;
                                 nameNode = next;
                             }
-                            else if(next.has("@key"))
-                                key = fieldName;
                         }
                         if(name.equals("list")) {
                             if(nameNode == null)
                                 log.error("Error, object " + name + " not correctly parsed");
-                            if(! key.equals(""))
-                                keyOfYangLists.put(prev + "/" + name, key);
-                            findYinLeafs(next, prev + "/" + name + "[]");
+                            findYinLeafs(nameNode, prev + "/" + nameNode.get("@name").textValue() + "[]");
                         }
-                        else if(! name.equals(""))
-                            findYinLeafs(next, prev+"/"+next.get("@name").textValue());
+                        else if(! name.equals("")){
+			    if(nameNode == null)
+				log.error("Error, object " + name + " not correctly parsed");
+                            findYinLeafs(nameNode, prev+"/"+nameNode.get("@name").textValue());
+			}//else
+			//	findYinLeafs(nameNode, prev);
                     }else{
                         if(valueNode.has("@name")&&fieldName.equals("list"))
                             findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").textValue()+"[]");
                         else if(valueNode.has("@name"))
                             findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").textValue());
+			//else
+			//	findYinLeafs(valueNode, prev);
                     }
             }
         }
