@@ -460,15 +460,17 @@ public class StateListenerNew extends Thread{
      * @return
      */
     private ArrayList<String> findListKeys(String yangPath){
-        String[] values = yangPath.split(Pattern.quote("/"));
+	//The following regular expression is able to split values inside square brackets []
+	//TODO test if it works with multiple lists in the same path, e.g., a/b/c[x]/d/e[y]
+        String[] values = yangPath.split("(?<=\\])|(?=\\[)");
         ArrayList<String> keyList = new ArrayList();
-
         for (String value : values){
             int startBracketIndex = value.indexOf("[");
             int endBracketIndex = value.indexOf("]");
             if(startBracketIndex != -1 && endBracketIndex != -1 && startBracketIndex < endBracketIndex){
                 String key = value.substring(startBracketIndex + 1, endBracketIndex);
-                keyList.add(key);
+		if(! key.equals(""))
+	                keyList.add(key);
             }
         }
 
@@ -2342,19 +2344,11 @@ public class StateListenerNew extends Thread{
     //DIVIDE THE LEAFS IN THE DIFFERENT STRUCTURES BASED ON THE ADVERTISE VALUE
     //IF PERIODIC -> START TE NEW THREAD
     private void findYinLeafs(JsonNode y, String prev) {
-	ObjectMapper mapper = new ObjectMapper();
-	String pretty = new String();
-	try{
-	pretty = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(y);
-	}catch(Exception e){
-	}
-	log.info("JsonNode: " + pretty + "\n\n\n");
         Iterator<Entry<String, JsonNode>> iter = y.fields();
         while(iter.hasNext()){
             Entry<String, JsonNode> value = iter.next();
             String fieldName = value.getKey();
             JsonNode valueNode = value.getValue();
-	    log.info("Child i fieldName: " + fieldName + " valueNode");
             if(fieldName.equals("leaf")){
                 //can be an array
                 if(valueNode.isArray()){
@@ -2470,44 +2464,24 @@ public class StateListenerNew extends Thread{
 		    if(valueNode.has("@value")){
 			    String key = new String();
 			    key = valueNode.get("@value").textValue();
-			    log.info("key found! " + prev +  " -> " + key);
 			    keyOfYangLists.put(prev, key);
 		    }
 	    }else{
                 //traverse
                     if(valueNode.isArray()){
                         Iterator<JsonNode> objs = ((ArrayNode)valueNode).elements();
-                        String name = new String();
-                        JsonNode nameNode = null;
-			JsonNode keyNode = null;
                         while(objs.hasNext()){
-                            /**
-                             * Currently the only relevant field for this loop is name. If name == 'list', I have to append a '[]' to the second paramenter of findYinLeafs method
-                             */
-                            JsonNode next = objs.next();
-                            if(next.has("@name")) {
-                                name = fieldName;
-                                nameNode = next;
-                            }
-                        }
-                        if(name.equals("list")) {
-                            if(nameNode == null)
-                                log.error("Error, object " + name + " not correctly parsed");
-                            findYinLeafs(nameNode, prev + "/" + nameNode.get("@name").textValue() + "[]");
-                        }
-                        else if(! name.equals("")){
-			    if(nameNode == null)
-				log.error("Error, object " + name + " not correctly parsed");
-                            findYinLeafs(nameNode, prev+"/"+nameNode.get("@name").textValue());
-			}//else
-			//	findYinLeafs(nameNode, prev);
+				JsonNode next = objs.next();
+				if(next.has("@name")&&fieldName.equals("list"))
+					findYinLeafs(next, prev+"/"+next.get("@name").textValue()+"[]");
+				else if(next.has("@name"))
+					findYinLeafs(next, prev+"/"+next.get("@name").textValue());                          
+			}
                     }else{
                         if(valueNode.has("@name")&&fieldName.equals("list"))
                             findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").textValue()+"[]");
                         else if(valueNode.has("@name"))
                             findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").textValue());
-			//else
-			//	findYinLeafs(valueNode, prev);
                     }
             }
         }
