@@ -104,6 +104,26 @@ public class StateListenerNew extends Thread{
      * allowedStaticKeysInList contains, per each list, what are the static keys that can be associated to it
      */
     private HashMap<String, List<String>> allowedStaticKeysInList;
+    /**
+     * keyOfYangLists contains the leaf name of a list element that is actually used as key of the list
+     * Example:
+     *      YANG excerpt:
+     *          ....
+     *          list natTable{
+                    key port;
+                    leaf port{
+                        type uint16;
+                        confnat:advertise onchange;
+                    }
+                    leaf inputAddress{
+                        type string;
+                        confnat:advertise onchange;
+                    }
+                ....
+
+            keyOfYangLists.put("path/Yang/to/natTable", "port")
+     */
+    private HashMap<String, String> keyOfYangLists;
     private HashMap<String, String> YangType;
     private HashMap<String, Boolean> YangMandatory;
     private ConnectionModuleClient cM;
@@ -247,6 +267,7 @@ public class StateListenerNew extends Thread{
         timer = new Timer();
         allowedStaticKeysInList = new HashMap<String, List<String>>();
         staticListKeys = new HashMap<String, String>();
+        keyOfYangLists = new HashMap<String, String>();
         //stateList = new HashMap<>();
         //nullValuesToListen = new ArrayList<>();
         //whatHappened = new ArrayList<>();
@@ -2423,13 +2444,30 @@ public class StateListenerNew extends Thread{
                 //traverse
                     if(valueNode.isArray()){
                         Iterator<JsonNode> objs = ((ArrayNode)valueNode).elements();
+                        String name = new String();
+                        JsonNode nameNode = null;
+                        String key = new String();
                         while(objs.hasNext()){
+                            /**
+                             * Currently supported only 'name' and 'key'
+                             */
                             JsonNode next = objs.next();
-                            if(next.has("@name")&&fieldName.equals("list"))
-                                findYinLeafs(next, prev+"/"+next.get("@name").textValue()+"[]");
-                            else if(next.has("@name"))
-                                findYinLeafs(next, prev+"/"+next.get("@name").textValue());
+                            if(next.has("@name")) {
+                                name = fieldName;
+                                nameNode = next;
+                            }
+                            else if(next.has("@key"))
+                                key = fieldName;
                         }
+                        if(name.equals("list")) {
+                            if(nameNode == null)
+                                log.error("Error, object " + name + " not correctly parsed");
+                            if(! key.equals(""))
+                                keyOfYangLists.put(prev + "/" + name, key);
+                            findYinLeafs(next, prev + "/" + name + "[]");
+                        }
+                        else if(! name.equals(""))
+                            findYinLeafs(next, prev+"/"+next.get("@name").textValue());
                     }else{
                         if(valueNode.has("@name")&&fieldName.equals("list"))
                             findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").textValue()+"[]");
