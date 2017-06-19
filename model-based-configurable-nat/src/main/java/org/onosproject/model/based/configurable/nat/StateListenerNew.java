@@ -299,7 +299,17 @@ public class StateListenerNew extends Thread{
             
             //PARSING YIN - GETTING THE LEAFS
             findYinLeafs(rootYin, rootYin.get("@name").textValue());
-            
+
+            /***
+             * Debug INFO
+             */
+            log.debug("***KEY LEAF OF YANG LISTS***");
+            for (String name: keyOfYangLists.keySet()){
+                String value = keyOfYangLists.get(name);
+                log.debug(name + " -> " + value);
+            }
+            log.debug("*** ***");
+
         } catch (Exception ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -323,6 +333,23 @@ public class StateListenerNew extends Thread{
         //PARSE MAPPING FILE
         try{
             readMappingFile(loader);
+            /***
+             * Debug INFO
+             */
+            log.debug("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
+            for (String name: staticListIndexes.keySet()){
+                String value = allowedStaticIndexesInList.get(name);
+                log.debug(name + " -> " + value);
+            }
+            log.debug("*** ***");
+
+            log.debug("***ALLOWED STATIC INDEXES PER EACH YANG LIST***");
+            for (String name: allowedStaticIndexesInList.keySet()){
+                List<String> value = allowedStaticIndexesInList.get(name);
+                for(String index : value)
+                    log.debug(name + " -> " + index);
+            }
+            log.debug("*** ***");
         }catch(Exception e){
             log.error("Error during the parsing of the mapping file\nError report: " + e.getMessage());
         }
