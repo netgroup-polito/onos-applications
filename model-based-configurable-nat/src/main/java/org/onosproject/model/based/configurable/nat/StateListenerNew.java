@@ -13,6 +13,8 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+//import java.io.StringWriter;
+//import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1226,8 +1228,7 @@ public class StateListenerNew extends Thread{
             if(!configVariables(noIndexes(var), toSet)){
                 log.info("not to config..");
                 return 1;
-            }
-
+            }		
             return fillVariables(toSet, var);
         } catch (IOException ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -1247,9 +1248,15 @@ public class StateListenerNew extends Thread{
     private boolean configVariables(String var, JsonNode toSet){
         if(toSet.isValueNode()){
 //            log.info("Is a value Node: "+var);
+		try{
+		    	String value =  mapper.writerWithDefaultPrettyPrinter().writeValueAsString(toSet);
+			staticListIndexes.replace(var, value);
+		}catch(Exception e){
+			log.error("Fail during the Json conversion in 'pretty' String");
+		}
             return config.get(var);
         }
-        if(toSet.isObject()){
+        if(toSet.isObject()){	    
             Iterator<Entry<String, JsonNode>> iter = ((ObjectNode)toSet).fields();
             boolean ok = true;
             while(iter.hasNext()){
@@ -1259,14 +1266,16 @@ public class StateListenerNew extends Thread{
                     if(config.containsKey(var+"/"+field.getKey()))
                         ok = ok && config.get(var+"/"+field.getKey());
                     else{
-//                        log.info("Config non contiene "+var+"/"+field.getKey());
+//			log.info("Config does not contain "+ var + "/ " + field.getKey());
                         ok = true;
                     }
 
                     //Check if the current value is a static list key
                     String currentKey = var + "/" + field.getKey();
-                    if(staticListIndexes.containsKey(currentKey))
+                    if(staticListIndexes.containsKey(currentKey)){			
                         staticListIndexes.replace(currentKey, field.getValue().toString());
+//			log.info("New static index value " + currentKey + " : " + field.getValue().toString());
+		    }
                 }else
                     ok = ok && configVariables(var+"/"+field.getKey(), field.getValue());
             }
@@ -1518,7 +1527,7 @@ public class StateListenerNew extends Thread{
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
                 
-            case CONFIG:
+            case CONFIG:		
                 String noInd = deleteIndexes(msg.var);
                 if(config.containsKey(noInd) && !config.get(noInd)){
                     //no configurable
@@ -1527,26 +1536,33 @@ public class StateListenerNew extends Thread{
                     cM.setResourceValue((new Gson()).toJson(msg));
                     return;
                 }
-                try {
+                try {		
                     Integer ret;
                     //-------ADDED FOR THE NAT!
                     ((AppComponent)root).withdrawIntercepts();
                     //-------
 
                     //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
-                    if(var!=null && !var.equals("root")&&state.containsKey(var.substring(5))){
-                        boolean setted = setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);
+                    if(var!=null && !var.equals("root")&&state.containsKey(var.substring(5))){			
+                        boolean setted = setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);			
                         ret = (setted)?0:1;
                     }else{
-                        //IT ISN'T THE VALUE OF A LEAF CONTAINED IN THE STATE
-                        ret = setComplexObject(msg.var, (String)msg.obj);
+                        //IT ISN'T THE VALUE OF A LEAF CONTAINED IN THE STATE									
+                        ret = setComplexObject(msg.var, (String)msg.obj);			
+			log.info("***STATIC LIST INDEXES AFTER CONFIG***");
+                        for (String name: staticListIndexes.keySet()){
+                            String value = staticListIndexes.get(name);
+                            log.info(name + " -> " + value);
+                        }
+                    	log.info("*** ***");
+
                     }
 
                     msg.objret = ret.toString();
 //                    log.info("Result: "+ret);
-                    //return the result to the ConnectionModule
-                    cM.setResourceValue((new Gson()).toJson(msg));
-                    
+                    //return the result to the ConnectionModule			
+                    cM.setResourceValue((new Gson()).toJson(msg));			               
+
                     //-------ADDED FOR THE NAT!
                     ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
                     ((AppComponent)root).requestIntercepts();
@@ -1590,6 +1606,13 @@ public class StateListenerNew extends Thread{
 //                            ((AppComponent)root).installOutcomingNatRule(inIp, outIp, proto, inPort, natPort, MacAddress.NONE, PortNumber.portNumber(outPort));
                         }
                     }
+		    log.info("***STATIC LIST INDEXES AFTER CONFIG***");
+                        for (String name: staticListIndexes.keySet()){
+                                String value = staticListIndexes.get(name);
+                                log.info(name + " -> " + value);
+                        }
+                    log.info("*** ***");
+
                     //-------
                     return;
                 } catch (NoSuchFieldException ex) {
