@@ -211,8 +211,9 @@ public class StateListenerNew extends Thread{
         return null;
     }
     
-    public StateListenerNew(Object root){
+    public StateListenerNew(String nf_id, Object root){
         this.root = root;
+        AppId = nf_id;
         state = new HashMap<>();
         stateThreshold = new HashMap<>();
         toListenPush = new ArrayList<>();
@@ -241,7 +242,6 @@ public class StateListenerNew extends Thread{
             Properties prop = new Properties();
             InputStream propFile = loader.getResourceAsStream("configuration/appProperties.properties");
             if (propFile!=null)prop.load(propFile);
-            AppId = prop.getProperty("appId", "StateListener");
             String baseUri = prop.getProperty("baseUri", "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule");
             String eventsUri = prop.getProperty("eventsUri", "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events");
             log.info("appId "+AppId);

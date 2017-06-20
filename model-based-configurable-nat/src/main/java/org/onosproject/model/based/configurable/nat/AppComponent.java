@@ -86,6 +86,7 @@ public class AppComponent {
     protected NetworkConfigRegistry configRegistry;
 
     public ApplicationId appId;
+    private String nf_id;
 
     private NatPacketProcessor processor = new NatPacketProcessor();
 
@@ -136,11 +137,19 @@ public class AppComponent {
     private final ExecutorService eventExecutor =
             newSingleThreadExecutor(groupedThreads("onos/nat-ctl", "event-handler", log));
 
-    private final ConfigFactory configFactory =
+    private final ConfigFactory portConfigFactory =
             new ConfigFactory(SubjectFactories.APP_SUBJECT_FACTORY, PortConfig.class, "nat") {
                 @Override
                 public PortConfig createConfig() {
                     return new PortConfig();
+                }
+            };
+
+    private final ConfigFactory idConfigFactory =
+            new ConfigFactory(SubjectFactories.APP_SUBJECT_FACTORY, IdConfig.class, "nf-id") {
+                @Override
+                public IdConfig createConfig() {
+                    return new IdConfig();
                 }
             };
 
@@ -153,15 +162,14 @@ public class AppComponent {
         loadConfiguration();
 
         appId = coreService.registerApplication("it.polito.modelbasedconfignat");
-//        log.info("AppId "+appId);
         packetService.addProcessor(processor, PacketProcessor.director(0));
         configService.addListener(configListener);
-        configRegistry.registerConfigFactory(configFactory);
+        configRegistry.registerConfigFactory(portConfigFactory);
+        configRegistry.registerConfigFactory(idConfigFactory);
         requestIntercepts();
-                
-        sl = new StateListenerNew(this);
         
         log.info("Started");
+        ((InternalConfigListener) configListener).setAppStartTime(new Date().getTime());
     }
 
     @Deactivate
@@ -169,15 +177,17 @@ public class AppComponent {
         
         log.info("Deactivate");
 
-        sl.stopSL();
-        
-        log.info("stopped State Listener");
+        if (nf_id != null) {
+            sl.stopSL();
+            log.info("stopped State Listener");
+        }
         
         withdrawIntercepts();
         flowRuleService.removeFlowRulesById(appId);
         packetService.removeProcessor(processor);
         configService.removeListener(configListener);
-        configRegistry.unregisterConfigFactory(configFactory);
+        configRegistry.unregisterConfigFactory(portConfigFactory);
+        configRegistry.unregisterConfigFactory(idConfigFactory);
         processor = null;
         
         log.info("Stopped");
@@ -215,19 +225,21 @@ public class AppComponent {
     }
 
     /**
-     * Load configuration by the Network Config API
+     * Load port configuration by the Network Config API
      */
-    private void readConfiguration() {
-        PortConfig config = configRegistry.getConfig(appId, PortConfig.class);
-        if (config == null) {
-            log.debug("No configuration found");
+    private void readPortConfiguration() {
+        PortConfig port_config = configRegistry.getConfig(appId, PortConfig.class);
+        if (port_config == null) {
+            log.info("No port configuration found");
             return;
         }
+
+        log.info("Reading port configuration...");
 
         // stop current interceptor
         withdrawIntercepts();
 
-        PortConfig.ApplicationPort privatePort = config.getPort(PRIVATE_PORT_ID);
+        PortConfig.ApplicationPort privatePort = port_config.getPort(PRIVATE_PORT_ID);
         if (privatePort != null) {
             if (privatePort.getDeviceId() != null)
                 inputApp.deviceId = privatePort.getDeviceId();
@@ -238,7 +250,7 @@ public class AppComponent {
             inputApp.externalVlan = VlanId.vlanId((short) privatePort.getExternalVlan());
 
         }
-        PortConfig.ApplicationPort publicPort = config.getPort(PUBLIC_PORT_ID);
+        PortConfig.ApplicationPort publicPort = port_config.getPort(PUBLIC_PORT_ID);
         if (publicPort != null) {
             if (publicPort.getDeviceId() != null)
                 outputApp.deviceId = publicPort.getDeviceId();
@@ -249,11 +261,34 @@ public class AppComponent {
             outputApp.externalVlan = VlanId.vlanId((short) publicPort.getExternalVlan());
         }
 
-        log.info("Updated configuration");
+        log.info("Updated port configuration");
 
         // clean old rules and restart interceptor with new configuration
         flowRuleService.removeFlowRulesById(appId);
         requestIntercepts();
+    }
+
+    /**
+     * Load port configuration by the Network Config API
+     */
+    private void readIdConfiguration() {
+        IdConfig id_config = configRegistry.getConfig(appId, IdConfig.class);
+
+        if (id_config == null) {
+            log.info("No id configuration found");
+            return;
+        }
+
+        log.info("Reading id configuration...");
+
+        if (nf_id == null) {
+            nf_id = id_config.getId();
+            log.info("Updated nf id");
+            sl = new StateListenerNew(nf_id, this);
+            log.info("Started state listener");
+        } else {
+            log.error("Nf id yet configured!");
+        }
     }
 
     /**
@@ -823,15 +858,23 @@ public class AppComponent {
 
     private class InternalConfigListener implements NetworkConfigListener {
 
+        private long appStartTime = 0;
+
+        public void setAppStartTime(long appStartTime) {
+            this.appStartTime = appStartTime;
+        }
+
         @Override
         public void event(NetworkConfigEvent event) {
-            if (!event.configClass().equals(PortConfig.class)) {
-                return;
-            }
+            log.info("Network Config Event!");
             switch (event.type()) {
                 case CONFIG_ADDED:
                 case CONFIG_UPDATED:
-                    eventExecutor.execute(AppComponent.this::readConfiguration);
+                    if (event.configClass().equals(PortConfig.class))
+                        eventExecutor.execute(AppComponent.this::readPortConfiguration);
+                    else if (event.configClass().equals(IdConfig.class)
+                            && this.appStartTime != 0 && event.time() > this.appStartTime)
+                        eventExecutor.execute(AppComponent.this::readIdConfiguration);
                     break;
                 default:
                     break;
