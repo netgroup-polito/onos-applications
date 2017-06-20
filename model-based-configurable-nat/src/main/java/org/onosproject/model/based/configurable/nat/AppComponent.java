@@ -55,8 +55,8 @@ public class AppComponent {
     private static final short FIRST_PORT = 10000;
     private static final short LAST_PORT = 12000;
 
-    private static final String PRIVATE_PORT_ID = "USER:0";
-    private static final String PUBLIC_PORT_ID = "WAN:0";
+    // private static final String PRIVATE_PORT_ID = "USER:0";
+    // private static final String PUBLIC_PORT_ID = "WAN:0";
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     private boolean first = true;
@@ -90,21 +90,13 @@ public class AppComponent {
 
     private NatPacketProcessor processor = new NatPacketProcessor();
 
-    // default configuration
+    // application parameters
+    private String privatePortLabel;
+    private String publicPortLabel;
+
     public ApplicationPort inputApp = new ApplicationPort();
     public ApplicationPort outputApp= new ApplicationPort();
-    
-//    private DeviceId inputApp.deviceId;
-//    private DeviceId outputApp.deviceId;
-//    private PortNumber inputApp.portNumber;
-//    private PortNumber outputApp.portNumber;
-//    private int inputPortFlowPriority;
-//    private int outputPortFlowPriority;
-//    private VlanId inputApp.externalVlan = VlanId.vlanId((short) 0);
-//    private VlanId outputApp.externalVlan = VlanId.vlanId((short) 0);
-//
-//    private Ip4Address inputApp.ipAddress;
-//    private Ip4Address outputApp.ipAddress;
+
     public MacAddress privateMac = valueOf(randomMACAddress());
     public MacAddress publicMac = valueOf(randomMACAddress());
     private int flowTimeout = DEFAULT_TIMEOUT;
@@ -206,6 +198,9 @@ public class AppComponent {
             log.info("Loading parameters from configuration file.");
             NatConfiguration config = new NatConfiguration();
 
+            this.privatePortLabel = config.getPrivatePortLabel();
+            this.publicPortLabel = config.getPublicPortLabel();
+
             this.inputApp.deviceId = DeviceId.deviceId(config.getUserDeviceId());
             this.outputApp.deviceId = DeviceId.deviceId(config.getWanDeviceId());
             this.inputApp.portNumber = PortNumber.portNumber(config.getUserInterface());
@@ -239,7 +234,7 @@ public class AppComponent {
         // stop current interceptor
         withdrawIntercepts();
 
-        PortConfig.ApplicationPort privatePort = port_config.getPort(PRIVATE_PORT_ID);
+        PortConfig.ApplicationPort privatePort = port_config.getPort(this.privatePortLabel);
         if (privatePort != null) {
             if (privatePort.getDeviceId() != null)
                 inputApp.deviceId = privatePort.getDeviceId();
@@ -250,7 +245,7 @@ public class AppComponent {
             inputApp.externalVlan = VlanId.vlanId((short) privatePort.getExternalVlan());
 
         }
-        PortConfig.ApplicationPort publicPort = port_config.getPort(PUBLIC_PORT_ID);
+        PortConfig.ApplicationPort publicPort = port_config.getPort(this.publicPortLabel);
         if (publicPort != null) {
             if (publicPort.getDeviceId() != null)
                 outputApp.deviceId = publicPort.getDeviceId();
@@ -295,16 +290,13 @@ public class AppComponent {
      * Request packet in via packet service.
      */
     public void requestIntercepts() {
-//        log.info("starting request Intercepts");
         try{
             TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_IPV4);
             selector.matchInPort(inputApp.portNumber);
             if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
                 selector.matchVlanId(inputApp.externalVlan);
-            TrafficSelector s = selector.build();
-            packetService.requestPackets(s, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
-//            log.info("Traffic selector for ipv4 in input setted");
+            packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
             selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_ARP);
@@ -312,7 +304,6 @@ public class AppComponent {
             if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
                 selector.matchVlanId(inputApp.externalVlan);
             packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
-//            log.info("Traffic selector for ethernet in input setted");
 
             selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_ARP);
@@ -320,7 +311,6 @@ public class AppComponent {
             if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
                 selector.matchVlanId(outputApp.externalVlan);
             packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
-//            log.info("Traffic selector for ethernet in output setted");
         }catch(Exception ex){
             log.error(ex.getMessage());
             withdrawIntercepts();
@@ -332,15 +322,10 @@ public class AppComponent {
             TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_IPV4);
             selector.matchInPort(inputApp.portNumber);
-//            log.info("externalVlan "+inputApp.externalVlan);
             if (inputApp.externalVlan!=null && inputApp.externalVlan.toShort() != 0)
                 selector.matchVlanId(inputApp.externalVlan);
-//            log.info("Siamo dopo l'if e appId "+appId+" e devId "+inputApp.deviceId);
-            TrafficSelector sel = selector.build();
-//            log.info("build the selector");
-            packetService.cancelPackets(sel, PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
+            packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
-//            log.info("Stop input ipv4");
 
             selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_ARP);
@@ -349,16 +334,12 @@ public class AppComponent {
                 selector.matchVlanId(inputApp.externalVlan);
             packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(inputApp.deviceId));
 
-//            log.info("Stop input arp");
-
             selector = DefaultTrafficSelector.builder();
             selector.matchEthType(Ethernet.TYPE_ARP);
             selector.matchInPort(outputApp.portNumber);
             if (outputApp.externalVlan!=null && outputApp.externalVlan.toShort() != 0)
                 selector.matchVlanId(outputApp.externalVlan);
             packetService.cancelPackets(selector.build(), PacketPriority.REACTIVE, appId, Optional.of(outputApp.deviceId));
-
-//            log.info("stop output");
         }catch(Exception ex){
             log.error(ex.getMessage());
         }
@@ -446,15 +427,16 @@ public class AppComponent {
                     srcPortNumber = tcpHeader.getSourcePort();
                     publicPort = getAvailableOutputPort();
 
-//                    natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
-
                     FlowIdentifier flowId = new FlowIdentifier();
-                    flowId.srcPort = (short) publicPort;
-                    flowId.protocol = ipHeader.getProtocol();
+                    flowId.setSrcIp(srcAddress.getIp4Address());
+                    flowId.setSrcPort((short) srcPortNumber);
+                    flowId.setProtocol(IPv4.PROTOCOL_TCP);
+                    flowId.setDstIp(dstAddress.getIp4Address());
+                    flowId.setDstPort((short) tcpHeader.getDestinationPort());
                     
                     FlowInfo flowInfo= new FlowInfo();
-                    flowInfo.nattedIp = srcAddress.toString();
-                    flowInfo.nattedPort = (short)srcPortNumber;
+                    flowInfo.setNattedIp(outputApp.getIpAddress().getIp4Address());
+                    flowInfo.setNattedPort((short) publicPort);
                     natPortMap.put(flowId, flowInfo);
 
                     log.info(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
@@ -471,16 +453,17 @@ public class AppComponent {
                          return;
                      srcPortNumber = udpHeader.getSourcePort();
                      publicPort = getAvailableOutputPort();
- 
-//                     natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
- 
+
                     FlowIdentifier flowId = new FlowIdentifier();
-                    flowId.srcPort = (short) publicPort;
-                    flowId.protocol = ipHeader.getProtocol();
-                    
+                    flowId.setSrcIp(srcAddress.getIp4Address());
+                    flowId.setSrcPort((short) srcPortNumber);
+                    flowId.setProtocol(IPv4.PROTOCOL_TCP);
+                    flowId.setDstIp(dstAddress.getIp4Address());
+                    flowId.setDstPort((short) udpHeader.getDestinationPort());
+
                     FlowInfo flowInfo= new FlowInfo();
-                    flowInfo.nattedIp = srcAddress.toString();
-                    flowInfo.nattedPort = (short)srcPortNumber;
+                    flowInfo.setNattedIp(outputApp.getIpAddress().getIp4Address());
+                    flowInfo.setNattedPort((short) publicPort);
                     natPortMap.put(flowId, flowInfo);
                     
                     log.debug(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
@@ -497,6 +480,17 @@ public class AppComponent {
                     if (icmpHeader == null)
                         return;
                     srcPortNumber = icmpHeader.getIcmpCode();   // icmp query id?
+
+                    FlowIdentifier flowId = new FlowIdentifier();
+                    flowId.setSrcIp(srcAddress.getIp4Address());
+                    //flowId.setSrcPort((short) srcPortNumber);
+                    flowId.setProtocol(IPv4.PROTOCOL_ICMP);
+                    flowId.setDstIp(dstAddress.getIp4Address());
+
+                    FlowInfo flowInfo= new FlowInfo();
+                    flowInfo.setNattedIp(outputApp.getIpAddress().getIp4Address());
+                    //flowInfo.setNattedPort((short) publicPort); new icmp query id?
+                    natPortMap.put(flowId, flowInfo);
 
                     log.info(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
                     log.info(" - - Src IP: " + srcAddress.toString());
@@ -848,12 +842,27 @@ public class AppComponent {
 
     private short getAvailableOutputPort() {
 
+        if (this.natPortMap.size() == LAST_PORT - FIRST_PORT + 1) {
+            log.warn("no more port available!");
+            return -1;
+        }
+
         Random random = new Random();
         short port;
         do {
             port = (short) (random.nextInt((LAST_PORT - FIRST_PORT) + 1) + FIRST_PORT);
-        } while (this.natPortMap.containsKey(port) && this.natPortMap.size() != LAST_PORT - FIRST_PORT + 1);
+        } while (natTableContainsRule(port));
         return port;
+    }
+
+    public boolean natTableContainsRule(short nattedPort) {
+        // TODO should check also destination ip:port and protocol (?)
+        for(FlowInfo fi : this.natPortMap.values()) {
+            if(fi != null && fi.getNattedPort() == nattedPort && fi.getNattedIp() == outputApp.ipAddress) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private class InternalConfigListener implements NetworkConfigListener {
