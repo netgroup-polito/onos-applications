@@ -11,6 +11,8 @@ config-nat/interfaces[config-nat/nat/public-interface]/priority : root/outputApp
 config-nat/interfaces[config-nat/nat/public-interface]/externalVlan : root/outputApp/externalVlan;
 config-nat/interfaces[config-nat/nat/public-interface]/ipAddress : root/outputApp/ipAddress;
 config-nat/interfaces[config-nat/nat/public-interface]/macAddress : root/publicMac;
+config-nat/nat/private-interface : void;
+config-nat/nat/public-interface: void;
 config-nat/nat/nat-table/nat-session : root/natPortMap;
 config-nat/nat/nat-table/nat-session[] : root/natPortMap[{key}];
 config-nat/nat/nat-table/nat-session[]/src_port : root/natPortMap[{key}]/{key}/srcPort;

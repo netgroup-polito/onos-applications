@@ -13,8 +13,8 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-//import java.io.StringWriter;
-//import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1537,26 +1537,35 @@ public class StateListenerNew extends Thread{
                     return;
                 }
                 try {		
-                    Integer ret;
+                    Integer ret = 0;
                     //-------ADDED FOR THE NAT!
                     ((AppComponent)root).withdrawIntercepts();
                     //-------
-
-                    //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
-                    if(var!=null && !var.equals("root")&&state.containsKey(var.substring(5))){			
-                        boolean setted = setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);			
-                        ret = (setted)?0:1;
-                    }else{
-                        //IT ISN'T THE VALUE OF A LEAF CONTAINED IN THE STATE									
-                        ret = setComplexObject(msg.var, (String)msg.obj);			
-			log.info("***STATIC LIST INDEXES AFTER CONFIG***");
-                        for (String name: staticListIndexes.keySet()){
-                            String value = staticListIndexes.get(name);
-                            log.info(name + " -> " + value);
-                        }
-                    	log.info("*** ***");
-
-                    }
+		    
+		    try{
+			    //If var == 'void', the message requests for the set of an information that is not mapped into any Java variables
+			    if(! var.equals("void")){	
+                		    //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
+                	       	    if(var!=null && !var.equals("root")&&state.containsKey(var.substring(5))){			
+                           		 boolean setted = setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);			
+	                            	ret = (setted)?0:1;
+        	                    }else{
+                	            	//IT ISN'T THE VALUE OF A LEAF CONTAINED IN THE STATE									
+                        	    	ret = setComplexObject(msg.var, (String)msg.obj);			
+	       		    		log.info("***STATIC LIST INDEXES AFTER CONFIG***");
+	                            	for (String name: staticListIndexes.keySet()){
+	                                	String value = staticListIndexes.get(name);
+		                                log.info(name + " -> " + value);
+                	                }
+    	                	    	log.info("*** ***");
+                            	   }
+			    }else
+                        	staticListIndexes.replace(msg.var, (String)msg.obj);
+		    }catch(Exception e){
+			StringWriter errors = new StringWriter();
+			e.printStackTrace(new PrintWriter(errors));
+			log.info("Eccezione: " + errors.toString());
+		    }
 
                     msg.objret = ret.toString();
 //                    log.info("Result: "+ret);
@@ -1785,6 +1794,9 @@ public class StateListenerNew extends Thread{
     //SETTING A VALUE TO A VARIABLE
     public boolean setVariable(String var, String complete, String newVal, Object actual) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
 //        log.info("var -> "+var);
+
+	if(var.equals("void"))
+		return true;
         String[] fs = var.split(Pattern.quote("/"));
         if(fs.length==1){
 //            log.info("**we are in a leaf** - complete "+complete);
