@@ -55,8 +55,8 @@ public class AppComponent {
     private static final short FIRST_PORT = 10000;
     private static final short LAST_PORT = 12000;
 
-    private static final String PRIVATE_PORT_ID = "USER:0";
-    private static final String PUBLIC_PORT_ID = "WAN:0";
+    // private static final String PRIVATE_PORT_ID = "L2Port:1";
+    // private static final String PUBLIC_PORT_ID = "L2Port:0";
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -89,6 +89,9 @@ public class AppComponent {
     private NatPacketProcessor processor = new NatPacketProcessor();
 
     // default configuration
+    private String privatePortLabel;
+    private String publicPortLabel;
+
     private DeviceId inputDeviceId;
     private DeviceId outputDeviceId;
     private PortNumber inputInterface;
@@ -180,6 +183,9 @@ public class AppComponent {
             log.info("Loading parameters from configuration file.");
             NatConfiguration config = new NatConfiguration();
 
+            this.privatePortLabel = config.getPrivatePortLabel();
+            this.publicPortLabel = config.getPublicPortLabel();
+
             this.inputDeviceId = DeviceId.deviceId(config.getUserDeviceId());
             this.outputDeviceId = DeviceId.deviceId(config.getWanDeviceId());
             this.inputInterface = PortNumber.portNumber(config.getUserInterface());
@@ -208,7 +214,7 @@ public class AppComponent {
         // stop current interceptor
         withdrawIntercepts();
 
-        PortConfig.ApplicationPort privatePort = config.getPort(PRIVATE_PORT_ID);
+        PortConfig.ApplicationPort privatePort = config.getPort(this.privatePortLabel);
         if (privatePort != null) {
             if (privatePort.getDeviceId() != null)
                 inputDeviceId = privatePort.getDeviceId();
@@ -218,7 +224,7 @@ public class AppComponent {
             externalInputVlan = VlanId.vlanId((short) privatePort.getExternalVlan());
 
         }
-        PortConfig.ApplicationPort publicPort = config.getPort(PUBLIC_PORT_ID);
+        PortConfig.ApplicationPort publicPort = config.getPort(this.publicPortLabel);
         if (publicPort != null) {
             if (publicPort.getDeviceId() != null)
                 outputDeviceId = publicPort.getDeviceId();

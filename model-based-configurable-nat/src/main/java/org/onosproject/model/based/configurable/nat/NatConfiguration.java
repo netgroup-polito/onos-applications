@@ -1,5 +1,6 @@
 package org.onosproject.model.based.configurable.nat;
 
+
 import java.io.*;
 
 /**
@@ -8,10 +9,14 @@ import java.io.*;
 
 public class NatConfiguration {
 
-    private static final String CONFIGURATION_FILE = "configuration/orch-config.ini";
+    private static final String CONFIGURATION_FILE = "configuration/nat-config.ini";
 
     private static final String INTERFACES = "interfaces";
     private static final String ADDRESSES = "addresses";
+    private static final String PORT_LABELS = "port_labels";
+
+    private String privatePortLabel;
+    private String publicPortLabel;
 
     private String userDeviceId;
     private String wanDeviceId;
@@ -20,30 +25,32 @@ public class NatConfiguration {
 
     private String privateAddress;
     private String publicAddress;
-    protected final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
 
     public NatConfiguration() throws IOException {
 
-        log.info("In NatConfiguration - starting upload");
+        // [port_labels]
+        privatePortLabel = iniLoad(PORT_LABELS, "private_port_label");
+        publicPortLabel = iniLoad(PORT_LABELS, "public_port_label");
+
         // [interfaces]
         userDeviceId = iniLoad(INTERFACES, "user_device");
         wanDeviceId = iniLoad(INTERFACES, "wan_device");
         userInterface = iniLoad(INTERFACES, "user_interface");
         wanInterface = iniLoad(INTERFACES, "wan_interface");
-//
-//        log.info("Uploaded Interfaces");
-//        log.info(userDeviceId);
-//        log.info(wanDeviceId);
-//        log.info(userInterface);
-//        log.info(wanInterface);
-        
+
         // [addresses]
         privateAddress = iniLoad(ADDRESSES, "private_address");
         publicAddress = iniLoad(ADDRESSES, "public_address");
-//        log.info("Uploaded addresses");
-//        log.info(privateAddress);
-//        log.info(publicAddress);
     }
+
+    public String getPrivatePortLabel() {
+        return privatePortLabel;
+    }
+
+    public String getPublicPortLabel() {
+        return publicPortLabel;
+    }
+
 
     public String getUserDeviceId() {
         return userDeviceId;
@@ -74,7 +81,7 @@ public class NatConfiguration {
         ClassLoader classLoader = AppComponent.class.getClassLoader();
         InputStream is = classLoader.getResourceAsStream(CONFIGURATION_FILE);
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        //File file = new File(classLoader.getResource("configuration/orch-config.ini").getFile());
+        //File file = new File(classLoader.getResource("configuration/nat-config.ini").getFile());
         //BufferedReader br = new BufferedReader(new FileReader(file));
 
         String line;
@@ -96,3 +103,4 @@ public class NatConfiguration {
         return line.split("=")[1].replaceAll(" ", "");
     }
 }
+
