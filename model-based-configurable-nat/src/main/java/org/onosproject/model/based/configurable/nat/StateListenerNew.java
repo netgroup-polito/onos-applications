@@ -352,6 +352,16 @@ public class StateListenerNew extends Thread{
                     log.info(name + " -> " + index);
             }
             log.info("*** ***");
+	    /**
+             * Debug INFO
+             */
+            log.debug("***YANG PATH MAPPING TO JAVA PATH***");
+            for (String javaPath: YangToJava.keySet()){
+                String yangPath = YangToJava.get(javaPath);
+                log.debug(yangPath + " -> " + javaPath);
+            }
+            log.debug("*** ***");
+
         }catch(Exception e){
             log.error("Error during the parsing of the mapping file\nError report: " + e.getMessage());
         }
@@ -420,12 +430,21 @@ public class StateListenerNew extends Thread{
                     throw new Exception(message);
                 }
 
+		String pathYang = informationMapping[0].trim();
+		String pathJava = informationMapping[1].trim();
+		//pathJava is used as key of a map. Hence I need to discriminate the 'void' information
+		//that can be found in the mapping file. 'void' identifies all the information that are
+		//not mapped in any Java variable. In order to make such 'void' information unique,
+		//a substring is appended -> void.<path_yang_to_the_information>
+		if(pathJava.equals("void"))
+			pathJava += "." + pathYang;
+
                 //If any static list keys are found inside the YANG path, they are stored into staticListIndexes map
                 //Then, allowedStaticIndexesInList stores, for each YANG list analyzed, the list of static keys found until now
-                for(String key : findListKeys(informationMapping[0].trim())){
+                for(String key : findListKeys(pathYang)){
                     if(! staticListIndexes.keySet().contains(key))
                         staticListIndexes.put(key, null);
-                        String listPath = informationMapping[0].substring(0, informationMapping[0].lastIndexOf("["));
+                        String listPath = pathYang.substring(0, pathYang.lastIndexOf("["));
                         if(allowedStaticIndexesInList.containsKey(listPath)){
                             List<String> currentListAllowedIndexes = allowedStaticIndexesInList.get(listPath);
                             if(! currentListAllowedIndexes.contains(key)) {
@@ -440,7 +459,7 @@ public class StateListenerNew extends Thread{
                         }
                 }
 
-                YangToJava.put(informationMapping[1].trim(), informationMapping[0].trim());
+                YangToJava.put(pathJava, pathYang);
             }
         }
     }
@@ -463,6 +482,8 @@ public class StateListenerNew extends Thread{
      */
     private ArrayList<String> findListKeys(String yangPath){
 	//The following regular expression is able to split values inside square brackets []
+	//e.g., nat-config/interfaces[nat/public]/address becomes {"nat-config/interfaces", "[nat/public]", "/address"}
+	//Using split(Pattern.quote("/") is not enough because the key may contain slashes '/'
 	//TODO test if it works with multiple lists in the same path, e.g., a/b/c[x]/d/e[y]
         String[] values = yangPath.split("(?<=\\])|(?=\\[)");
         ArrayList<String> keyList = new ArrayList();
@@ -1511,15 +1532,19 @@ public class StateListenerNew extends Thread{
     //COMMAND CALLED FROM THE CONNECTIONMODULECLIENT - MESSAGE FROM THE SERVICE LAYER
     public void parseCommand(String msgJson) throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException, IOException{
         CommandMsg msg = ((new Gson()).fromJson(msgJson, CommandMsg.class));
+	log.info("prima di fromyangToJava");
         String var = fromYangToJava(msg.var);
+	log.info("dopo fromyangotjava");
 //        log.info("Command "+msg.act);
 //        log.info("Variable "+msg.var);
 //        log.info("Variable in the code "+var);
         switch(msg.act){
             case GET:
                 //get the object
+		log.info("prima di getComplexObj");
                 Object result = getComplexObj(msg.var);
-//                log.info("result "+result);
+		log.info("dopo getComplexObj");
+                log.info("result "+result);
 //                log.info("result.."+result);
                 msg.objret = mapper.writeValueAsString(result);
                 //pass the result to the connection module
@@ -1543,8 +1568,9 @@ public class StateListenerNew extends Thread{
                     //-------
 		    
 		    try{
-			    //If var == 'void', the message requests for the set of an information that is not mapped into any Java variables
-			    if(! var.equals("void")){	
+			    //If var.substring(0, 4) == 'void', the message requests for the set
+			    // of an information that is not mapped into any Java variables
+			    if(! var.substring(0, 4).equals("void")){	
                 		    //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
                 	       	    if(var!=null && !var.equals("root")&&state.containsKey(var.substring(5))){			
                            		 boolean setted = setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);			
@@ -1559,8 +1585,11 @@ public class StateListenerNew extends Thread{
                 	                }
     	                	    	log.info("*** ***");
                             	   }
-			    }else
+			    }else{
+				log.info("prima di replace");
                         	staticListIndexes.replace(msg.var, (String)msg.obj);
+				log.info("dopo replace");
+			    }
 		    }catch(Exception e){
 			StringWriter errors = new StringWriter();
 			e.printStackTrace(new PrintWriter(errors));
@@ -1795,7 +1824,11 @@ public class StateListenerNew extends Thread{
     public boolean setVariable(String var, String complete, String newVal, Object actual) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
 //        log.info("var -> "+var);
 
-	if(var.equals("void"))
+	//Check if the java variable path begins with 'void'
+	//if it does, it is related to an information that is written in the application YANG model
+	//but that is not present inside the Java code.
+	//Since there is no variable to set, return true (nothing to do, job done c:)
+	if(var.substring(0, 4).equals("void"))
 		return true;
         String[] fs = var.split(Pattern.quote("/"));
         if(fs.length==1){
@@ -2279,33 +2312,91 @@ public class StateListenerNew extends Thread{
         }
         return null;
     }
-    
+
+/*
+	 * transformListIndexes receives the full path of a YANG information (e.g., config-nat/interfaces[wan]/address)
+	 * and drop the index. If the index is a well-known index, this method put the name of the index
+	 * in place of its value (e.g., config-nat/interfaces[wan]/address -> config-nat/interfaces[config-nat/nat/interface-public]/address).
+	 */
+	private String transformListIndexes(String path){
+		//The following regular expression separates the [index] from the string
+		//e.g. config-nat/interfaces[wan]/ip[v4]/address -> {"config-nat/interfaces", "[wan]", "/ip", "[v4], "/address"}
+		String[] separated = path.split("(?<=\\])|(?=\\[)");
+		List<String> buildingNewPath = new ArrayList<String>();
+		log.info("dentro TRANSFORMLISTINDEXES");	
+		//Starting from the string splitted by the above regular expression, join the indexes with the name list
+		//e.g., {"config-nat/interfaces", "[wan]", "/ip", "[v4], "/address"} -> {"config-nat/interfaces[wan]", "/ip[v4], "/address"}
+		for(int i = 0; i < separated.length; i ++ ){
+			if(separated[i].contains("[") && separated[i].contains("]")){
+				String tmp = buildingNewPath.get(buildingNewPath.size() - 1);
+				tmp += separated[i];
+				buildingNewPath.set(buildingNewPath.size() - 1, tmp);
+			}
+			else
+				buildingNewPath.add(separated[i]);
+		}
+		
+		//Analyze the index of each list, if it is a well known static index, which is valid for the analyzed list
+		//substitue the value with the name of the index. Otherwise strip away the index
+		//e.g. {"config-nat/interfaces[wan]", "/ip[v4], "/address"} -> {"config-nat/interfaces[config-nat/nat/interface-public]", "/ip[], "/address"}
+		try{
+		for(int i = 0; i < buildingNewPath.size(); i ++){
+			String currentPath = buildingNewPath.get(i); 
+			if(currentPath.contains("[") && currentPath.contains("]")){
+				String index = currentPath.substring(currentPath.lastIndexOf('[') + 1, currentPath.lastIndexOf(']'));
+				String listPath = currentPath.substring(0, currentPath.lastIndexOf('['));
+				
+				boolean found = false;				
+				if(allowedStaticIndexesInList.containsKey(listPath)){
+					log.info("dimensione allowedStaticIndexesinList: " + allowedStaticIndexesInList.size());
+					for(String indexAllowed : allowedStaticIndexesInList.get(listPath)){
+						//log.info("ris: " + staticListIndexes.get(indexAllowed).equals(index));
+						log.info("indexAllowed: " + indexAllowed);
+						log.info("res = " + staticListIndexes.get(indexAllowed));
+						if(staticListIndexes.containsKey(indexAllowed) && staticListIndexes.get(indexAllowed) != null && staticListIndexes.get(indexAllowed).equals(index)){
+							found = true;
+							buildingNewPath.set(i, listPath + '[' + indexAllowed + ']');
+						}
+					}
+					if(!found)
+						buildingNewPath.set(i, listPath + "[]");
+				}
+			}
+		}
+		
+		//join the path from the buildingNewPath list
+        	String finalPath = new String();
+        	for(String tmp : buildingNewPath)
+        		finalPath += tmp;
+		return finalPath;
+        	}catch(Exception e){
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			log.info("error: " + sw.toString());
+		}
+        	return null;
+	}
     
     //TRANSLATION FROM THE YANG NAME TO THE JAVA NAME
-    public String fromYangToJava(String y){
-        String[] separated = y.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
-        String yang = new String();
-        for(int i=0; i<separated.length;i++)
-            if(i%2==0 && i!=separated.length-1)
-                yang+=separated[i]+"[]";
-        if(separated.length%2==1)
-            yang+=separated[separated.length-1];
-//        log.info("yang "+yang);
+    public String fromYangToJava(String path){
+	log.info("path: " + path);
+        String yang = transformListIndexes(path);
+        log.info("yang "+yang);
         String j =null;
         if(YangToJava.containsValue(yang))
             for(String s:YangToJava.keySet())
                 if(YangToJava.get(s).equals(yang))
                     j=s;
-//        log.info("j "+j);
+        log.info("j "+j);
         if(j==null)
             return j;
         String[] java = j.split("["+Pattern.quote("[")+"," +Pattern.quote("]")+"]");
         j=new String();
-        yang = new String();
+	String[] separated = path.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
         for(int i=0; i<java.length; i++){
             if(i%2==0){
                 j+=java[i];
-                yang +=separated[i];
             }else{
 //                if(!separated[i].equals("")&&(separated[i].startsWith("{")|| separated[i].startsWith("["))){
 //                    try {
@@ -2322,8 +2413,8 @@ public class StateListenerNew extends Thread{
                     j+="["+separated[i]+"]";
             }
         }
-//        log.info("j di nuovo "+j);
-        if(y.endsWith("[]"))
+        log.info("j di nuovo "+j);
+        if(path.endsWith("[]"))
             j+="[]";
         return j;
     }
