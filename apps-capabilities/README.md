@@ -19,14 +19,14 @@ To install the application on a running onos instance run the following steps.
 
 - download and build the source code through maven:
 
-        sudo apt-get install maven
-        git clone https://github.com/netgroup-polito/onos-applications
-        cd onos-applications/apps-capabilities
-        mvn clean install
+        $ sudo apt-get install maven
+        $ git clone https://github.com/netgroup-polito/onos-applications
+        $ cd onos-applications/apps-capabilities
+        $ mvn clean install
 
 - Finally you can install the application through the command:
 
-        onos-app {onos-address} reinstall target/apps-capabilities-1.0-SNAPSHOT.oar
+        $ onos-app {onos-address} reinstall target/apps-capabilities-1.0-SNAPSHOT.oar
 
 (onos-address is the ip-address of ONOS server, e.g., 192.168.123.1)
 
@@ -34,7 +34,9 @@ To install the application on a running onos instance run the following steps.
 ## Activate
 After installing the application, you can activate it through the onos cli by typing:
 
-        app activate it.polito.onosapp.apps-capabilities
+        # Open the ONOS cli (in this example, we suppose that ONOS is listening at the address 192.168.123.1)
+        $ client -h 192.192.123.1
+        onos> app activate it.polito.onosapp.apps-capabilities
 
 To check that the app has been activated type log:tail from the onos cli.
 
