@@ -19,7 +19,7 @@ To install the application on a running onos instance run the following steps.
 
 - Finally you can install the application through the command:
 
-        $onos-app {onos-address} install target/onos-app-ovsdbrest-1.9.0-SNAPSHOT.oar
+        $onos-app {onos-address} install target/ovsdbrest-1.7.0-SNAPSHOT.oar
 
 (onos-address is the ip-address of ONOS server, e.g., 192.168.123.1)
 
