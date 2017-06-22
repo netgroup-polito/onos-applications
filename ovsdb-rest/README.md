@@ -14,7 +14,7 @@ To install the application on a running onos instance run the following steps.
 - then build the source code of the ovsdbrest application through maven:
 
         $ git clone https://github.com/netgroup-polito/onos-applications
-        $ cd onos-applications/ovsdbrest
+        $ cd onos-applications/ovsdb-rest
         $ mvn clean install
 
 - Finally you can install the application through the command:
