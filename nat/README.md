@@ -10,24 +10,28 @@ To install the application on a running onos instance run the following steps.
 
 - download and build the source code through maven:
 
-        git clone https://github.com/netgroup-polito/onos-applications
-        cd onos-applications/nat
-        mvn clean install
+        $ git clone https://github.com/netgroup-polito/onos-applications
+        $ cd onos-applications/nat
+        $ mvn clean install
 
 - then install the application:
 
-        onos-app {onos-address} reinstall target/nat-1.0-SNAPSHOT.oar
+        $ onos-app {onos-address} reinstall target/nat-1.0-SNAPSHOT.oar
 
-(onos-address is the ip-address of onos server, for example 192.168.123.1)
+(onos-address is the ip-address of ONOS server, e.g., 192.168.123.1)
 
 
 ## Activate
+
 After installing the application, you can activate it through the onos cli by typing:
 
-        app activate it.polito.onosapp.nat
+    # Open the ONOS cli (in this example, we suppose that ONOS is listening at the address 192.168.123.1)
+    $ client -h 192.168.123.1
+    onos>  app activate it.polito.onosapp.nat
 
-To check that the app has been activated type log:tail from the onos cli.
+To check that the app has been activated type the following command in the onos cli:
 
+    onos> log:tail
 
 ## Configure
 After activating the application you need to configure functional ports that it should use. This is done by using the onos Network Configuration system.
