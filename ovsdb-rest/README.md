@@ -28,7 +28,7 @@ To install the application on a running onos instance run the following steps.
 After installing the application, you can activate it through the onos cli by typing:
 
     # Open the ONOS cli (in this example, we suppose that ONOS is listening at the address 192.168.123.1)
-    $ client -h 192.192.123.1
+    $ client -h 192.168.123.1
     onos> app activate it.polito.onosapp.ovsdbrest
 
 To check that the app has been activated type the following command in the onos cli:
