@@ -389,9 +389,35 @@ public class StateListenerNew extends Thread{
             rootJson = mapper.createObjectNode();
             
             //CREATE THE JSON TREE CORRESPONDENT TO THE YANG MODEL
-            for(String l:leafs)
-                createTree(rootJson, YangToJava.get(l));
-            
+            for(String l:leafs){
+		String pathYang = YangToJava.get(l);
+		if(pathYang.substring(0, 4).equals("void"))
+			continue;
+		//The following regular expression separates the [index] from the string
+		//e.g. config-nat/interfaces[wan]/ip[v4]/address -> {"config-nat/interfaces", "[wan]", "/ip", "[v4], "/address"}
+		String[] pathNodeSplitArray = pathYang.split("(?<=\\])|(?=\\[)");
+		
+		//Delete eventual index inside square brackets '[]'
+		for(int i = 0; i < pathNodeSplitArray.length; i ++){
+			if(pathNodeSplitArray[i].contains("[") && !pathNodeSplitArray[i].equals("[]"))
+				pathNodeSplitArray[i] = "[]";
+		}
+		
+		//Join the pathNodeSplitArray, creating an index-free version of the original string
+		pathYang = "";
+		for(String partialPath : pathNodeSplitArray){
+			if(! partialPath.equals("[]") && ! pathYang.equals("") && ! partialPath.startsWith("/"))
+				pathYang += '/';
+			pathYang += partialPath;
+		}
+                createTree(rootJson, pathYang);
+	    }
+	    try{
+                String pretty = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootJson);
+	        log.info("rootJson pretty printed:\n" + pretty);
+	    }catch(Exception e){
+		log.info("Error writing pretty string");
+	    }
             //START MONITORING
             this.start();
     }
@@ -928,10 +954,16 @@ public class StateListenerNew extends Thread{
         if(l==null || l.equals(""))
             return;
         String[] splitted = l.split(Pattern.quote("/"));
+	for(int i = 0; i < splitted.length; i ++)
+		if(splitted[i].endsWith("]") && !splitted[i].contains("[")){
+			log.info("old splitted i: " + splitted[i]);
+			splitted[i] = splitted[i].substring(0, splitted[i].length() - 1);
+			log.info("new splitted i: " + splitted[i]);
+		}
         if(node.isObject()){
             JsonNode next;
             if(splitted[0].contains("[")){
-                String inter = splitted[0].substring(0, splitted[0].indexOf("["));
+                String inter = splitted[0].substring(0, splitted[0].indexOf("["));				
                 next = ((ObjectNode)node).get(inter);
                 if(next==null)
                     ((ObjectNode)node).put(inter, mapper.createArrayNode());
@@ -939,16 +971,24 @@ public class StateListenerNew extends Thread{
             }else{
                 next = ((ObjectNode)node).get(splitted[0]);
                 if(next==null){
-                    if(splitted.length>1 || (splitted.length>1&&splitted[1].contains("[")))
-                        ((ObjectNode)node).put(splitted[0], mapper.createObjectNode());
+                    if(splitted.length>1 || (splitted.length>1&&splitted[1].contains("["))){
+			//if(splitted[0].contains("]"))
+                        	//splitted[0] = splitted[0].substring(0, splitted[0].indexOf("]"));
+                        ((ObjectNode)node).put(splitted[0], mapper.createObjectNode());			
+		    }
                     else if (splitted.length==1 && splitted[0].contains("[")){
                         ArrayNode mappa = mapper.createArrayNode();
                         ObjectNode elemMappa = mapper.createObjectNode();
                         elemMappa.put("key", "");
                         elemMappa.put("value", "");
-                        ((ObjectNode)node).put(splitted[0], mappa);
-                    }else
-                       ((ObjectNode)node).put(splitted[0], new String()); 
+			//if(splitted[0].contains("]"))
+	                        //splitted[0] = splitted[0].substring(0, splitted[0].indexOf("]"));
+                        ((ObjectNode)node).put(splitted[0], mappa);			
+                    }else{
+			//if(splitted[0].contains("]"))
+	                        //splitted[0] = splitted[0].substring(0, splitted[0].indexOf("]"));
+                       ((ObjectNode)node).put(splitted[0], new String()); 		       
+		    }
                 }
                 next = ((ObjectNode)node).get(splitted[0]);
             }
@@ -963,14 +1003,17 @@ public class StateListenerNew extends Thread{
         }else{
             JsonNode next;
             if(splitted[0].contains("[")){
-                String inter = splitted[0].substring(0, splitted[0].indexOf("["));
+                String inter = splitted[0].substring(0, splitted[0].indexOf("["));				
                 if(node.isArray()){
                     //è una lista
                     if(((ArrayNode)node).elements().hasNext()==false)
                         ((ArrayNode)node).addObject();
                     next = ((ArrayNode)node).get(0);
-                    if(((ObjectNode)next).get(inter)==null)
-                        ((ObjectNode)next).put(inter, mapper.createArrayNode());
+                    if(((ObjectNode)next).get(inter)==null){
+			//if(inter.contains("]"))
+	                        //inter = inter.substring(0, inter.indexOf("]"));
+                        ((ObjectNode)next).put(inter, mapper.createArrayNode());			
+		    }
                     next = ((ObjectNode)next).get(inter);
                 }else{
                     //è l'elemento di una mappa
@@ -986,10 +1029,16 @@ public class StateListenerNew extends Thread{
                     ((ArrayNode)node).addObject();
                 next = ((ArrayNode)node).get(0);
                 if(((ObjectNode)next).get(splitted[0])==null){
-                    if(splitted.length>2)
-                        ((ObjectNode)next).put(splitted[0], mapper.createObjectNode());
-                    else
-                       ((ObjectNode)next).put(splitted[0], new String()); 
+                    if(splitted.length>2){
+			//if(splitted[0].contains("]"))
+	                        //splitted[0] = splitted[0].substring(0, splitted[0].indexOf("]"));
+                        ((ObjectNode)next).put(splitted[0], mapper.createObjectNode());			
+		    }
+                    else{
+			//if(splitted[0].contains("]"))
+	                        //splitted[0] = splitted[0].substring(0, splitted[0].indexOf("]"));
+                       ((ObjectNode)next).put(splitted[0], new String()); 			
+		    }
                 }
                 next = ((ObjectNode)next).get(splitted[0]);
             }
@@ -1534,6 +1583,7 @@ public class StateListenerNew extends Thread{
         CommandMsg msg = ((new Gson()).fromJson(msgJson, CommandMsg.class));
 	log.info("prima di fromyangToJava");
         String var = fromYangToJava(msg.var);
+	log.info("var: " + var);
 	log.info("dopo fromyangotjava");
 //        log.info("Command "+msg.act);
 //        log.info("Variable "+msg.var);
