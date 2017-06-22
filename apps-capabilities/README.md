@@ -38,7 +38,9 @@ After installing the application, you can activate it through the onos cli by ty
         $ client -h 192.192.123.1
         onos> app activate it.polito.onosapp.apps-capabilities
 
-To check that the app has been activated type log:tail from the onos cli.
+To check that the app has been activated type the following command in the onos cli:
+
+        onos> log:tail
 
 
 ## API
