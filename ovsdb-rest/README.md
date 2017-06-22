@@ -8,29 +8,32 @@ To install the application on a running onos instance run the following steps.
 
 - first of all, if it is not ready installed, you need to install the ovsdb driver provided by onos. On your onos root directory run:
 
-        cd drivers/ovsdb/
-        onos-app {onos-address} install target/onos-drivers-ovsdb-1.9.0.oar
+        $ cd drivers/ovsdb/
+        $ onos-app {onos-address} install target/onos-drivers-ovsdb-1.9.0.oar
 
 - then build the source code of the ovsdbrest application through maven:
 
-        git clone https://github.com/netgroup-polito/onos-applications
-        cd onos-applications/ovsdbrest
-        mvn clean install
+        $ git clone https://github.com/netgroup-polito/onos-applications
+        $ cd onos-applications/ovsdbrest
+        $ mvn clean install
 
 - Finally you can install the application through the command:
 
-        onos-app {onos-address} install target/onos-app-ovsdbrest-1.9.0-SNAPSHOT.oar
+        $onos-app {onos-address} install target/onos-app-ovsdbrest-1.9.0-SNAPSHOT.oar
 
-(onos-address is the ip-address of onos server, for example 192.168.123.1)
+(onos-address is the ip-address of ONOS server, e.g., 192.168.123.1)
 
 
 ## Activate
 After installing the application, you can activate it through the onos cli by typing:
 
-        app activate org.onosproject.ovsdbrest
+    # Open the ONOS cli (in this example, we suppose that ONOS is listening at the address 192.168.123.1)
+    $ client -h 192.192.123.1
+    onos> app activate it.polito.onosapp.ovsdbrest
 
-To check that the app has been activated type log:tail from the onos cli.
+To check that the app has been activated type the following command in the onos cli:
 
+    onos> log:tail
 
 ## Configure
 After activating the application you need to configure the ovsdb node IP. This is done by using the onos Network Configuration system.
