@@ -28,7 +28,7 @@ To install the application on a running onos instance run the following steps.
 
         onos-app {onos-address} reinstall target/apps-capabilities-1.0-SNAPSHOT.oar
 
-(onos-address is the ip-address of onos server, for example 192.168.123.1)
+(onos-address is the ip-address of ONOS server, e.g., 192.168.123.1)
 
 
 ## Activate
