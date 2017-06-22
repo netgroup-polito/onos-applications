@@ -1,6 +1,6 @@
 # NAT ONOS APPLICATION
 
-This applications implement a Nat through the reactive SDN paradigm on top of the onos controller.
+This applications implement a NAT through the reactive SDN paradigm on top of the ONOS controller.
 Currently is used just as test app in the scenario of the dynamic exportation of the capabilities, so this application, other than the address translation logic, provides:
 - a port configuration module that allows the local orchestrator to specify the interfaces that the NAT should use;
 - a [data scructure](tools/functional_capability.json) that describes the functional capability with the specifications, that is taken by the [apps-capabilities](../apps-capabilities/) application when this app is installed.
