@@ -48,7 +48,11 @@ To check that the app has been activated type the following command in the onos 
 - Retrieve the list of all the current functional capabilities:
 
     **GET http://{onos-address}:8181/onos/apps-capabilities/capability**
+    
+  Example: http://192.168.123.1:8181/onos/apps-capabilities/capability*
 
 - Retrieve the description of a single functional capability by its name (application name):
 
     **GET http://{onos-address}:8181/onos/apps-capabilities/capability/{app-name}**
+    
+    Example: http://192.168.123.1:8181/onos/apps-capabilities/capability/it.polito.onosapp.nat
