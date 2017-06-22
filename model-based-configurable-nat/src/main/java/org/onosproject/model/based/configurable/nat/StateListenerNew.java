@@ -311,6 +311,13 @@ public class StateListenerNew extends Thread{
                 log.info(name + " -> " + value);
             }
             log.info("*** ***");
+	    log.info("***CONFIG MAP***");
+            for (String name: config.keySet()){
+                Boolean value = config.get(name);
+                log.info(name + " -> " + value);
+            }
+            log.info("*** ***");
+
 
         } catch (Exception ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -524,6 +531,35 @@ public class StateListenerNew extends Thread{
         }
 
         return keyList;
+    }
+
+    /**
+     *This method check if a YANG variable is configurable.
+     *Since the isConfigurable information is found in the YIN file, which has no knowledge about eventual static well kwokn indexes of any lists
+     *Eventual list indexes has to be purged before accessing to the config map
+     */
+    private Boolean isConfigurable(String pathYang){
+        if(pathYang.substring(0, 4).equals("void"))
+                return true;
+        //The following regular expression separates the [index] from the string
+        //e.g. config-nat/interfaces[wan]/ip[v4]/address -> {"config-nat/interfaces", "[wan]", "/ip", "[v4], "/address"}
+        String[] pathNodeSplitArray = pathYang.split("(?<=\\])|(?=\\[)");
+
+        //Delete eventual index inside square brackets '[]'
+        for(int i = 0; i < pathNodeSplitArray.length; i ++){
+                if(pathNodeSplitArray[i].contains("[") && !pathNodeSplitArray[i].equals("[]"))
+                        pathNodeSplitArray[i] = "[]";
+        }
+
+        //Join the pathNodeSplitArray, creating an index-free version of the original string
+        pathYang = "";
+        for(String partialPath : pathNodeSplitArray){
+                if(! partialPath.equals("[]") && ! pathYang.equals("") && ! partialPath.startsWith("/"))
+                        pathYang += '/';
+                pathYang += partialPath;
+        }
+
+	return config.get(pathYang);
     }
 
     public void run(){
@@ -1317,14 +1353,15 @@ public class StateListenerNew extends Thread{
     //ELSE -> FALSE
     private boolean configVariables(String var, JsonNode toSet){
         if(toSet.isValueNode()){
-//            log.info("Is a value Node: "+var);
+            log.info("Is a value Node: "+var);
 		try{
 		    	String value =  mapper.writerWithDefaultPrettyPrinter().writeValueAsString(toSet);
 			staticListIndexes.replace(var, value);
 		}catch(Exception e){
 			log.error("Fail during the Json conversion in 'pretty' String");
 		}
-            return config.get(var);
+	    log.info("isConfigurable: " + isConfigurable(var));
+            return isConfigurable(var);
         }
         if(toSet.isObject()){	    
             Iterator<Entry<String, JsonNode>> iter = ((ObjectNode)toSet).fields();
@@ -1334,7 +1371,7 @@ public class StateListenerNew extends Thread{
                 if(field.getValue().isValueNode()){
                     //leaf - check config
                     if(config.containsKey(var+"/"+field.getKey()))
-                        ok = ok && config.get(var+"/"+field.getKey());
+                        ok = ok && isConfigurable(var+"/"+field.getKey());
                     else{
 //			log.info("Config does not contain "+ var + "/ " + field.getKey());
                         ok = true;
@@ -1604,7 +1641,7 @@ public class StateListenerNew extends Thread{
                 
             case CONFIG:		
                 String noInd = deleteIndexes(msg.var);
-                if(config.containsKey(noInd) && !config.get(noInd)){
+                if(config.containsKey(noInd) && !isConfigurable(noInd)){
                     //no configurable
                     log.info("Not configurable");
                     msg.objret = "2";
