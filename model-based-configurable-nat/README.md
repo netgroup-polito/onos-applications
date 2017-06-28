@@ -40,9 +40,9 @@ This is done by using the onos Network Configuration system.
           "user-id" : "userID",
           "graph-id": "graphID",
           "nf-id": "nfID"
-   } 
+       } 
+     }
    }
-  }
 }
 ```
 
