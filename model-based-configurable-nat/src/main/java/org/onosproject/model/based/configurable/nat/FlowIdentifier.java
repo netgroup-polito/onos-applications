@@ -13,12 +13,22 @@ import org.onlab.packet.IpAddress;
  * @author lara
  */
 public class FlowIdentifier {
-    public Ip4Address srcIp;
-    public Short srcPort;
-    public Ip4Address dstIp;
-    public Short dstPort;
-    public byte protocol;
-    
+    private Ip4Address srcIp;
+    private Short srcPort;
+    private Ip4Address dstIp;
+    private Short dstPort;
+    private byte protocol;
+
+    public FlowIdentifier(){}
+
+    public FlowIdentifier(Ip4Address srcIp, Ip4Address dstIp, Short srcPort, Short dstPort, byte protocol){
+        srcIp = this.srcIp;
+        dstIp = this.dstIp;
+        srcPort = this.srcPort;
+        dstPort = this.dstPort;
+        protocol = this.protocol;
+    }
+
     public Ip4Address getSrcIp() {
         return srcIp;
     }
@@ -57,5 +67,24 @@ public class FlowIdentifier {
 
     public void setProtocol(byte protocol) {
         this.protocol = protocol;
+    }
+
+    public boolean equals(FlowIdentifier object){
+        if(! this.srcIp.equals(object.getSrcIp()))
+            return false;
+
+        if(! this.dstIp.equals(object.getDstIp()))
+            return false;
+
+        if(! (this.srcPort == object.getSrcPort()) )
+            return false;
+
+        if(! (this.dstPort == object.getDstPort()) )
+            return false;
+
+        if(! (this.protocol == object.getProtocol()) )
+            return false;
+
+        return true;
     }
 }

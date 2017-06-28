@@ -514,7 +514,7 @@ public class StateListenerNew extends Thread{
                 Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         //CHECK IF THEY'RE CHANGED -> SEND TO CONNECTION MODULE
         checkChangesSaved();
 
@@ -1548,7 +1548,9 @@ public class StateListenerNew extends Thread{
                     //-------ADDED FOR THE NAT!
                     ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
                     ((AppComponent)root).requestIntercepts();
-                    
+
+
+
                     if(natTableModified(var, (String)msg.obj)){
                         //ACTIONS
                         log.info("Modified nat table");
@@ -1561,6 +1563,7 @@ public class StateListenerNew extends Thread{
                             log.info("entry "+entry);
                             Ip4Address inIp=null, outIp=null, natIp=null;
                             Short inPort=null, outPort=null, natPort=null;
+                            String connectionState = null;
                             int proto=0;
                             log.info("prima di prendere i valori");
                             if(entry.has("inputAddress")){
@@ -1576,6 +1579,9 @@ public class StateListenerNew extends Thread{
                                 outPort = entry.get("outputPort").shortValue();
                             if(entry.has("newPort"))
                                 natPort = entry.get("newPort").shortValue();
+                            if(entry.has("connectionState"))
+                                connectionState = entry.get("connectionState").textValue();
+
                             log.info("p3 "+natPort);
                                 proto = entry.get("proto").asInt();
                             log.info("input address "+inIp);
@@ -1585,7 +1591,9 @@ public class StateListenerNew extends Thread{
                             log.info("nat address "+natIp);
                             log.info("nat port "+natPort);
                             log.info("proto "+proto);
-//                            ((AppComponent)root).installOutcomingNatRule(inIp, outIp, proto, inPort, natPort, MacAddress.NONE, PortNumber.portNumber(outPort));
+                            log.info("connection state " + connectionState);
+                            ((AppComponent) root).processor.importL4SessionEntry(inIp, outIp, inPort, outPort, natIp, natPort, proto, connectionState);
+//                          //((AppComponent)root).installOutcomingNatRule(inIp, outIp, proto, inPort, natPort, MacAddress.NONE, PortNumber.portNumber(outPort));
                         }
                     }
                     //-------

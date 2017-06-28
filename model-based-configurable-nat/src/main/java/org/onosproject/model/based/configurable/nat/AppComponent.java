@@ -15,6 +15,7 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
+import com.sun.xml.internal.bind.v2.ContextFactory;
 import org.apache.felix.scr.annotations.*;
 import org.onlab.packet.*;
 import org.onosproject.cfg.ComponentConfigService;
@@ -29,9 +30,11 @@ import org.onosproject.net.flowobjective.FlowObjectiveService;
 import org.onosproject.net.flowobjective.ForwardingObjective;
 import org.onosproject.net.packet.*;
 import org.onosproject.net.topology.TopologyService;
+import static org.onosproject.net.DeviceId.deviceId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.osgi.service.component.ComponentContext;
+import sun.rmi.transport.Transport;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -87,7 +90,7 @@ public class AppComponent {
 
     public ApplicationId appId;
 
-    private NatPacketProcessor processor = new NatPacketProcessor();
+    public NatPacketProcessor processor = new NatPacketProcessor();
 
     // default configuration
     public ApplicationPort inputApp = new ApplicationPort();
@@ -329,7 +332,18 @@ public class AppComponent {
         }
     }
 
-    private class NatPacketProcessor implements PacketProcessor {
+    public class MyPacketContext extends DefaultPacketContext{
+        protected MyPacketContext(long time, InboundPacket inPkt, OutboundPacket outPkt, boolean block) {
+            super(time, inPkt, outPkt, block);
+        }
+
+        @Override
+        public void send() {
+
+        }
+    }
+
+    public class NatPacketProcessor implements PacketProcessor {
 
         @Override
         public void process(PacketContext packetContext) {
@@ -414,12 +428,12 @@ public class AppComponent {
 //                    natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
 
                     FlowIdentifier flowId = new FlowIdentifier();
-                    flowId.srcPort = (short) publicPort;
-                    flowId.protocol = ipHeader.getProtocol();
+                    flowId.setSrcPort((short) publicPort);
+                    flowId.setProtocol(ipHeader.getProtocol());
                     
                     FlowInfo flowInfo= new FlowInfo();
-                    flowInfo.nattedIp = srcAddress.toString();
-                    flowInfo.nattedPort = (short)srcPortNumber;
+                    flowInfo.setNattedIp(srcAddress.toString());
+                    flowInfo.setNattedPort((short)srcPortNumber);
                     natPortMap.put(flowId, flowInfo);
 
                     log.info(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
@@ -440,12 +454,12 @@ public class AppComponent {
 //                     natPortMap.put((short) publicPort, srcAddress.toString() + ":" + srcPortNumber);
  
                     FlowIdentifier flowId = new FlowIdentifier();
-                    flowId.srcPort = (short) publicPort;
-                    flowId.protocol = ipHeader.getProtocol();
+                    flowId.setSrcPort((short) publicPort);
+                    flowId.setProtocol(ipHeader.getProtocol());
                     
                     FlowInfo flowInfo= new FlowInfo();
-                    flowInfo.nattedIp = srcAddress.toString();
-                    flowInfo.nattedPort = (short)srcPortNumber;
+                    flowInfo.setNattedIp(srcAddress.toString());
+                    flowInfo.setNattedPort((short)srcPortNumber);
                     natPortMap.put(flowId, flowInfo);
                     
                     log.debug(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
@@ -509,13 +523,136 @@ public class AppComponent {
         }
 
         /**
+         * set a TCP/UDP session entry into the application, forwarding the proper nat rules to the underlying network
+         * of switches.
+         * This method is thought for state migration purposes
+         *
+         * @param srcIpAddress IP address of the source device
+         * @param dstIpAddress IP address of the destination device
+         * @param srcPort L4 port of the source device
+         * @param dstPort L4 port of the source device
+         * @param translatedIpAddress ip address exposed to the WAN instead of the local source IP
+         * @param translatedPort port exposed to the WAN instead of the local source port
+         */
+        public void importL4SessionEntry(Ip4Address srcIpAddress, Ip4Address dstIpAddress,
+                                   Short srcPort, Short dstPort, Ip4Address translatedIpAddress, Short translatedPort,
+                                   int protocol, String connectionState){
+            if(protocol > 255)
+                log.warn("Protocol wrong, it is expected to be a number <= 255, it is: " + protocol);
+
+            //Storing tcp/udp session information into natPortMap
+            FlowIdentifier flowId = new FlowIdentifier(srcIpAddress, dstIpAddress, srcPort, dstPort, (byte)protocol);
+            FlowInfo flowInfo = new FlowInfo(translatedIpAddress.toString(), translatedPort, connectionState);
+
+            natPortMap.put(flowId, flowInfo);
+
+            //Creating packet that will trigger the nat rules creation and forwarding to the switches
+            BasePacket transportPacket = null;
+            switch(protocol) {
+                case IPv4.PROTOCOL_TCP:
+                    transportPacket = new TCP();
+                    ((TCP)transportPacket).setSourcePort(srcPort);
+                    ((TCP)transportPacket).setDestinationPort(dstPort);
+                    break;
+                case IPv4.PROTOCOL_UDP:
+                    transportPacket = new UDP();
+                    ((UDP)transportPacket).setSourcePort(srcPort);
+                    ((UDP)transportPacket).setDestinationPort(dstPort);
+                    break;
+            }
+
+            if(transportPacket == null){
+                log.info("Importing L4 session not supported, protocol code (binary): " + protocol);
+                return;
+            }
+
+            IPv4 ipHeader = (IPv4)transportPacket.getPayload();
+            ipHeader.setDestinationAddress(dstIpAddress.toString());
+            ipHeader.setSourceAddress(srcIpAddress.toString());
+            Ethernet ethPacket = (Ethernet)ipHeader.getPayload();
+
+            MacAddress srcMac = arpTable.get(srcIpAddress.getIp4Address());
+            if(srcMac == null){
+                log.info("source MAC not found in arp table: " + srcIpAddress.getIp4Address());
+                return;
+            }
+            ethPacket.setSourceMACAddress(srcMac);
+
+            //Creating the packetContext on which some of the following already existing method are based on
+            PacketContext packetContext = createMyPacketContext(transportPacket);
+
+            // first we need to know the destination mac address
+            MacAddress dstMac = arpTable.get(dstIpAddress.getIp4Address());
+            if (dstMac == null) {
+
+                log.info(" - sending arp request to {}", dstIpAddress.getIp4Address());
+                sendArpRequest(dstIpAddress, outputApp.deviceId, outputApp.portNumber);
+
+                // add this packet to the map of the pending packets to allow future processing
+                pendingPackets.putIfAbsent(dstIpAddress.getIp4Address(), new LinkedBlockingQueue<>());
+                pendingPackets.get(dstIpAddress.getIp4Address()).add(packetContext);
+                return;
+            }
+
+
+            // Forwarding rules into the swithes
+            if(inputApp.deviceId.equals(outputApp.deviceId)) {
+                // nat interfaces are on the same device
+                installIncomingNatRule(packetContext, srcIpAddress.getIp4Address(), dstIpAddress.getIp4Address(), ipHeader.getProtocol(), srcPort, translatedPort, dstMac, outputApp.portNumber);
+                installOutcomingNatRule(dstIpAddress.getIp4Address(), srcIpAddress.getIp4Address(), ipHeader.getProtocol(), translatedPort, srcPort, ethPacket.getSourceMAC(), inputApp.portNumber);
+            } else {
+                // nat interfaces are on different devices, we need to find a path
+                Set<Path> paths = topologyService.getPaths(topologyService.currentTopology(), inputApp.deviceId, outputApp.deviceId);
+                Path path = pickForwardPathIfPossible(paths, packetContext.inPacket().receivedFrom().port());
+
+                // create flows for each link
+                for (Link link : path.links()) {
+                    if (link.src().deviceId().equals(inputApp.deviceId)) {
+                        log.debug("LINK: input device");
+                        installIncomingNatRule(packetContext, srcIpAddress.getIp4Address(), dstIpAddress.getIp4Address(), ipHeader.getProtocol(), srcPort, translatedPort, dstMac, link.src().port());
+                        installForwardingRule(link.src().deviceId(), inputApp.portNumber, dstIpAddress.getIp4Address(), srcIpAddress.getIp4Address());
+                    } else {
+                        log.debug("LINK: not input device");
+                        installForwardingRule(link.src().deviceId(), link.src().port(), outputApp.ipAddress.getIp4Address(), dstIpAddress.getIp4Address());
+                    }
+                    if (link.dst().deviceId().equals(outputApp.deviceId)) {
+                        log.debug("LINK: output device");
+                        installOutcomingNatRule(dstIpAddress.getIp4Address(), srcIpAddress.getIp4Address(), ipHeader.getProtocol(), translatedPort, srcPort, ethPacket.getSourceMAC(), link.dst().port());
+                        installForwardingRule(link.dst().deviceId(), outputApp.portNumber, outputApp.ipAddress.getIp4Address(), dstIpAddress.getIp4Address());
+                    } else {
+                        log.debug("LINK: not output device");
+                        installForwardingRule(link.dst().deviceId(), link.dst().port(), dstIpAddress.getIp4Address(), srcIpAddress.getIp4Address());
+                    }
+                }
+            }
+
+            //try { Thread.sleep(100); } catch (InterruptedException ignored) { }
+
+            //log.info("Forwarding to Table");
+            //packetToTable(packetContext);
+        }
+
+        private PacketContext createMyPacketContext(BasePacket packet){
+            Ethernet ethPacket = (Ethernet)((IPv4)packet.getPayload()).getPayload();
+            ConnectPoint cp = new ConnectPoint(inputApp.deviceId, inputApp.portNumber);
+            byte[] bytes = new byte[10];
+            ByteBuffer packetData = ByteBuffer.wrap(bytes);
+
+            InboundPacket inPacket = new DefaultInboundPacket(cp, ethPacket, packetData);
+
+
+            MyPacketContext context = new MyPacketContext(50, inPacket, null, false);
+
+            return context;
+        }
+
+        /**
          * Processes the ARP Payload and initiates a reply to the client.
          *
          * @param packetContext context of the incoming message
          * @param ethPkt the ethernet payload
          */
         private void processArpRequest(PacketContext packetContext, Ethernet ethPkt, MacAddress replyMac) {
-
             ARP arpPacket = (ARP) ethPkt.getPayload();
 
             ARP arpReply = (ARP) arpPacket.clone();
