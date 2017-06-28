@@ -29,7 +29,8 @@ After activating the application you need to configure the tenant, graph and app
 This is done by using the onos Network Configuration system.
 
 - Send a REST request as follows:
-**POST http://{onos-address}:8181/onos/v1/network/configuration/
+
+**POST http://{onos-address}:8181/onos/v1/network/configuration/**
 
 ```json
 {
