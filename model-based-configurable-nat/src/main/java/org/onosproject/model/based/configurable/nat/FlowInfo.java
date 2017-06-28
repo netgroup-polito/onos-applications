@@ -5,6 +5,7 @@
  */
 package org.onosproject.model.based.configurable.nat;
 
+import org.onlab.packet.Ip4Address;
 import org.onlab.packet.IpAddress;
 
 /**
@@ -12,23 +13,23 @@ import org.onlab.packet.IpAddress;
  * @author lara
  */
 public class FlowInfo {
-    private String nattedIp;
+    private Ip4Address nattedIp;
     private Short nattedPort;
     private String connectionState;
 
     public FlowInfo(){}
 
-    public FlowInfo(String nattedIp, Short nattedPort, String connectionState){
+    public FlowInfo(Ip4Address nattedIp, Short nattedPort, String connectionState){
         nattedIp = this.nattedIp;
         nattedPort = this.nattedPort;
         connectionState = this.connectionState;
     }
 
-    public String getNattedIp() {
+    public Ip4Address getNattedIp() {
         return nattedIp;
     }
 
-    public void setNattedIp(String nattedIp) {
+    public void setNattedIp(Ip4Address nattedIp) {
         this.nattedIp = nattedIp;
     }
 
@@ -46,5 +47,21 @@ public class FlowInfo {
 
     public void setConnectionState(String connectionState) {
         this.connectionState = connectionState;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (!(o instanceof FlowInfo))
+            return false;
+
+        FlowInfo fi = (FlowInfo) o;
+        return this.nattedIp.equals(fi.getNattedIp()) && this.nattedPort.equals(fi.getNattedPort());
+    }
+
+    @Override
+    public int hashCode() {
+
+        return 31*nattedIp.hashCode() + nattedPort.hashCode();
     }
 }

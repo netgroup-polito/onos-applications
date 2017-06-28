@@ -13,6 +13,8 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -242,8 +244,9 @@ public class StateListenerNew extends Thread{
         return null;
     }
     
-    public StateListenerNew(Object root){
+    public StateListenerNew(String nf_id, Object root){
         this.root = root;
+        AppId = nf_id;
         state = new HashMap<>();
         stateThreshold = new HashMap<>();
         toListenPush = new ArrayList<>();
@@ -275,7 +278,6 @@ public class StateListenerNew extends Thread{
             Properties prop = new Properties();
             InputStream propFile = loader.getResourceAsStream("configuration/appProperties.properties");
             if (propFile!=null)prop.load(propFile);
-            AppId = prop.getProperty("appId", "StateListener");
             String baseUri = prop.getProperty("baseUri", "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule");
             String eventsUri = prop.getProperty("eventsUri", "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events");
             log.info("appId "+AppId);
@@ -309,6 +311,13 @@ public class StateListenerNew extends Thread{
                 log.info(name + " -> " + value);
             }
             log.info("*** ***");
+	    log.info("***CONFIG MAP***");
+            for (String name: config.keySet()){
+                Boolean value = config.get(name);
+                log.info(name + " -> " + value);
+            }
+            log.info("*** ***");
+
 
         } catch (Exception ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -350,6 +359,16 @@ public class StateListenerNew extends Thread{
                     log.info(name + " -> " + index);
             }
             log.info("*** ***");
+	    /**
+             * Debug INFO
+             */
+            log.debug("***YANG PATH MAPPING TO JAVA PATH***");
+            for (String javaPath: YangToJava.keySet()){
+                String yangPath = YangToJava.get(javaPath);
+                log.debug(yangPath + " -> " + javaPath);
+            }
+            log.debug("*** ***");
+
         }catch(Exception e){
             log.error("Error during the parsing of the mapping file\nError report: " + e.getMessage());
         }
@@ -377,9 +396,35 @@ public class StateListenerNew extends Thread{
             rootJson = mapper.createObjectNode();
             
             //CREATE THE JSON TREE CORRESPONDENT TO THE YANG MODEL
-            for(String l:leafs)
-                createTree(rootJson, YangToJava.get(l));
-            
+            for(String l:leafs){
+		String pathYang = YangToJava.get(l);
+		if(pathYang.substring(0, 4).equals("void"))
+			continue;
+		//The following regular expression separates the [index] from the string
+		//e.g. config-nat/interfaces[wan]/ip[v4]/address -> {"config-nat/interfaces", "[wan]", "/ip", "[v4], "/address"}
+		String[] pathNodeSplitArray = pathYang.split("(?<=\\])|(?=\\[)");
+		
+		//Delete eventual index inside square brackets '[]'
+		for(int i = 0; i < pathNodeSplitArray.length; i ++){
+			if(pathNodeSplitArray[i].contains("[") && !pathNodeSplitArray[i].equals("[]"))
+				pathNodeSplitArray[i] = "[]";
+		}
+		
+		//Join the pathNodeSplitArray, creating an index-free version of the original string
+		pathYang = "";
+		for(String partialPath : pathNodeSplitArray){
+			if(! partialPath.equals("[]") && ! pathYang.equals("") && ! partialPath.startsWith("/"))
+				pathYang += '/';
+			pathYang += partialPath;
+		}
+                createTree(rootJson, pathYang);
+	    }
+	    try{
+                String pretty = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootJson);
+	        log.info("rootJson pretty printed:\n" + pretty);
+	    }catch(Exception e){
+		log.info("Error writing pretty string");
+	    }
             //START MONITORING
             this.start();
     }
@@ -418,12 +463,21 @@ public class StateListenerNew extends Thread{
                     throw new Exception(message);
                 }
 
+		String pathYang = informationMapping[0].trim();
+		String pathJava = informationMapping[1].trim();
+		//pathJava is used as key of a map. Hence I need to discriminate the 'void' information
+		//that can be found in the mapping file. 'void' identifies all the information that are
+		//not mapped in any Java variable. In order to make such 'void' information unique,
+		//a substring is appended -> void.<path_yang_to_the_information>
+		if(pathJava.equals("void"))
+			pathJava += "." + pathYang;
+
                 //If any static list keys are found inside the YANG path, they are stored into staticListIndexes map
                 //Then, allowedStaticIndexesInList stores, for each YANG list analyzed, the list of static keys found until now
-                for(String key : findListKeys(informationMapping[0].trim())){
+                for(String key : findListKeys(pathYang)){
                     if(! staticListIndexes.keySet().contains(key))
                         staticListIndexes.put(key, null);
-                        String listPath = informationMapping[0].substring(0, informationMapping[0].lastIndexOf("["));
+                        String listPath = pathYang.substring(0, pathYang.lastIndexOf("["));
                         if(allowedStaticIndexesInList.containsKey(listPath)){
                             List<String> currentListAllowedIndexes = allowedStaticIndexesInList.get(listPath);
                             if(! currentListAllowedIndexes.contains(key)) {
@@ -438,7 +492,7 @@ public class StateListenerNew extends Thread{
                         }
                 }
 
-                YangToJava.put(informationMapping[1].trim(), informationMapping[0].trim());
+                YangToJava.put(pathJava, pathYang);
             }
         }
     }
@@ -460,19 +514,52 @@ public class StateListenerNew extends Thread{
      * @return
      */
     private ArrayList<String> findListKeys(String yangPath){
-        String[] values = yangPath.split(Pattern.quote("/"));
+	//The following regular expression is able to split values inside square brackets []
+	//e.g., nat-config/interfaces[nat/public]/address becomes {"nat-config/interfaces", "[nat/public]", "/address"}
+	//Using split(Pattern.quote("/") is not enough because the key may contain slashes '/'
+	//TODO test if it works with multiple lists in the same path, e.g., a/b/c[x]/d/e[y]
+        String[] values = yangPath.split("(?<=\\])|(?=\\[)");
         ArrayList<String> keyList = new ArrayList();
-
         for (String value : values){
             int startBracketIndex = value.indexOf("[");
             int endBracketIndex = value.indexOf("]");
             if(startBracketIndex != -1 && endBracketIndex != -1 && startBracketIndex < endBracketIndex){
                 String key = value.substring(startBracketIndex + 1, endBracketIndex);
-                keyList.add(key);
+		if(! key.equals(""))
+	                keyList.add(key);
             }
         }
 
         return keyList;
+    }
+
+    /**
+     *This method check if a YANG variable is configurable.
+     *Since the isConfigurable information is found in the YIN file, which has no knowledge about eventual static well kwokn indexes of any lists
+     *Eventual list indexes has to be purged before accessing to the config map
+     */
+    private Boolean isConfigurable(String pathYang){
+        if(pathYang.substring(0, 4).equals("void"))
+                return true;
+        //The following regular expression separates the [index] from the string
+        //e.g. config-nat/interfaces[wan]/ip[v4]/address -> {"config-nat/interfaces", "[wan]", "/ip", "[v4], "/address"}
+        String[] pathNodeSplitArray = pathYang.split("(?<=\\])|(?=\\[)");
+
+        //Delete eventual index inside square brackets '[]'
+        for(int i = 0; i < pathNodeSplitArray.length; i ++){
+                if(pathNodeSplitArray[i].contains("[") && !pathNodeSplitArray[i].equals("[]"))
+                        pathNodeSplitArray[i] = "[]";
+        }
+
+        //Join the pathNodeSplitArray, creating an index-free version of the original string
+        pathYang = "";
+        for(String partialPath : pathNodeSplitArray){
+                if(! partialPath.equals("[]") && ! pathYang.equals("") && ! partialPath.startsWith("/"))
+                        pathYang += '/';
+                pathYang += partialPath;
+        }
+
+	return config.get(pathYang);
     }
 
     public void run(){
@@ -903,10 +990,16 @@ public class StateListenerNew extends Thread{
         if(l==null || l.equals(""))
             return;
         String[] splitted = l.split(Pattern.quote("/"));
+	for(int i = 0; i < splitted.length; i ++)
+		if(splitted[i].endsWith("]") && !splitted[i].contains("[")){
+			log.info("old splitted i: " + splitted[i]);
+			splitted[i] = splitted[i].substring(0, splitted[i].length() - 1);
+			log.info("new splitted i: " + splitted[i]);
+		}
         if(node.isObject()){
             JsonNode next;
             if(splitted[0].contains("[")){
-                String inter = splitted[0].substring(0, splitted[0].indexOf("["));
+                String inter = splitted[0].substring(0, splitted[0].indexOf("["));				
                 next = ((ObjectNode)node).get(inter);
                 if(next==null)
                     ((ObjectNode)node).put(inter, mapper.createArrayNode());
@@ -914,16 +1007,24 @@ public class StateListenerNew extends Thread{
             }else{
                 next = ((ObjectNode)node).get(splitted[0]);
                 if(next==null){
-                    if(splitted.length>1 || (splitted.length>1&&splitted[1].contains("[")))
-                        ((ObjectNode)node).put(splitted[0], mapper.createObjectNode());
+                    if(splitted.length>1 || (splitted.length>1&&splitted[1].contains("["))){
+			//if(splitted[0].contains("]"))
+                        	//splitted[0] = splitted[0].substring(0, splitted[0].indexOf("]"));
+                        ((ObjectNode)node).put(splitted[0], mapper.createObjectNode());			
+		    }
                     else if (splitted.length==1 && splitted[0].contains("[")){
                         ArrayNode mappa = mapper.createArrayNode();
                         ObjectNode elemMappa = mapper.createObjectNode();
                         elemMappa.put("key", "");
                         elemMappa.put("value", "");
-                        ((ObjectNode)node).put(splitted[0], mappa);
-                    }else
-                       ((ObjectNode)node).put(splitted[0], new String()); 
+			//if(splitted[0].contains("]"))
+	                        //splitted[0] = splitted[0].substring(0, splitted[0].indexOf("]"));
+                        ((ObjectNode)node).put(splitted[0], mappa);			
+                    }else{
+			//if(splitted[0].contains("]"))
+	                        //splitted[0] = splitted[0].substring(0, splitted[0].indexOf("]"));
+                       ((ObjectNode)node).put(splitted[0], new String()); 		       
+		    }
                 }
                 next = ((ObjectNode)node).get(splitted[0]);
             }
@@ -938,14 +1039,17 @@ public class StateListenerNew extends Thread{
         }else{
             JsonNode next;
             if(splitted[0].contains("[")){
-                String inter = splitted[0].substring(0, splitted[0].indexOf("["));
+                String inter = splitted[0].substring(0, splitted[0].indexOf("["));				
                 if(node.isArray()){
                     //è una lista
                     if(((ArrayNode)node).elements().hasNext()==false)
                         ((ArrayNode)node).addObject();
                     next = ((ArrayNode)node).get(0);
-                    if(((ObjectNode)next).get(inter)==null)
-                        ((ObjectNode)next).put(inter, mapper.createArrayNode());
+                    if(((ObjectNode)next).get(inter)==null){
+			//if(inter.contains("]"))
+	                        //inter = inter.substring(0, inter.indexOf("]"));
+                        ((ObjectNode)next).put(inter, mapper.createArrayNode());			
+		    }
                     next = ((ObjectNode)next).get(inter);
                 }else{
                     //è l'elemento di una mappa
@@ -961,10 +1065,16 @@ public class StateListenerNew extends Thread{
                     ((ArrayNode)node).addObject();
                 next = ((ArrayNode)node).get(0);
                 if(((ObjectNode)next).get(splitted[0])==null){
-                    if(splitted.length>2)
-                        ((ObjectNode)next).put(splitted[0], mapper.createObjectNode());
-                    else
-                       ((ObjectNode)next).put(splitted[0], new String()); 
+                    if(splitted.length>2){
+			//if(splitted[0].contains("]"))
+	                        //splitted[0] = splitted[0].substring(0, splitted[0].indexOf("]"));
+                        ((ObjectNode)next).put(splitted[0], mapper.createObjectNode());			
+		    }
+                    else{
+			//if(splitted[0].contains("]"))
+	                        //splitted[0] = splitted[0].substring(0, splitted[0].indexOf("]"));
+                       ((ObjectNode)next).put(splitted[0], new String()); 			
+		    }
                 }
                 next = ((ObjectNode)next).get(splitted[0]);
             }
@@ -1224,8 +1334,7 @@ public class StateListenerNew extends Thread{
             if(!configVariables(noIndexes(var), toSet)){
                 log.info("not to config..");
                 return 1;
-            }
-
+            }		
             return fillVariables(toSet, var);
         } catch (IOException ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -1244,10 +1353,17 @@ public class StateListenerNew extends Thread{
     //ELSE -> FALSE
     private boolean configVariables(String var, JsonNode toSet){
         if(toSet.isValueNode()){
-//            log.info("Is a value Node: "+var);
-            return config.get(var);
+            log.info("Is a value Node: "+var);
+		try{
+		    	String value =  mapper.writerWithDefaultPrettyPrinter().writeValueAsString(toSet);
+			staticListIndexes.replace(var, value);
+		}catch(Exception e){
+			log.error("Fail during the Json conversion in 'pretty' String");
+		}
+	    log.info("isConfigurable: " + isConfigurable(var));
+            return isConfigurable(var);
         }
-        if(toSet.isObject()){
+        if(toSet.isObject()){	    
             Iterator<Entry<String, JsonNode>> iter = ((ObjectNode)toSet).fields();
             boolean ok = true;
             while(iter.hasNext()){
@@ -1255,16 +1371,18 @@ public class StateListenerNew extends Thread{
                 if(field.getValue().isValueNode()){
                     //leaf - check config
                     if(config.containsKey(var+"/"+field.getKey()))
-                        ok = ok && config.get(var+"/"+field.getKey());
+                        ok = ok && isConfigurable(var+"/"+field.getKey());
                     else{
-//                        log.info("Config non contiene "+var+"/"+field.getKey());
+//			log.info("Config does not contain "+ var + "/ " + field.getKey());
                         ok = true;
                     }
 
                     //Check if the current value is a static list key
                     String currentKey = var + "/" + field.getKey();
-                    if(staticListIndexes.containsKey(currentKey))
+                    if(staticListIndexes.containsKey(currentKey)){			
                         staticListIndexes.replace(currentKey, field.getValue().toString());
+//			log.info("New static index value " + currentKey + " : " + field.getValue().toString());
+		    }
                 }else
                     ok = ok && configVariables(var+"/"+field.getKey(), field.getValue());
             }
@@ -1500,15 +1618,20 @@ public class StateListenerNew extends Thread{
     //COMMAND CALLED FROM THE CONNECTIONMODULECLIENT - MESSAGE FROM THE SERVICE LAYER
     public void parseCommand(String msgJson) throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException, IOException{
         CommandMsg msg = ((new Gson()).fromJson(msgJson, CommandMsg.class));
+	log.info("prima di fromyangToJava");
         String var = fromYangToJava(msg.var);
+	log.info("var: " + var);
+	log.info("dopo fromyangotjava");
 //        log.info("Command "+msg.act);
 //        log.info("Variable "+msg.var);
 //        log.info("Variable in the code "+var);
         switch(msg.act){
             case GET:
                 //get the object
+		log.info("prima di getComplexObj");
                 Object result = getComplexObj(msg.var);
-//                log.info("result "+result);
+		log.info("dopo getComplexObj");
+                log.info("result "+result);
 //                log.info("result.."+result);
                 msg.objret = mapper.writeValueAsString(result);
                 //pass the result to the connection module
@@ -1516,35 +1639,55 @@ public class StateListenerNew extends Thread{
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
                 
-            case CONFIG:
+            case CONFIG:		
                 String noInd = deleteIndexes(msg.var);
-                if(config.containsKey(noInd) && !config.get(noInd)){
+                if(config.containsKey(noInd) && !isConfigurable(noInd)){
                     //no configurable
                     log.info("Not configurable");
                     msg.objret = "2";
                     cM.setResourceValue((new Gson()).toJson(msg));
                     return;
                 }
-                try {
-                    Integer ret;
+                try {		
+                    Integer ret = 0;
                     //-------ADDED FOR THE NAT!
                     ((AppComponent)root).withdrawIntercepts();
                     //-------
-
-                    //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
-                    if(var!=null && !var.equals("root")&&state.containsKey(var.substring(5))){
-                        boolean setted = setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);
-                        ret = (setted)?0:1;
-                    }else{
-                        //IT ISN'T THE VALUE OF A LEAF CONTAINED IN THE STATE
-                        ret = setComplexObject(msg.var, (String)msg.obj);
-                    }
+		    
+		    try{
+			    //If var.substring(0, 4) == 'void', the message requests for the set
+			    // of an information that is not mapped into any Java variables
+			    if(! var.substring(0, 4).equals("void")){	
+                		    //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
+                	       	    if(var!=null && !var.equals("root")&&state.containsKey(var.substring(5))){			
+                           		 boolean setted = setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);			
+	                            	ret = (setted)?0:1;
+        	                    }else{
+                	            	//IT ISN'T THE VALUE OF A LEAF CONTAINED IN THE STATE									
+                        	    	ret = setComplexObject(msg.var, (String)msg.obj);			
+	       		    		log.info("***STATIC LIST INDEXES AFTER CONFIG***");
+	                            	for (String name: staticListIndexes.keySet()){
+	                                	String value = staticListIndexes.get(name);
+		                                log.info(name + " -> " + value);
+                	                }
+    	                	    	log.info("*** ***");
+                            	   }
+			    }else{
+				log.info("prima di replace");
+                        	staticListIndexes.replace(msg.var, (String)msg.obj);
+				log.info("dopo replace");
+			    }
+		    }catch(Exception e){
+			StringWriter errors = new StringWriter();
+			e.printStackTrace(new PrintWriter(errors));
+			log.info("Eccezione: " + errors.toString());
+		    }
 
                     msg.objret = ret.toString();
 //                    log.info("Result: "+ret);
-                    //return the result to the ConnectionModule
-                    cM.setResourceValue((new Gson()).toJson(msg));
-                    
+                    //return the result to the ConnectionModule			
+                    cM.setResourceValue((new Gson()).toJson(msg));			               
+
                     //-------ADDED FOR THE NAT!
                     ((AppComponent)root).flowRuleService.removeFlowRulesById(((AppComponent)root).appId);
                     ((AppComponent)root).requestIntercepts();
@@ -1596,6 +1739,13 @@ public class StateListenerNew extends Thread{
 //                          //((AppComponent)root).installOutcomingNatRule(inIp, outIp, proto, inPort, natPort, MacAddress.NONE, PortNumber.portNumber(outPort));
                         }
                     }
+		    log.info("***STATIC LIST INDEXES AFTER CONFIG***");
+                        for (String name: staticListIndexes.keySet()){
+                                String value = staticListIndexes.get(name);
+                                log.info(name + " -> " + value);
+                        }
+                    log.info("*** ***");
+
                     //-------
                     return;
                 } catch (NoSuchFieldException ex) {
@@ -1768,6 +1918,13 @@ public class StateListenerNew extends Thread{
     //SETTING A VALUE TO A VARIABLE
     public boolean setVariable(String var, String complete, String newVal, Object actual) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
 //        log.info("var -> "+var);
+
+	//Check if the java variable path begins with 'void'
+	//if it does, it is related to an information that is written in the application YANG model
+	//but that is not present inside the Java code.
+	//Since there is no variable to set, return true (nothing to do, job done c:)
+	if(var.substring(0, 4).equals("void"))
+		return true;
         String[] fs = var.split(Pattern.quote("/"));
         if(fs.length==1){
 //            log.info("**we are in a leaf** - complete "+complete);
@@ -2250,33 +2407,91 @@ public class StateListenerNew extends Thread{
         }
         return null;
     }
-    
+
+/*
+	 * transformListIndexes receives the full path of a YANG information (e.g., config-nat/interfaces[wan]/address)
+	 * and drop the index. If the index is a well-known index, this method put the name of the index
+	 * in place of its value (e.g., config-nat/interfaces[wan]/address -> config-nat/interfaces[config-nat/nat/interface-public]/address).
+	 */
+	private String transformListIndexes(String path){
+		//The following regular expression separates the [index] from the string
+		//e.g. config-nat/interfaces[wan]/ip[v4]/address -> {"config-nat/interfaces", "[wan]", "/ip", "[v4], "/address"}
+		String[] separated = path.split("(?<=\\])|(?=\\[)");
+		List<String> buildingNewPath = new ArrayList<String>();
+		log.info("dentro TRANSFORMLISTINDEXES");	
+		//Starting from the string splitted by the above regular expression, join the indexes with the name list
+		//e.g., {"config-nat/interfaces", "[wan]", "/ip", "[v4], "/address"} -> {"config-nat/interfaces[wan]", "/ip[v4], "/address"}
+		for(int i = 0; i < separated.length; i ++ ){
+			if(separated[i].contains("[") && separated[i].contains("]")){
+				String tmp = buildingNewPath.get(buildingNewPath.size() - 1);
+				tmp += separated[i];
+				buildingNewPath.set(buildingNewPath.size() - 1, tmp);
+			}
+			else
+				buildingNewPath.add(separated[i]);
+		}
+		
+		//Analyze the index of each list, if it is a well known static index, which is valid for the analyzed list
+		//substitue the value with the name of the index. Otherwise strip away the index
+		//e.g. {"config-nat/interfaces[wan]", "/ip[v4], "/address"} -> {"config-nat/interfaces[config-nat/nat/interface-public]", "/ip[], "/address"}
+		try{
+		for(int i = 0; i < buildingNewPath.size(); i ++){
+			String currentPath = buildingNewPath.get(i); 
+			if(currentPath.contains("[") && currentPath.contains("]")){
+				String index = currentPath.substring(currentPath.lastIndexOf('[') + 1, currentPath.lastIndexOf(']'));
+				String listPath = currentPath.substring(0, currentPath.lastIndexOf('['));
+				
+				boolean found = false;				
+				if(allowedStaticIndexesInList.containsKey(listPath)){
+					log.info("dimensione allowedStaticIndexesinList: " + allowedStaticIndexesInList.size());
+					for(String indexAllowed : allowedStaticIndexesInList.get(listPath)){
+						//log.info("ris: " + staticListIndexes.get(indexAllowed).equals(index));
+						log.info("indexAllowed: " + indexAllowed);
+						log.info("res = " + staticListIndexes.get(indexAllowed));
+						if(staticListIndexes.containsKey(indexAllowed) && staticListIndexes.get(indexAllowed) != null && staticListIndexes.get(indexAllowed).equals(index)){
+							found = true;
+							buildingNewPath.set(i, listPath + '[' + indexAllowed + ']');
+						}
+					}
+					if(!found)
+						buildingNewPath.set(i, listPath + "[]");
+				}
+			}
+		}
+		
+		//join the path from the buildingNewPath list
+        	String finalPath = new String();
+        	for(String tmp : buildingNewPath)
+        		finalPath += tmp;
+		return finalPath;
+        	}catch(Exception e){
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			log.info("error: " + sw.toString());
+		}
+        	return null;
+	}
     
     //TRANSLATION FROM THE YANG NAME TO THE JAVA NAME
-    public String fromYangToJava(String y){
-        String[] separated = y.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
-        String yang = new String();
-        for(int i=0; i<separated.length;i++)
-            if(i%2==0 && i!=separated.length-1)
-                yang+=separated[i]+"[]";
-        if(separated.length%2==1)
-            yang+=separated[separated.length-1];
-//        log.info("yang "+yang);
+    public String fromYangToJava(String path){
+	log.info("path: " + path);
+        String yang = transformListIndexes(path);
+        log.info("yang "+yang);
         String j =null;
         if(YangToJava.containsValue(yang))
             for(String s:YangToJava.keySet())
                 if(YangToJava.get(s).equals(yang))
                     j=s;
-//        log.info("j "+j);
+        log.info("j "+j);
         if(j==null)
             return j;
         String[] java = j.split("["+Pattern.quote("[")+"," +Pattern.quote("]")+"]");
         j=new String();
-        yang = new String();
+	String[] separated = path.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
         for(int i=0; i<java.length; i++){
             if(i%2==0){
                 j+=java[i];
-                yang +=separated[i];
             }else{
 //                if(!separated[i].equals("")&&(separated[i].startsWith("{")|| separated[i].startsWith("["))){
 //                    try {
@@ -2293,8 +2508,8 @@ public class StateListenerNew extends Thread{
                     j+="["+separated[i]+"]";
             }
         }
-//        log.info("j di nuovo "+j);
-        if(y.endsWith("[]"))
+        log.info("j di nuovo "+j);
+        if(path.endsWith("[]"))
             j+="[]";
         return j;
     }
@@ -2350,19 +2565,11 @@ public class StateListenerNew extends Thread{
     //DIVIDE THE LEAFS IN THE DIFFERENT STRUCTURES BASED ON THE ADVERTISE VALUE
     //IF PERIODIC -> START TE NEW THREAD
     private void findYinLeafs(JsonNode y, String prev) {
-	ObjectMapper mapper = new ObjectMapper();
-	String pretty = new String();
-	try{
-	pretty = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(y);
-	}catch(Exception e){
-	}
-	log.info("JsonNode: " + pretty + "\n\n\n");
         Iterator<Entry<String, JsonNode>> iter = y.fields();
         while(iter.hasNext()){
             Entry<String, JsonNode> value = iter.next();
             String fieldName = value.getKey();
             JsonNode valueNode = value.getValue();
-	    log.info("Child i fieldName: " + fieldName + " valueNode");
             if(fieldName.equals("leaf")){
                 //can be an array
                 if(valueNode.isArray()){
@@ -2478,44 +2685,24 @@ public class StateListenerNew extends Thread{
 		    if(valueNode.has("@value")){
 			    String key = new String();
 			    key = valueNode.get("@value").textValue();
-			    log.info("key found! " + prev +  " -> " + key);
 			    keyOfYangLists.put(prev, key);
 		    }
 	    }else{
                 //traverse
                     if(valueNode.isArray()){
                         Iterator<JsonNode> objs = ((ArrayNode)valueNode).elements();
-                        String name = new String();
-                        JsonNode nameNode = null;
-			JsonNode keyNode = null;
                         while(objs.hasNext()){
-                            /**
-                             * Currently the only relevant field for this loop is name. If name == 'list', I have to append a '[]' to the second paramenter of findYinLeafs method
-                             */
-                            JsonNode next = objs.next();
-                            if(next.has("@name")) {
-                                name = fieldName;
-                                nameNode = next;
-                            }
-                        }
-                        if(name.equals("list")) {
-                            if(nameNode == null)
-                                log.error("Error, object " + name + " not correctly parsed");
-                            findYinLeafs(nameNode, prev + "/" + nameNode.get("@name").textValue() + "[]");
-                        }
-                        else if(! name.equals("")){
-			    if(nameNode == null)
-				log.error("Error, object " + name + " not correctly parsed");
-                            findYinLeafs(nameNode, prev+"/"+nameNode.get("@name").textValue());
-			}//else
-			//	findYinLeafs(nameNode, prev);
+				JsonNode next = objs.next();
+				if(next.has("@name")&&fieldName.equals("list"))
+					findYinLeafs(next, prev+"/"+next.get("@name").textValue()+"[]");
+				else if(next.has("@name"))
+					findYinLeafs(next, prev+"/"+next.get("@name").textValue());                          
+			}
                     }else{
                         if(valueNode.has("@name")&&fieldName.equals("list"))
                             findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").textValue()+"[]");
                         else if(valueNode.has("@name"))
                             findYinLeafs(valueNode, prev+"/"+valueNode.get("@name").textValue());
-			//else
-			//	findYinLeafs(valueNode, prev);
                     }
             }
         }

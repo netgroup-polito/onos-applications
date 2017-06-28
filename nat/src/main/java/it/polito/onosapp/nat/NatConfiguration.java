@@ -12,6 +12,10 @@ public class NatConfiguration {
 
     private static final String INTERFACES = "interfaces";
     private static final String ADDRESSES = "addresses";
+    private static final String PORT_LABELS = "port_labels";
+
+    private String privatePortLabel;
+    private String publicPortLabel;
 
     private String userDeviceId;
     private String wanDeviceId;
@@ -23,6 +27,10 @@ public class NatConfiguration {
 
     public NatConfiguration() throws IOException {
 
+        // [port_labels]
+        privatePortLabel = iniLoad(PORT_LABELS, "private_port_label");
+        publicPortLabel = iniLoad(PORT_LABELS, "public_port_label");
+
         // [interfaces]
         userDeviceId = iniLoad(INTERFACES, "user_device");
         wanDeviceId = iniLoad(INTERFACES, "wan_device");
@@ -33,6 +41,15 @@ public class NatConfiguration {
         privateAddress = iniLoad(ADDRESSES, "private_address");
         publicAddress = iniLoad(ADDRESSES, "public_address");
     }
+
+    public String getPrivatePortLabel() {
+        return privatePortLabel;
+    }
+
+    public String getPublicPortLabel() {
+        return publicPortLabel;
+    }
+
 
     public String getUserDeviceId() {
         return userDeviceId;

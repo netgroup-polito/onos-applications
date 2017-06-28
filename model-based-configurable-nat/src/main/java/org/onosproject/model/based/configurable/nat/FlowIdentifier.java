@@ -69,22 +69,21 @@ public class FlowIdentifier {
         this.protocol = protocol;
     }
 
-    public boolean equals(FlowIdentifier object){
-        if(! this.srcIp.equals(object.getSrcIp()))
+    @Override
+    public boolean equals(Object o) {
+
+        if (!(o instanceof FlowIdentifier))
             return false;
 
-        if(! this.dstIp.equals(object.getDstIp()))
-            return false;
+        FlowIdentifier fi = (FlowIdentifier) o;
+        return this.srcIp.equals(fi.getSrcIp()) && this.srcPort.equals(fi.getSrcPort())
+                && this.dstIp.equals(fi.getDstIp()) && this.dstPort.equals(fi.getDstPort())
+                && this.protocol == fi.getProtocol();
+    }
 
-        if(! (this.srcPort == object.getSrcPort()) )
-            return false;
+    @Override
+    public int hashCode() {
 
-        if(! (this.dstPort == object.getDstPort()) )
-            return false;
-
-        if(! (this.protocol == object.getProtocol()) )
-            return false;
-
-        return true;
+        return 31*srcIp.hashCode() + srcPort.hashCode() + dstIp.hashCode() + dstPort.hashCode() + this.protocol;
     }
 }
