@@ -35,7 +35,7 @@ This is done by using the onos Network Configuration system.
 ```json
 {
   "apps": {
-    "it.polito.modelbasedconfiguration": {
+    "it.polito.modelbasedconfignat": {
       "nf-id":{
           "user-id" : "userID",
           "graph-id": "graphID",
