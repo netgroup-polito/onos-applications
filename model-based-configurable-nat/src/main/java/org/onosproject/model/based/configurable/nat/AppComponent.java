@@ -567,9 +567,7 @@ public class AppComponent {
          */
         public void importL4SessionEntry(Ip4Address srcIpAddress, Ip4Address dstIpAddress,
                                    Short srcPort, Short dstPort, Ip4Address translatedIpAddress, Short translatedPort,
-                                   int protocol, String connectionState){
-            if(protocol > 255)
-                log.warn("Protocol wrong, it is expected to be a number <= 255, it is: " + protocol);
+                                   byte protocol, String connectionState){
 
             //Storing tcp/udp session information into natPortMap
             FlowIdentifier flowId = new FlowIdentifier(srcIpAddress, dstIpAddress, srcPort, dstPort, (byte)protocol);
@@ -578,29 +576,30 @@ public class AppComponent {
             natPortMap.put(flowId, flowInfo);
 
             //Creating packet that will trigger the nat rules creation and forwarding to the switches
-            BasePacket transportPacket = null;
-            switch(protocol) {
-                case IPv4.PROTOCOL_TCP:
-                    transportPacket = new TCP();
-                    ((TCP)transportPacket).setSourcePort(srcPort);
-                    ((TCP)transportPacket).setDestinationPort(dstPort);
-                    break;
-                case IPv4.PROTOCOL_UDP:
-                    transportPacket = new UDP();
-                    ((UDP)transportPacket).setSourcePort(srcPort);
-                    ((UDP)transportPacket).setDestinationPort(dstPort);
-                    break;
-            }
-
-            if(transportPacket == null){
-                log.info("Importing L4 session not supported, protocol code (binary): " + protocol);
-                return;
-            }
-
-            IPv4 ipHeader = (IPv4)transportPacket.getPayload();
+            Ethernet ethPacket = new Ethernet();
+            ethPacket.setPayload(new IPv4());
+            IPv4 ipHeader = (IPv4)ethPacket.getPayload();
             ipHeader.setDestinationAddress(dstIpAddress.toString());
             ipHeader.setSourceAddress(srcIpAddress.toString());
-            Ethernet ethPacket = (Ethernet)ipHeader.getPayload();
+            ipHeader.setProtocol(protocol);
+
+            switch(protocol) {
+                case IPv4.PROTOCOL_TCP:
+                    TCP tcpPacket = new TCP();
+                    tcpPacket.setSourcePort(srcPort);
+                    tcpPacket.setDestinationPort(dstPort);
+                    ipHeader.setPayload(tcpPacket);
+                    break;
+                case IPv4.PROTOCOL_UDP:
+                    UDP udpPacket = new UDP();
+                    udpPacket.setSourcePort(srcPort);
+                    udpPacket.setDestinationPort(dstPort);
+                    ipHeader.setPayload(udpPacket);
+                    break;
+                default:
+                    log.info("Importing L4 session not supported, protocol code (binary): " + protocol);
+                    return;
+            }
 
             MacAddress srcMac = arpTable.get(srcIpAddress.getIp4Address());
             if(srcMac == null){
@@ -610,7 +609,7 @@ public class AppComponent {
             ethPacket.setSourceMACAddress(srcMac);
 
             //Creating the packetContext on which some of the following already existing method are based on
-            PacketContext packetContext = createMyPacketContext(transportPacket);
+            PacketContext packetContext = createMyPacketContext(ethPacket);
 
             // first we need to know the destination mac address
             MacAddress dstMac = arpTable.get(dstIpAddress.getIp4Address());
@@ -663,8 +662,7 @@ public class AppComponent {
             //packetToTable(packetContext);
         }
 
-        private PacketContext createMyPacketContext(BasePacket packet){
-            Ethernet ethPacket = (Ethernet)((IPv4)packet.getPayload()).getPayload();
+        private PacketContext createMyPacketContext(Ethernet ethPacket){
             ConnectPoint cp = new ConnectPoint(inputApp.deviceId, inputApp.portNumber);
             byte[] bytes = new byte[10];
             ByteBuffer packetData = ByteBuffer.wrap(bytes);
