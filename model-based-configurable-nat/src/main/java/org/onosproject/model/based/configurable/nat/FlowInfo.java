@@ -13,11 +13,15 @@ import org.onlab.packet.IpAddress;
  * @author lara
  */
 public class FlowInfo {
-    private Ip4Address nattedIp;
-    private Short nattedPort;
-    private String connectionState;
+    public Ip4Address nattedIp;
+    public Short nattedPort;
+    public String connectionState;
 
-    public FlowInfo(){}
+    public FlowInfo(){
+	this.nattedIp = null;
+	this.nattedPort = 0;
+	this.connectionState = null;
+    }
 
     public FlowInfo(Ip4Address nattedIp, Short nattedPort, String connectionState){
         nattedIp = this.nattedIp;
@@ -61,7 +65,12 @@ public class FlowInfo {
 
     @Override
     public int hashCode() {
+	int nattedIpHash = 0, connectionStateHash = 0;
+	if(this.nattedIp != null)
+	 	 nattedIpHash = 31 * nattedIp.hashCode();
+	if(this.connectionState != null)
+		connectionStateHash = connectionState.hashCode();
 
-        return 31*nattedIp.hashCode() + nattedPort.hashCode();
+        return nattedIpHash  + connectionStateHash;
     }
 }

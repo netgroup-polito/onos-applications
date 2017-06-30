@@ -13,13 +13,19 @@ import org.onlab.packet.IpAddress;
  * @author lara
  */
 public class FlowIdentifier {
-    private Ip4Address srcIp;
-    private Short srcPort;
-    private Ip4Address dstIp;
-    private Short dstPort;
-    private byte protocol;
+    public Ip4Address srcIp;
+    public Short srcPort;
+    public Ip4Address dstIp;
+    public Short dstPort;
+    public byte protocol;
 
-    public FlowIdentifier(){}
+    public FlowIdentifier(){
+	this.srcIp = null;
+	this.srcPort = null;
+	this.dstIp = null;
+	this.dstPort = null;
+	this.protocol = 0;
+    }
 
     public FlowIdentifier(Ip4Address srcIp, Ip4Address dstIp, Short srcPort, Short dstPort, byte protocol){
         srcIp = this.srcIp;
@@ -83,7 +89,16 @@ public class FlowIdentifier {
 
     @Override
     public int hashCode() {
+	int srcIpHash = 0, srcPortHash = 0, dstIpHash = 0, dstPortHash = 0, protocolHash;
+	if(this.srcIp != null)
+		srcIpHash = 31 * this.srcIp.hashCode();
+	if(this.srcPort != null)
+		srcPortHash = srcPort.hashCode();
+	if(this.dstIp != null)
+		dstIpHash = dstIp.hashCode();
+	if(this.dstPort != null)
+		dstPortHash = this.dstPort.hashCode();
 
-        return 31*srcIp.hashCode() + srcPort.hashCode() + dstIp.hashCode() + dstPort.hashCode() + this.protocol;
+        return srcIpHash + srcPortHash + dstIpHash + dstPortHash +this.protocol;
     }
 }
