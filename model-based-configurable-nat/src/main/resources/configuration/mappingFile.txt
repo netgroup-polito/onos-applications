@@ -1,15 +1,13 @@
 config-nat : root;
 config-nat/interfaces : void;
+config-nat/interfaces/ifEntry[config-nat/nat/private-interface] : root/inputApp;
 config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/id : root/inputApp/deviceId;
 config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/name : root/inputApp/portNumber;
-config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/priority : root/inputApp/flowPriority;
-config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/externalVlan : root/inputApp/externalVlan;
 config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/ipv4_configuration/address : root/inputApp/ipAddress;
 config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/ipv4_configuration/mac-address : root/privateMac;
+config-nat/interfaces/ifEntry[config-nat/nat/public-interface] : root/outputApp;
 config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/id : root/outputApp/deviceId;
 config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/name : root/outputApp/portNumber;
-config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/priority : root/outputApp/flowPriority;
-config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/externalVlan : root/outputApp/externalVlan;
 config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/ipv4_configuration/address : root/outputApp/ipAddress;
 config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/ipv4_configuration/mac-address : root/publicMac;
 config-nat/nat/private-interface : void;
@@ -24,3 +22,7 @@ config-nat/nat/nat-table/nat-session[]/protocol : root/natPortMap[{key}]/{key}/p
 config-nat/nat/nat-table/nat-session[]/translated_port : root/natPortMap[{key}]/{value}/nattedPort;
 config-nat/nat/nat-table/nat-session[]/translated_address : root/natPortMap[{key}]/{value}/nattedIp;
 config-nat/nat/nat-table/nat-session[]/tcp_state : root/natPortMap[{key}]/{value}/connectionState;
+config-nat/nat/arp-table/arp-entry : root/arpTable;
+config-nat/nat/arp-table/arp-entry[] : root/arpTable[{key}];
+config-nat/nat/arp-table/arp-entry[]/ip_address : root/arpTable[{key}]/{key};
+config-nat/nat/arp-table/arp-entry[]/mac_address : root/arpTable[{key}]/{value};

@@ -60,7 +60,7 @@ import java.util.Properties;
 import java.io.FileInputStream;
 import org.onlab.packet.IpAddress;
 import org.onlab.packet.IPv4;
-
+import org.onlab.packet.MacAddress;
 
 /**
  *
@@ -139,45 +139,56 @@ public class StateListenerNew extends Thread{
     /*****PERSONALIZABLE FUNCTIONS*******/
     
     private Object personalizedDeserialization(Class<?> type, String json){
-//        log.info("In personalized Deserialization the json is "+json);
+        log.info("In personalized Deserialization the json is "+json);
         try{
-            JsonNode jsonValue = mapper.readTree(json);
-            log.info("jsonValue is "+jsonValue);
+	    if(json.startsWith("\""))
+		json = json.substring(1);
+	    if(json.endsWith("\""))
+		json = json.substring(0, json.length() -1);
+	    log.info("Converted json leaf in personalized deserialization: " + json);
             if(type == Ip4Address.class){
-                Ip4Address value = Ip4Address.valueOf(jsonValue.asText());
-                log.info("value is.."+value);
+                Ip4Address value = Ip4Address.valueOf(json);
+//                log.info("value is.."+value);
                 return value;
             }
             if(type == IpAddress.class){
-                IpAddress value = IpAddress.valueOf(jsonValue.asText());
+                IpAddress value = IpAddress.valueOf(json);
                 return value;
             }
             if(type == Short.class){
-		log.info("short recevide: " + jsonValue.asText());
-                Short value = Short.parseShort(jsonValue.asText());
-		log.info("short converted: " + value);
+//		log.info("short recevide: " + json);
+                Short value = Short.parseShort(json);
+//		log.info("short converted: " + value);
                 return value;
             }
             if(type == PortNumber.class){
 //                log.info("E' un port number, the value passed is "+json+" and the type is "+type);
-                PortNumber value = PortNumber.portNumber(jsonValue.asLong());
+                PortNumber value = PortNumber.portNumber(Integer.parseInt(json));
                 return value;
             }
             if(type == DeviceId.class){
-                DeviceId value = DeviceId.deviceId(jsonValue.asText());
+		//String id = jsonValue.asText();
+		log.info("device id to set: " + json);
+                DeviceId value = DeviceId.deviceId(json);
                 return value;
             }
 	    if(type == byte.class){
 		//The ONOS nat application suppose the protocol type value to be a byte value specified into the class IPv4
-		log.info("value to convert into byte information: " + jsonValue.asText());
-		if(jsonValue.asText().equals("TCP")){
+//		log.info("value to convert into byte information: " + json);
+		if(json.equals("TCP")){
 			return IPv4.PROTOCOL_TCP;
 		}
-		else if(jsonValue.asText().equals("UDP")){
+		else if(json.equals("UDP")){
 			return IPv4.PROTOCOL_UDP;
 		}
 
 		return null;
+	    }
+	    if(type == org.onlab.packet.MacAddress.class){
+//		log.info("mac address: " + json);
+		MacAddress mac = MacAddress.valueOf(json);
+//		log.info("mac address correctly parsed: " + mac);
+		return mac;
 	    }
         }catch(Exception e){
             log.info("Can't convert the json correctly");
@@ -223,6 +234,7 @@ public class StateListenerNew extends Thread{
             ObjectNode objJson = mapper.createObjectNode();
             for(int i=0; i<objFields.length; i++){
                 String javaField = javaVar+"/"+objFields[i].getName();
+		log.info("javaField: " + javaField);
                 if(YangToJava.containsKey(javaField)){
                     String fieldName = YangToJava.get(javaField).substring(YangToJava.get(javaField).lastIndexOf("/")+1);
                     if(objFields[i].getClass().getPackage()==root.getClass().getPackage()){
@@ -334,6 +346,12 @@ public class StateListenerNew extends Thread{
             }
             log.info("*** ***");
 
+	    log.info("***YANG TYPE MAP***");
+            for (String name: YangType.keySet()){
+                String value = YangType.get(name);
+                log.info(name + " -> " + value);
+            }
+            log.info("*** ***");
 
         } catch (Exception ex) {
             Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -378,12 +396,12 @@ public class StateListenerNew extends Thread{
 	    /**
              * Debug INFO
              */
-            log.debug("***YANG PATH MAPPING TO JAVA PATH***");
+            log.info("***YANG PATH MAPPING TO JAVA PATH***");
             for (String javaPath: YangToJava.keySet()){
                 String yangPath = YangToJava.get(javaPath);
-                log.debug(yangPath + " -> " + javaPath);
+                log.info(yangPath + " -> " + javaPath);
             }
-            log.debug("*** ***");
+            log.info("*** ***");
 
         }catch(Exception e){
             log.error("Error during the parsing of the mapping file\nError report: " + e.getMessage());
@@ -1138,9 +1156,9 @@ public class StateListenerNew extends Thread{
         String[] splitted = l.split(Pattern.quote("/"));
 	for(int i = 0; i < splitted.length; i ++)
 		if(splitted[i].endsWith("]") && !splitted[i].contains("[")){
-			log.info("old splitted i: " + splitted[i]);
+//			log.info("old splitted i: " + splitted[i]);
 			splitted[i] = splitted[i].substring(0, splitted[i].length() - 1);
-			log.info("new splitted i: " + splitted[i]);
+//			log.info("new splitted i: " + splitted[i]);
 		}
         if(node.isObject()){
             JsonNode next;
@@ -1248,7 +1266,7 @@ public class StateListenerNew extends Thread{
                     continue;
                 }else{
                     //System.out.println(var + " not found");
-                    log.info("var not found "+field);
+//                    log.info("var not found "+field);
                     return null;
                 }
             }else{
@@ -1284,7 +1302,7 @@ public class StateListenerNew extends Thread{
         JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
         
-//        log.info("To fill the result -> "+var);
+        log.info("To fill the result -> "+var);
         
         res = fillResult(ref, var);
         
@@ -1301,9 +1319,11 @@ public class StateListenerNew extends Thread{
     //PUT THE SUB-TREE VAR IN THE JSON SUB-TREE REF
     private JsonNode fillResult(JsonNode ref, String var) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException {
         JsonNode toRet;
-        
+//        log.info("fillingResult of path: " + var);
+
         if(ref.isObject()){
             //fill fields
+//	    log.info("FILL RESULT: ref is an object");
             toRet = mapper.createObjectNode();
             Iterator<String> field = ((ObjectNode)ref).fieldNames();
             if(!field.hasNext()){
@@ -1348,24 +1368,37 @@ public class StateListenerNew extends Thread{
                         if(i%2==0)
                             varWithoutIndexes+=varSp[i]+"[]";
                     varWithoutIndexes = varWithoutIndexes.substring(0, varWithoutIndexes.length()-2);
-//                    log.info("varWithoutIndexes is correct? "+varWithoutIndexes);
-                    if(YangToJava.containsValue(varWithoutIndexes)){
+//		      varWithoutIndexes = transformListIndexes(var + '/' + fieldName);
+                    log.info("varWithoutIndexes is correct? "+varWithoutIndexes);
+		    String jWithIndex = new String();
+		    log.info("var: " + var);
+		    log.info("fieldName: " + fieldName);
+		    log.info("result of transformListIndexes: " + transformListIndexes(var + '/' + fieldName));
+                    if(YangToJava.containsValue(transformListIndexes(var + '/' + fieldName))){		      
                         String key = null;
-                        for(String k:YangToJava.keySet())
-                            if(YangToJava.get(k).equals(varWithoutIndexes))
+                        for(String k:YangToJava.keySet()){
+                            if(YangToJava.get(k).equals(transformListIndexes(var + '/' + fieldName))){				
                                 key = k;
-                        String[] yspez = (var+"/"+fieldName).split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
-                        String[] jspez = key.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
-                        String jWithIndex = new String();
-                        for(int i=0;i<yspez.length;i++){
-                            if(i%2==0)
-                                jWithIndex+=jspez[i];
-                            else
-                                jWithIndex+="["+yspez[i]+"]";
-                        }
+				break;
+			    }
+			}
+                        if(key.contains("[")){
+                        	String[] yspez = (var+"/"+fieldName).split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
+                       	 	String[] jspez = key.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
+                       	 	
+                       	 	for(int i=0;i<yspez.length;i++){
+                	            if(i%2==0)
+        	                        jWithIndex+=jspez[i];
+	                            else
+                                	jWithIndex+="["+yspez[i]+"]";
+                        	}				
+			}
+			else
+				jWithIndex = key;			
                         //jWithIndex is the name of hte variable in Java (preceeded by "root.")
+			log.info("prima di getLeafValue, jWithIndex: " + jWithIndex);
                         Object value = getLeafValue(jWithIndex.substring(5));
-//                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
+                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
                         if(value!=null){
                             //PERSONALIZED SERIALIZATION
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
@@ -1384,14 +1417,15 @@ public class StateListenerNew extends Thread{
                                 else if(Double.class.isAssignableFrom(parsed.getClass())){
 //                                    log.info("trattato come double");
                                     ((ObjectNode)toRet).put(fieldName, (Double)parsed);}
-                                else {//log.info("Trattato come string");
+                                else {
+//				log.info("Trattato come string");
                                 ((ObjectNode)toRet).put(fieldName, parsed.toString());
                                 }
                             }
                         }
                     }
                     else
-                        log.info("It's not correct..");
+                        log.info("Variable " + transformListIndexes(var + '/' + fieldName) + " not found in yangToJava map");
                 }else{
                     //IT'S NOT A LEAF - GO DEEPER
                     JsonNode f = fillResult(((ObjectNode)ref).get(fieldName), var+"/"+fieldName);
@@ -1475,6 +1509,7 @@ public class StateListenerNew extends Thread{
     private int setComplexObject(String var, String newVal) {
         try {
             JsonNode toSet = mapper.readTree(newVal);
+	    log.info("Into setComplexObject, var is: " + var);
 
             //check if all the values are configurable
             if(!configVariables(noIndexes(var), toSet)){
@@ -1499,14 +1534,15 @@ public class StateListenerNew extends Thread{
     //ELSE -> FALSE
     private boolean configVariables(String var, JsonNode toSet){
         if(toSet.isValueNode()){
-            log.info("Is a value Node: "+var);
+            log.info("Is a value Node: "+ var + " value: " + toSet);
 		try{
 		    	String value =  mapper.writerWithDefaultPrettyPrinter().writeValueAsString(toSet);
-			staticListIndexes.replace(var, value);
+			if(staticListIndexes.containsKey(var))
+				staticListIndexes.replace(var, value);
 		}catch(Exception e){
 			log.error("Fail during the Json conversion in 'pretty' String");
 		}
-	    log.info("isConfigurable: " + isConfigurable(var));
+//	    log.info("isConfigurable: " + isConfigurable(var));
             return isConfigurable(var);
         }
         if(toSet.isObject()){	    
@@ -1556,13 +1592,22 @@ public class StateListenerNew extends Thread{
 //            log.info("In fillVariables - reached leaf");
             String j = fromYangToJava(var);
             if(j!=null){
-                if(setVariable(j.substring(5), j.substring(5), toSet.asText(), root))
+		//If the Java path of a variable starts with 'void.', it means that the variable is not stored in any Java variable of the app code
+		//In this case, setVariable has to store the value of such variable in a map of the stateListener module
+		String pathJava = j;
+		if(! j.substring(0, 5).equals("void."))
+			pathJava = j.substring(5);
+			
+                if(setVariable(pathJava, pathJava, toSet.asText(), root))
                     return 0;
-                else
+                else{
+		    log.info("set of variable " + var + " failed");
                     return 1;
-            }else
+		}
+            }else{
+//		log.info("variable " + var + " does not have a java representation");
                 return 2;
-            //}
+            }
         }else{
             if(toSet.isObject()){
                 if(var.endsWith("[]")){
@@ -1597,12 +1642,17 @@ public class StateListenerNew extends Thread{
                         if(newValJava!=null){
                             if(setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root))
                                 return 0;
-                            else
+                            else{
+//				log.info("set of the object list " + var + " failed");
                                 return 1;
+			    }
                         }
+//			log.info("the object list " + var + " does not have a java representation");
                         return 1;
-                    }else
+                    }else{
+//			log.info("the object list " + var + " does not have a java representation");
                         return 2;
+		    }
                 }else{
                     //IT'S AN OBJECT
                     Iterator<String> fields = toSet.fieldNames();
@@ -1644,7 +1694,7 @@ public class StateListenerNew extends Thread{
                     }
                     //jWithIndex is the name of the list in java
                     if(jWithIndex.length()<=5){
-//                        log.info("Is root.!! Can't be a list");
+                        log.info("Is root.!! Can't be a list");
                         return 2;
                     }
                     jWithIndex = jWithIndex.substring(5);
@@ -1690,7 +1740,7 @@ public class StateListenerNew extends Thread{
                         type = (Class<?>)pt.getActualTypeArguments()[0];
                         
                     }else{
-//                        log.info("The list doesn't exist");
+                        log.info("The list doesn't exist");
                         return 2;
                     }
                     Iterator<JsonNode> iter = ((ArrayNode)toSet).elements();
@@ -1699,12 +1749,15 @@ public class StateListenerNew extends Thread{
                         //INSERT THE VALUES OF THE LIST'S ELEMENTS
                         JsonNode newValJava = getCorrectItem(mapper.writeValueAsString(iter.next()), varWithoutIndexes+"[]");
                         if(newValJava!=null){
-                            if(!setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root))
+                            if(!setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root)){
+				log.info("set variable failed: " + var);
                                 res = 1;
+			    }
                         }
                     }   
                     return res;
                 }
+		log.info("yang to java di nuovo non contiene il valore: " + var);
                 return 2;
             }
         }
@@ -1805,7 +1858,7 @@ public class StateListenerNew extends Thread{
 		    try{
 			    //If var.substring(0, 4) == 'void', the message requests for the set
 			    // of an information that is not mapped into any Java variables
-			    if(! var.substring(0, 4).equals("void")){	
+			    if(var == null || ! var.substring(0, 4).equals("void")){	
                 		    //case 1: is a leaf - it is configurable (no configurable leafs are handled in the previous if)
                 	       	    if(var!=null && !var.equals("root")&&state.containsKey(var.substring(5))){			
                            		 boolean setted = setVariable(var.substring(5), var.substring(5), (String)msg.obj, root);			
@@ -1821,9 +1874,9 @@ public class StateListenerNew extends Thread{
     	                	    	log.info("*** ***");
                             	   }
 			    }else{
-				log.info("prima di replace");
+//				log.info("prima di replace");
                         	staticListIndexes.replace(msg.var, (String)msg.obj);
-				log.info("dopo replace");
+//				log.info("dopo replace");
 			    }
 		    }catch(Exception e){
 			StringWriter errors = new StringWriter();
@@ -1846,7 +1899,7 @@ public class StateListenerNew extends Thread{
                         //ACTIONS
                         log.info("Modified nat table");
                         ArrayNode table = (ArrayNode)getComplexObj("config-nat/nat/nat-table/nat-session");
-                        log.info("the nat table is "+table);
+			log.info("the nat table is "+table);
                         
                         Iterator<JsonNode> tableEntries = table.elements();
                         while(tableEntries.hasNext()){
@@ -1855,7 +1908,8 @@ public class StateListenerNew extends Thread{
                             Ip4Address srcIp=null, dstIp=null, translatedIp=null;
                             Short srcPort=null, dstPort=null, translatedPort=null;
                             String connectionState = null;
-                            int proto=0;
+		            byte protocol = 0;
+
                             log.info("prima di prendere i valori");
                             if(entry.has("src_address")){
                                 srcIp = Ip4Address.valueOf(entry.get("src_address").textValue());
@@ -1865,28 +1919,34 @@ public class StateListenerNew extends Thread{
                             if(entry.has("translated_address"))
                                 translatedIp = Ip4Address.valueOf(entry.get("translated_address").textValue()); 
                             if(entry.has("src_port"))
-                                srcPort = entry.get("src_port").shortValue();
+                                srcPort = (short)entry.get("src_port").asLong();
                             if(entry.has("dst_port"))
-                                dstPort = entry.get("dst_port").shortValue();
+                                dstPort = (short)entry.get("dst_port").asLong();
                             if(entry.has("translated_port"))
-                                translatedPort = entry.get("translated_port").shortValue();
+                                translatedPort = (short)entry.get("translated_port").asLong();
                             if(entry.has("tcp_state"))
-                                connectionState = entry.get("tcp_state").textValue();
-		
-                            log.info("p3 "+translatedPort);
-                                proto = entry.get("proto").asInt();
+                                connectionState = entry.get("tcp_state").textValue();	
+			    //byte[] byteArray = entry.get("protocol").toString().getBytes("utf-8");
+			    //if(byteArray.length > 1){
+			    //	log.info("protocol type wrong, check the personalized deserialization method");
+			    //	return;
+			    //}
+    			    //protocol = byteArray[0];
+			    protocol = (byte)entry.get("protocol").asInt();
+
+                            log.info("p3 "+translatedPort); 
                             log.info("source address "+srcIp);
                             log.info("input port "+srcPort);
                             log.info("dst address "+dstIp);
                             log.info("output port "+dstPort);
                             log.info("nat address "+translatedIp);
                             log.info("nat port "+translatedPort);
-                            log.info("proto "+proto);
+                            log.info("protocol "+protocol);
                             log.info("connection state " + connectionState);
-                            ((AppComponent) root).processor.importL4SessionEntry(srcIp, dstIp, srcPort, dstPort, translatedIp, translatedPort, proto, connectionState);
+                            ((AppComponent) root).processor.importL4SessionEntry(srcIp, dstIp, srcPort, dstPort, translatedIp, translatedPort, protocol, connectionState);
 //                          //((AppComponent)root).installOutcomingNatRule(inIp, outIp, proto, inPort, natPort, MacAddress.NONE, PortNumber.portNumber(outPort));
                         }
-			((AppComponent) root).processor.importL4SessionEntry(Ip4Address.valueOf("10.0.0.5"), Ip4Address.valueOf("130.192.225.183"), (short)3000, (short)2044, Ip4Address.valueOf("30.0.0.2"), (short)2050, IPv4.PROTOCOL_TCP, "ESTABLISHED");
+			//((AppComponent) root).processor.importL4SessionEntry(Ip4Address.valueOf("10.0.0.5"), Ip4Address.valueOf("130.192.225.183"), (short)3000, (short)2044, Ip4Address.valueOf("30.0.0.2"), (short)2050, IPv4.PROTOCOL_TCP, "ESTABLISHED");
                     }
 		    log.info("***STATIC LIST INDEXES AFTER CONFIG***");
                         for (String name: staticListIndexes.keySet()){
@@ -2168,7 +2228,7 @@ public class StateListenerNew extends Thread{
                             Object value = valueType.newInstance();
                             Iterator<String> fields = node.fieldNames();
 			    //creating 'value' object of the map
-			    log.info("I'm creating the value! wow");
+//			    log.info("I'm creating the value! wow");
                             while(fields.hasNext()){
                                 String fieldName = fields.next();
                                 JsonNode v = node.get(fieldName);
@@ -2188,6 +2248,7 @@ public class StateListenerNew extends Thread{
                                     try{
                                         Object des = personalizedDeserialization(fV.getType(), mapper.writeValueAsString(v));
                                         fV.set(value, des);
+					log.info("map value object correctly set: " + des);
                                     }catch(Exception ex){
                                         log.info("Can't deserialize correctly!");
                                     }
@@ -2233,23 +2294,23 @@ public class StateListenerNew extends Thread{
                             }
                             Object value = valueType.newInstance();
                             Iterator<String> fields = node.fieldNames();
-			    log.info("I'm setting the value object of an empty map");
+//			    log.info("I'm setting the value object of an empty map");
 			    //Creating the object value
                             while(fields.hasNext()){				
                                 String fieldName = fields.next();
                                 JsonNode v = node.get(fieldName);
-                                log.info("EMPTY MAP: the field is "+fieldName+" and the value is "+v );
+//                                log.info("EMPTY MAP: the field is "+fieldName+" and the value is "+v );
                                 if(fieldName.equals("{value}")){
                                     if(Number.class.isAssignableFrom(valueType)){
-					log.info("Number.class is assignable");
+//					log.info("Number.class is assignable");
                                         value = v.asDouble();
 				    }
                                     else{
-					log.info("Number.class is NOT assignable");
+//					log.info("Number.class is NOT assignable");
                                         value = v.asText();
 				    }
                                 }else{
-				    log.info("I'm not equals to value!!");
+//				    log.info("I'm not equals to value!!");
                                     Field fV = value.getClass().getField(fieldName);
                                     try{
                                         if(Number.class.isAssignableFrom(fV.getType())){
@@ -2257,14 +2318,15 @@ public class StateListenerNew extends Thread{
                                             if(Double.class.isAssignableFrom(fV.getType()))
                                                 fV.set(value, v.asDouble());
                                             else
-                                                fV.set(value, v.numberValue());
+                                                fV.set(value, v.asLong());
                                         }
                                         else
                                             fV.set(value, (new Gson()).fromJson(mapper.writeValueAsString(v), fV.getType()));
                                     }catch(Exception e){
                                         try{
                                             Object des = personalizedDeserialization(fV.getType(), mapper.writeValueAsString(v));
-                                               fV.set(value, des);
+                                            fV.set(value, des);
+//					    log.info("settin object of an empty map 'value': " + des);
                                         }catch(Exception ex){
                                             log.info("Can't deserialize correctly!");
                                         }
@@ -2273,27 +2335,27 @@ public class StateListenerNew extends Thread{
                             }
                             //value = ((new Gson()).fromJson(mapper.writeValueAsString(node), valueType));
                             
-                            log.info("And k is.."+k);
+//                            log.info("And k is.."+k);
                             if(k!=null){
-                                log.info("k is != null");
-                                log.info("actual is "+actual);
-                                log.info("f is "+f);
+//                                log.info("k is != null");
+//                              log.info("actual is "+actual);
+//                            log.info("f is "+f);
                                 Map m = (Map)f.get(actual);
-				log.info("The map object is: " + m);
-				log.info("ciao");
-				if(value == null)
-					log.info("value is nullo");
-				else
-					log.info("value is not nullo");
+//				log.info("The map object is: " + m);
+//				log.info("ciao");
+//				if(value == null)
+//					log.info("value is nullo");
+//				else
+//					log.info("value is not nullo");
                                 m.put(k, value);
-                                log.info("new map is "+m);
+//                              log.info("new map is "+m);
                                 f.set(actual, m);
-				log.info("M2!");
-				Map m2 = (Map)f.get(actual);				
-				for(Object key : m2.keySet()){
-					log.info("key: " + key + " value: " + m2.get(key));
-				}
-                                log.info("Is setted!!");
+//				log.info("M2!");
+//				Map m2 = (Map)f.get(actual);				
+//				for(Object key : m2.keySet()){
+//					log.info("key: " + key + " value: " + m2.get(key));
+//				}
+//                                log.info("Is setted!!");
                             }
                             return true;
                         } catch (IOException ex) {
@@ -2359,9 +2421,9 @@ public class StateListenerNew extends Thread{
                 Object toInsert;
                 try{
                     toInsert = (new Gson()).fromJson(newVal, f.getGenericType());
-                    log.info("Translated: " + toInsert.toString());
+//                    log.info("Translated: " + toInsert.toString());
                     f.set(actual, toInsert);
-                    log.info("New value: " + toInsert.toString() + " setted in actual: " + actual.toString());
+//                    log.info("New value: " + toInsert.toString() + " setted in actual: " + actual.toString());
                     return true;
                 }catch(Exception e){
 		    //If I am here, the desarialization of the JSON value is failed, for instance, because the Java type of such value is complex and has no useful default constructor
@@ -2485,10 +2547,21 @@ public class StateListenerNew extends Thread{
                     fYang = YangToJava.get("root/"+tillHereJava+"/{key}/"+fieldName);
 //                log.info("fYang "+fYang);
                 if(fYang!=null){
+		    if(obj != null){
+			for (Field field2 : obj.getClass().getDeclaredFields()) {
+ 			    field2.setAccessible(true);
+			    String name2 = field2.getName();
+			    Object value2 = field2.get(obj);
+//			    log.info("Field name: %s, Field value: %s%n", name2, value2);
+			}
+		    }
+		    else
+			log.info("obj is null");
                     fYang = fYang.substring(fYang.lastIndexOf("/")+1);
 //                    log.info("Ovvero "+fYang);
 //                    log.info("oggetto nella chiave "+fields[i].get(obj));
 //                    log.info("oggetto nell'index "+indexObj.get(fYang));
+//		    log.info("indexObj: " + indexObj);
 //                    log.info("indexObje ha il campo? "+indexObj.has(fYang));
 //                    log.info("The value in indexObj "+indexObj.get(fYang).asText());
 //                    log.info("And in obj "+fields[i].get(obj));
@@ -2515,6 +2588,7 @@ public class StateListenerNew extends Thread{
     
     //get the value of a specific leaf
     public Object getLeafValue(String id){
+//	log.info("id of getLeafValue: " + id);
         if(state.containsKey(id))
             return state.get(id);
         try{
@@ -2535,7 +2609,7 @@ public class StateListenerNew extends Thread{
                             boolean found = false;
                             for(Object k:((Map)actual).keySet()){
                                 String jsonKey = (new Gson()).toJson(k);
-//                                log.info("The k is "+(new Gson()).toJson(k));
+                                log.info("The k is "+(new Gson()).toJson(k));
 //                                log.info("recompose is "+noIndexes(recompose.substring(1)));
 //                                JsonNode res = getCorrectItem(index, noIndexes(recompose.substring(1)));
 //                                log.info("perché res è null? -> "+res);
@@ -2601,7 +2675,8 @@ public class StateListenerNew extends Thread{
 		//e.g. config-nat/interfaces[wan]/ip[v4]/address -> {"config-nat/interfaces", "[wan]", "/ip", "[v4], "/address"}
 		String[] separated = path.split("(?<=\\])|(?=\\[)");
 		List<String> buildingNewPath = new ArrayList<String>();
-		log.info("dentro TRANSFORMLISTINDEXES");	
+//		log.info("dentro TRANSFORMLISTINDEXES");
+//		log.info("yang path to transform: " + path);
 		//Starting from the string splitted by the above regular expression, join the indexes with the name list
 		//e.g., {"config-nat/interfaces", "[wan]", "/ip", "[v4], "/address"} -> {"config-nat/interfaces[wan]", "/ip[v4], "/address"}
 		for(int i = 0; i < separated.length; i ++ ){
@@ -2614,6 +2689,11 @@ public class StateListenerNew extends Thread{
 				buildingNewPath.add(separated[i]);
 		}
 		
+//		log.info("*** BUILDING NEW PATH ***");
+//		for(String str : buildingNewPath)
+//			log.info(str);
+//		log.info("*** ***");
+
 		//Analyze the index of each list, if it is a well known static index, which is valid for the analyzed list
 		//substitue the value with the name of the index. Otherwise strip away the index
 		//e.g. {"config-nat/interfaces[wan]", "/ip[v4], "/address"} -> {"config-nat/interfaces[config-nat/nat/interface-public]", "/ip[], "/address"}
@@ -2636,16 +2716,22 @@ public class StateListenerNew extends Thread{
 							buildingNewPath.set(i, listPath + '[' + indexAllowed + ']');
 						}
 					}
-					if(!found)
-						buildingNewPath.set(i, listPath + "[]");
 				}
+				if(!found)
+                                    buildingNewPath.set(i, listPath + "[]");
 			}
 		}
-		
+//		log.info("*** BUILDING NEW PATH AFTER LIST ANALYSIS  ***");
+//              for(String str : buildingNewPath)
+//                        log.info(str);
+//                log.info("*** ***");
+
 		//join the path from the buildingNewPath list
         	String finalPath = new String();
         	for(String tmp : buildingNewPath)
         		finalPath += tmp;
+
+//		log.info("finalPath: " + finalPath);
 		return finalPath;
         	}catch(Exception e){
 			StringWriter sw = new StringWriter();

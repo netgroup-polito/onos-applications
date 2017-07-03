@@ -7,12 +7,14 @@ module config-nat {
 	description "Nat configuration";
 
     container interfaces {
+		description "name='Interfaces'";
 		list ifEntry{
-		    key "name";
+		    description "name='Interface'";
+		    key "id";
 		    min-elements 2;
 		    max-elements 3;
 			leaf id{
-				description "name='Id'";
+				description "name='ID'";
 				type string;
 			}		    
 			leaf name {
@@ -24,10 +26,11 @@ module config-nat {
 			    type enumeration {
                         enum L3;
                         enum transparent;
+                        enum not_defined;
     				}
 			}
 			leaf management{
-			    description "name='Management'";
+			    description "name='Management privileges'";
 			    type boolean;
 			    mandatory false;
 			}
@@ -41,7 +44,7 @@ module config-nat {
     				}
 			    }
 			    leaf address{
-			        description "name='IP Address";
+			        description "name='IP address";
 			        type inet:ipv4-address;
 			        mandatory false;
 			    }
@@ -56,7 +59,7 @@ module config-nat {
                     mandatory false;
 			    }
 			    leaf default_gw{
-			        description "name='Default GW";
+			        description "name='Default gateway";
 			        type inet:ipv4-address;
 			        mandatory false;
 			    }
@@ -71,7 +74,7 @@ module config-nat {
     				}
 			    }
 			    leaf address{
-			        description "name='IP Address";
+			        description "name='IP address";
 			        type inet:ipv6-address;
 			        mandatory false;
 			    }
@@ -81,109 +84,108 @@ module config-nat {
 			        mandatory false;
 			    }
 			    leaf default_gw{
-			        description "name='Default GW";
+			        description "name='Default gateway";
 			        type inet:ipv6-address;
 			        mandatory false;
 			    }
 			}
 		}
+     }
 
 	container nat{
-        description "name='Nat";
-        leaf private-interface {
-            description "name='Private Interface";
-            type leafref {
-                path "/interfaces/ifEntry/id";
-            }
-        }
-	leaf public-interface {
-            description "name='Public Interface";
-            type leafref {
-                path "/interfaces/ifEntry/id";
-            }
-        }
-        container nat-table{
-            description "name='Nat Table'";
-            list nat-session {
-                description "name='Nat Session'";
-                key "id";
-                leaf id {
-                    description "name='YYY'";
-                    type inet:ip-address;
-                }
-                leaf protocol {
-                    description "name='YYY'";
-                    type enumeration {
-                        enum ICMP;
-                        enum TCP;
-                        enum UDP;
-                    }
-                }
-                leaf src_address {
-                    description "name='YYY'";
-                    type inet:ip-address;
-                }
-                leaf src_port {
-                    description "name='YYY'";
-                    type string;
-                }
-                leaf dst_address {
-                    description "name='YYY'";
-                    type inet:ip-address;
-                }
-                leaf dst_port {
-                    type string;
-                }
-                leaf translated_address {
-                    type inet:ip-address;
-                }
-                leaf translated_port {
-                    type string;
-                }
-                leaf tcp_state {
-                    type enumeration {
-                        enum NONE;
-                        enum SYN_SENT;
-                        enum SYN_RECV;
-                        enum ESTABLISHED;
-                        enum FIN_WAIT;
-                        enum CLOSE_WAIT;
-                        enum LAST_ACK;
-                        enum TIME_WAIT;
-                        enum CLOSE;
-                        enum LISTEN;
-                    }
-                    mandatory false;
-                }
-            }
-        }
-        container arp-table{
-            description "name='Nat Table'";
-            list arp-entry{
-                description "name='Arp entry'";
-                key "ip_address";
-                leaf ip_address{
-                    type inet:ip-address;
-                }
-                leaf mac_address{
-                    type string;
-                }
-            }
-        }
-        }
-    	list floatingIP {
-            description "name='Floating IP'";
-            key "public_address";
-            leaf private_address {
-                description "name='Private address'";
-                type inet:ip-address;
-            }
-            leaf public_address {
-                description "name='Public address'";
-                type inet:ip-address;
-            }
-    	}
-    }
-
+		description "name='Nat";
+		leaf private-interface {
+		    description "name='Private Interface";
+		    type leafref {
+			path "/interfaces/ifEntry/id";
+		    }
+		}
+		leaf public-interface {
+		    description "name='Public Interface";
+		    type leafref {
+			path "/interfaces/ifEntry/id";
+		    }
+		}
+		container nat-table{
+		    description "name='Nat Table'";
+		    list nat-session {
+			description "name='Nat Session'";
+			leaf protocol {
+			    description "name='Protocol'";
+			    type enumeration {
+				enum ICMP;
+				enum TCP;
+				enum UDP;
+			    }
+			}
+			leaf src_address {
+			    description "name='Source Address'";
+			    type inet:ip-address;
+			}
+			leaf src_port {
+			    description "name='Source Port'";
+			    type string;
+			}
+			leaf dst_address {
+			    description "name='Destination address'";
+			    type inet:ip-address;
+			}
+			leaf dst_port {
+			    description "name='Destination port'";
+			    type string;
+			}
+			leaf translated_address {
+			    description "name='Translated address'";
+			    type inet:ip-address;
+			}
+			leaf translated_port {
+      			    description "name='Destination port'";
+			    type string;
+			}
+			leaf tcp_state {
+			    description "name='TCP state'";
+			    type enumeration {
+				enum NONE;
+				enum SYN_SENT;
+				enum SYN_RECV;
+				enum ESTABLISHED;
+				enum FIN_WAIT;
+				enum CLOSE_WAIT;
+				enum LAST_ACK;
+				enum TIME_WAIT;
+				enum CLOSE;
+				enum LISTEN;
+			    }
+			    mandatory false;
+			}
+		    }
+		}
+		container arp-table{
+		    description "name='ARP table'";
+		    list arp-entry{
+			description "name='ARP entry'";
+			key "ip_address";
+			leaf ip_address{
+			    description "name='IP address'";
+			    type inet:ip-address;
+			}
+			leaf mac_address{
+			    description "name='MAC address'";
+			    type string;
+			}
+		    }
+		}
+		}
+		list floatingIP {
+		    description "name='Floating IP'";
+		    key "public_address";
+		    leaf private_address {
+			description "name='Private address'";
+			type inet:ip-address;
+		    }
+		    leaf public_address {
+			description "name='Public address'";
+			type inet:ip-address;
+		    }
+		}
 }
-

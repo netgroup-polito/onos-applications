@@ -1,519 +1,473 @@
 {
-    "@name": "config-nat",
-    "@xmlns": "urn:ietf:params:xml:ns:yang:yin:1",
-    "@xmlns:nat": "http://netgroup.ipv6.polito.it/vnf",
-    "@xmlns:inet": "urn:ietf:params:xml:ns:yang:ietf-inet-types",
-    "namespace": {
-        "@uri": "http://netgroup.ipv6.polito.it/vnf"
-    }
-    ,
-    "prefix": {
-        "@value": "nat"
-    }
-    ,
-    "import": {
-        "@module": "ietf-inet-types",
-        "prefix": {
-            "@value": "inet"
+  "@xmlns": "urn:ietf:params:xml:ns:yang:yin:1",
+  "@name": "config-nat",
+  "description": {
+    "text": "Nat configuration"
+  },
+  "@xmlns:inet": "urn:ietf:params:xml:ns:yang:ietf-inet-types",
+  "namespace": {
+    "@uri": "http://netgroup.ipv6.polito.it/vnf"
+  },
+  "list": {
+    "leaf": [
+      {
+        "type": {
+          "@name": "inet:ip-address"
+        },
+        "@name": "private_address",
+        "description": {
+          "text": "name='Private address'"
         }
-    }
-    ,
+      },
+      {
+        "type": {
+          "@name": "inet:ip-address"
+        },
+        "@name": "public_address",
+        "description": {
+          "text": "name='Public address'"
+        }
+      }
+    ],
+    "@name": "floatingIP",
     "description": {
-        "text": "Nat configuration"
+      "text": "name='Floating IP'"
+    },
+    "key": {
+      "@value": "public_address"
     }
-    ,
-    "container": {
-        "@name": "interfaces",
-        "list": [ {
-            "@name": "ifEntry",
-            "key": {
-                "@value": "name"
+  },
+  "prefix": {
+    "@value": "nat"
+  },
+  "container": [
+    {
+      "list": {
+        "max-elements": {
+          "@value": "3"
+        },
+        "description": {
+          "text": "name='Interface'"
+        },
+        "min-elements": {
+          "@value": "2"
+        },
+        "container": [
+          {
+            "leaf": [
+              {
+                "type": {
+                  "enum": [
+                    {
+                      "@name": "dhcp"
+                    },
+                    {
+                      "@name": "static"
+                    }
+                  ],
+                  "@name": "enumeration"
+                },
+                "@name": "configurationType",
+                "description": {
+                  "text": "name='Configuration type'"
+                }
+              },
+              {
+                "type": {
+                  "@name": "inet:ipv4-address"
+                },
+                "mandatory": {
+                  "@value": "false"
+                },
+                "@name": "address",
+                "description": {
+                  "text": "name='IP address"
+                }
+              },
+              {
+                "type": {
+                  "@name": "inet:ip-address"
+                },
+                "mandatory": {
+                  "@value": "false"
+                },
+                "@name": "netmask",
+                "description": {
+                  "text": "name='Netmask"
+                }
+              },
+              {
+                "type": {
+                  "@name": "string"
+                },
+                "mandatory": {
+                  "@value": "false"
+                },
+                "@name": "mac-address",
+                "description": {
+                  "text": "name='MAC Address'"
+                }
+              },
+              {
+                "type": {
+                  "@name": "inet:ipv4-address"
+                },
+                "mandatory": {
+                  "@value": "false"
+                },
+                "@name": "default_gw",
+                "description": {
+                  "text": "name='Default gateway"
+                }
+              }
+            ],
+            "@name": "ipv4_configuration",
+            "presence": {
+              "@value": "it contains ipv4 configuration"
             }
-            ,
-            "min-elements": {
-                "@value": "2"
+          },
+          {
+            "leaf": [
+              {
+                "type": {
+                  "enum": [
+                    {
+                      "@name": "dhcp"
+                    },
+                    {
+                      "@name": "static"
+                    }
+                  ],
+                  "@name": "enumeration"
+                },
+                "@name": "configurationType",
+                "description": {
+                  "text": "name='Configuration type'"
+                }
+              },
+              {
+                "type": {
+                  "@name": "inet:ipv6-address"
+                },
+                "mandatory": {
+                  "@value": "false"
+                },
+                "@name": "address",
+                "description": {
+                  "text": "name='IP address"
+                }
+              },
+              {
+                "type": {
+                  "@name": "inet:ip-address"
+                },
+                "mandatory": {
+                  "@value": "false"
+                },
+                "@name": "netmask",
+                "description": {
+                  "text": "name='Netmask"
+                }
+              },
+              {
+                "type": {
+                  "@name": "inet:ipv6-address"
+                },
+                "mandatory": {
+                  "@value": "false"
+                },
+                "@name": "default_gw",
+                "description": {
+                  "text": "name='Default gateway"
+                }
+              }
+            ],
+            "@name": "ipv6_configuration",
+            "presence": {
+              "@value": "it contains ipv6 configuration"
             }
-            ,
-            "max-elements": {
-                "@value": "3"
+          }
+        ],
+        "key": {
+          "@value": "id"
+        },
+        "leaf": [
+          {
+            "type": {
+              "@name": "string"
+            },
+            "@name": "id",
+            "description": {
+              "text": "name='ID'"
             }
-            ,
-            "leaf": [ {
+          },
+          {
+            "type": {
+              "@name": "string"
+            },
+            "@name": "name",
+            "description": {
+              "text": "name='Name'"
+            }
+          },
+          {
+            "type": {
+              "enum": [
+                {
+                  "@name": "L3"
+                },
+                {
+                  "@name": "transparent"
+                }
+              ],
+              "@name": "enumeration"
+            },
+            "@name": "type",
+            "description": {
+              "text": "name='Type'"
+            }
+          },
+          {
+            "type": {
+              "@name": "boolean"
+            },
+            "mandatory": {
+              "@value": "false"
+            },
+            "@name": "management",
+            "description": {
+              "text": "name='Management privileges'"
+            }
+          }
+        ],
+        "@name": "ifEntry"
+      },
+      "@name": "interfaces",
+      "description": {
+        "text": "name='Interfaces'"
+      }
+    },
+    {
+      "leaf": [
+        {
+          "type": {
+            "path": {
+              "@value": "/interfaces/ifEntry/id"
+            },
+            "@name": "leafref"
+          },
+          "@name": "private-interface",
+          "description": {
+            "text": "name='Private Interface"
+          }
+        },
+        {
+          "type": {
+            "path": {
+              "@value": "/interfaces/ifEntry/id"
+            },
+            "@name": "leafref"
+          },
+          "@name": "public-interface",
+          "description": {
+            "text": "name='Public Interface"
+          }
+        }
+      ],
+      "container": [
+        {
+          "list": {
+            "leaf": [
+              {
+                "type": {
+                  "@name": "inet:ip-address"
+                },
                 "@name": "id",
                 "description": {
-                    "text": "name='Id'"
+                  "text": "name='ID'"
                 }
-                ,
+              },
+              {
                 "type": {
-                    "@name": "string"
-                }
-            }
-            ,
-            {
-                "@name": "name",
-                "description": {
-                    "text": "name='Name'"
-                }
-                ,
-                "type": {
-                    "@name": "string"
-                }
-            }
-            ,
-            {
-                "@name": "type",
-                "description": {
-                    "text": "name='Type'"
-                }
-                ,
-                "type": {
-                    "@name": "enumeration",
-                    "enum": [ {
-                        "@name": "L3"
-                    }
-                    ,
+                  "enum": [
                     {
-                        "@name": "transparent"
+                      "@name": "ICMP"
+                    },
+                    {
+                      "@name": "TCP"
+                    },
+                    {
+                      "@name": "UDP"
                     }
-                    ]
-                }
-            }
-            ,
-            {
-                "@name": "management",
+                  ],
+                  "@name": "enumeration"
+                },
+                "@name": "protocol",
                 "description": {
-                    "text": "name='Management'"
+                  "text": "name='Protocol'"
                 }
-                ,
+              },
+              {
                 "type": {
-                    "@name": "boolean"
+                  "@name": "inet:ip-address"
+                },
+                "@name": "src_address",
+                "description": {
+                  "text": "name='Source Address'"
                 }
-                ,
+              },
+              {
+                "type": {
+                  "@name": "string"
+                },
+                "@name": "src_port",
+                "description": {
+                  "text": "name='Source Port'"
+                }
+              },
+              {
+                "type": {
+                  "@name": "inet:ip-address"
+                },
+                "@name": "dst_address",
+                "description": {
+                  "text": "name='Destination address'"
+                }
+              },
+              {
+                "type": {
+                  "@name": "string"
+                },
+                "@name": "dst_port",
+                "description": {
+                  "text": "name='Destination port'"
+                }
+              },
+              {
+                "type": {
+                  "@name": "inet:ip-address"
+                },
+                "@name": "translated_address",
+                "description": {
+                  "text": "name='Translated address'"
+                }
+              },
+              {
+                "type": {
+                  "@name": "string"
+                },
+                "@name": "translated_port",
+                "description": {
+                  "text": "name='Destination port'"
+                }
+              },
+              {
+                "type": {
+                  "enum": [
+                    {
+                      "@name": "NONE"
+                    },
+                    {
+                      "@name": "SYN_SENT"
+                    },
+                    {
+                      "@name": "SYN_RECV"
+                    },
+                    {
+                      "@name": "ESTABLISHED"
+                    },
+                    {
+                      "@name": "FIN_WAIT"
+                    },
+                    {
+                      "@name": "CLOSE_WAIT"
+                    },
+                    {
+                      "@name": "LAST_ACK"
+                    },
+                    {
+                      "@name": "TIME_WAIT"
+                    },
+                    {
+                      "@name": "CLOSE"
+                    },
+                    {
+                      "@name": "LISTEN"
+                    }
+                  ],
+                  "@name": "enumeration"
+                },
                 "mandatory": {
-                    "@value": "false"
+                  "@value": "false"
+                },
+                "@name": "tcp_state",
+                "description": {
+                  "text": "name='TCP state'"
                 }
-            }
+              }
             ],
-            "container": [ {
-                "@name": "ipv4_configuration",
-                "presence": {
-                    "@value": "it contains ipv4 configuration"
-                }
-                ,
-                "leaf": [ {
-                    "@name": "configurationType",
-                    "description": {
-                        "text": "name='Configuration type'"
-                    }
-                    ,
-                    "type": {
-                        "@name": "enumeration",
-                        "enum": [ {
-                            "@name": "dhcp"
-                        }
-                        ,
-                        {
-                            "@name": "static"
-                        }
-                        ]
-                    }
-                }
-                ,
-                {
-                    "@name": "address",
-                    "description": {
-                        "text": "name='IP Address"
-                    }
-                    ,
-                    "type": {
-                        "@name": "inet:ipv4-address"
-                    }
-                    ,
-                    "mandatory": {
-                        "@value": "false"
-                    }
-                }
-                ,
-                {
-                    "@name": "netmask",
-                    "description": {
-                        "text": "name='Netmask"
-                    }
-                    ,
-                    "type": {
-                        "@name": "inet:ip-address"
-                    }
-                    ,
-                    "mandatory": {
-                        "@value": "false"
-                    }
-                }
-                ,
-                {
-                    "@name": "mac-address",
-                    "description": {
-                        "text": "name='MAC Address'"
-                    }
-                    ,
-                    "type": {
-                        "@name": "string"
-                    }
-                    ,
-                    "mandatory": {
-                        "@value": "false"
-                    }
-                }
-                ,
-                {
-                    "@name": "default_gw",
-                    "description": {
-                        "text": "name='Default GW"
-                    }
-                    ,
-                    "type": {
-                        "@name": "inet:ipv4-address"
-                    }
-                    ,
-                    "mandatory": {
-                        "@value": "false"
-                    }
-                }
-                ]
-            }
-            ,
-            {
-                "@name": "ipv6_configuration",
-                "presence": {
-                    "@value": "it contains ipv6 configuration"
-                }
-                ,
-                "leaf": [ {
-                    "@name": "configurationType",
-                    "description": {
-                        "text": "name='Configuration type'"
-                    }
-                    ,
-                    "type": {
-                        "@name": "enumeration",
-                        "enum": [ {
-                            "@name": "dhcp"
-                        }
-                        ,
-                        {
-                            "@name": "static"
-                        }
-                        ]
-                    }
-                }
-                ,
-                {
-                    "@name": "address",
-                    "description": {
-                        "text": "name='IP Address"
-                    }
-                    ,
-                    "type": {
-                        "@name": "inet:ipv6-address"
-                    }
-                    ,
-                    "mandatory": {
-                        "@value": "false"
-                    }
-                }
-                ,
-                {
-                    "@name": "netmask",
-                    "description": {
-                        "text": "name='Netmask"
-                    }
-                    ,
-                    "type": {
-                        "@name": "inet:ip-address"
-                    }
-                    ,
-                    "mandatory": {
-                        "@value": "false"
-                    }
-                }
-                ,
-                {
-                    "@name": "default_gw",
-                    "description": {
-                        "text": "name='Default GW"
-                    }
-                    ,
-                    "type": {
-                        "@name": "inet:ipv6-address"
-                    }
-                    ,
-                    "mandatory": {
-                        "@value": "false"
-                    }
-                }
-                ]
-            }
-            ]
-        }
-        ,
-        {
-            "@name": "floatingIP",
+            "@name": "nat-session",
             "description": {
-                "text": "name='Floating IP'"
-            }
-            ,
+              "text": "name='Nat Session'"
+            },
             "key": {
-                "@value": "public_address"
+              "@value": "id"
             }
-            ,
-            "leaf": [ {
-                "@name": "private_address",
-                "description": {
-                    "text": "name='Private address'"
-                }
-                ,
+          },
+          "@name": "nat-table",
+          "description": {
+            "text": "name='Nat Table'"
+          }
+        },
+        {
+          "list": {
+            "leaf": [
+              {
                 "type": {
-                    "@name": "inet:ip-address"
-                }
-            }
-            ,
-            {
-                "@name": "public_address",
+                  "@name": "inet:ip-address"
+                },
+                "@name": "ip_address",
                 "description": {
-                    "text": "name='Public address'"
+                  "text": "name='IP address'"
                 }
-                ,
+              },
+              {
                 "type": {
-                    "@name": "inet:ip-address"
-                }
-            }
-            ]
-        }
-        ],
-        "container": {
-            "@name": "nat",
-            "description": {
-                "text": "name='Nat"
-            }
-            ,
-            "leaf": [ {
-                "@name": "private-interface",
+                  "@name": "string"
+                },
+                "@name": "mac_address",
                 "description": {
-                    "text": "name='Private Interface"
+                  "text": "name='MAC address'"
                 }
-                ,
-                "type": {
-                    "@name": "leafref",
-                    "path": {
-                        "@value": "/interfaces/ifEntry/id"
-                    }
-                }
-            }
-            ,
-            {
-                "@name": "public-interface",
-                "description": {
-                    "text": "name='Public Interface"
-                }
-                ,
-                "type": {
-                    "@name": "leafref",
-                    "path": {
-                        "@value": "/interfaces/ifEntry/id"
-                    }
-                }
-            }
+              }
             ],
-            "container": [ {
-                "@name": "nat-table",
-                "description": {
-                    "text": "name='Nat Table'"
-                }
-                ,
-                "list": {
-                    "@name": "nat-session",
-                    "description": {
-                        "text": "name='Nat Session'"
-                    }
-                    ,
-                    "key": {
-                        "@value": "id"
-                    }
-                    ,
-                    "leaf": [ {
-                        "@name": "id",
-                        "description": {
-                            "text": "name='YYY'"
-                        }
-                        ,
-                        "type": {
-                            "@name": "inet:ip-address"
-                        }
-                    }
-                    ,
-                    {
-                        "@name": "protocol",
-                        "description": {
-                            "text": "name='YYY'"
-                        }
-                        ,
-                        "type": {
-                            "@name": "enumeration",
-                            "enum": [ {
-                                "@name": "ICMP"
-                            }
-                            ,
-                            {
-                                "@name": "TCP"
-                            }
-                            ,
-                            {
-                                "@name": "UDP"
-                            }
-                            ]
-                        }
-                    }
-                    ,
-                    {
-                        "@name": "src_address",
-                        "description": {
-                            "text": "name='YYY'"
-                        }
-                        ,
-                        "type": {
-                            "@name": "inet:ip-address"
-                        }
-                    }
-                    ,
-                    {
-                        "@name": "src_port",
-                        "description": {
-                            "text": "name='YYY'"
-                        }
-                        ,
-                        "type": {
-                            "@name": "string"
-                        }
-                    }
-                    ,
-                    {
-                        "@name": "dst_address",
-                        "description": {
-                            "text": "name='YYY'"
-                        }
-                        ,
-                        "type": {
-                            "@name": "inet:ip-address"
-                        }
-                    }
-                    ,
-                    {
-                        "@name": "dst_port",
-                        "type": {
-                            "@name": "string"
-                        }
-                    }
-                    ,
-                    {
-                        "@name": "translated_address",
-                        "type": {
-                            "@name": "inet:ip-address"
-                        }
-                    }
-                    ,
-                    {
-                        "@name": "translated_port",
-                        "type": {
-                            "@name": "string"
-                        }
-                    }
-                    ,
-                    {
-                        "@name": "tcp_state",
-                        "type": {
-                            "@name": "enumeration",
-                            "enum": [ {
-                                "@name": "NONE"
-                            }
-                            ,
-                            {
-                                "@name": "SYN_SENT"
-                            }
-                            ,
-                            {
-                                "@name": "SYN_RECV"
-                            }
-                            ,
-                            {
-                                "@name": "ESTABLISHED"
-                            }
-                            ,
-                            {
-                                "@name": "FIN_WAIT"
-                            }
-                            ,
-                            {
-                                "@name": "CLOSE_WAIT"
-                            }
-                            ,
-                            {
-                                "@name": "LAST_ACK"
-                            }
-                            ,
-                            {
-                                "@name": "TIME_WAIT"
-                            }
-                            ,
-                            {
-                                "@name": "CLOSE"
-                            }
-                            ,
-                            {
-                                "@name": "LISTEN"
-                            }
-                            ]
-                        }
-                        ,
-                        "mandatory": {
-                            "@value": "false"
-                        }
-                    }
-                    ]
-                }
+            "@name": "arp-entry",
+            "description": {
+              "text": "name='ARP entry'"
+            },
+            "key": {
+              "@value": "ip_address"
             }
-            ,
-            {
-                "@name": "arp-table",
-                "description": {
-                    "text": "name='Nat Table'"
-                }
-                ,
-                "list": {
-                    "@name": "arp-entry",
-                    "description": {
-                        "text": "name='Arp entry'"
-                    }
-                    ,
-                    "key": {
-                        "@value": "ip_address"
-                    }
-                    ,
-                    "leaf": [ {
-                        "@name": "ip_address",
-                        "type": {
-                            "@name": "inet:ip-address"
-                        }
-                    }
-                    ,
-                    {
-                        "@name": "mac_address",
-                        "type": {
-                            "@name": "string"
-                        }
-                    }
-                    ]
-                }
-            }
-            ]
+          },
+          "@name": "arp-table",
+          "description": {
+            "text": "name='ARP table'"
+          }
         }
+      ],
+      "@name": "nat",
+      "description": {
+        "text": "name='Nat"
+      }
     }
+  ],
+  "@xmlns:nat": "http://netgroup.ipv6.polito.it/vnf",
+  "import": {
+    "prefix": {
+      "@value": "inet"
+    },
+    "@module": "ietf-inet-types"
+  }
 }
+
+
