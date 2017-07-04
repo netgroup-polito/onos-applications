@@ -37,8 +37,10 @@ import org.osgi.service.component.ComponentContext;
 //import sun.rmi.transport.Transport;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -197,22 +199,40 @@ public class AppComponent {
      * Load configuration from ini config file.
      */
     private void loadConfiguration() {
+        ClassLoader loader = AppComponent.class.getClassLoader();
+
         try {
+            Properties prop = new Properties();
+            InputStream propFile = loader.getResourceAsStream("configuration/appProperties.properties");
+            if (propFile!=null)prop.load(propFile);
+
             log.info("Loading parameters from configuration file.");
             NatConfiguration config = new NatConfiguration();
 
             this.privatePortLabel = config.getPrivatePortLabel();
             this.publicPortLabel = config.getPublicPortLabel();
 
+            this.inputApp.deviceId = DeviceId.deviceId(prop.getProperty("privateSwitchId"));
+            this.outputApp.deviceId = DeviceId.deviceId(prop.getProperty("publicSwitchId"));
+            this.inputApp.portNumber = PortNumber.portNumber(prop.getProperty("privateSwitchPortNumber"));
+            this.outputApp.portNumber = PortNumber.portNumber(prop.getProperty("publicSwitchPortNumber"));
+            this.inputApp.ipAddress = Ip4Address.valueOf(prop.getProperty("privateHostIpAddress"));
+            this.outputApp.ipAddress = Ip4Address.valueOf(prop.getProperty("publicHostIpAddress"));
+            this.publicMac = MacAddress.valueOf(prop.getProperty("publicHostMacAddress"));
+            this.privateMac = MacAddress.valueOf(prop.getProperty("privateHostMacAddres"));
+
+            arpTable.put(this.inputApp.ipAddress, this.privateMac);
+            arpTable.put(this.outputApp.ipAddress, this.publicMac);
+            /*
             this.inputApp.deviceId = DeviceId.deviceId(config.getUserDeviceId());
             this.outputApp.deviceId = DeviceId.deviceId(config.getWanDeviceId());
             this.inputApp.portNumber = PortNumber.portNumber(config.getUserInterface());
-            this.outputApp.portNumber = PortNumber.portNumber(config.getWanInterface());
+            this.outputApp.portNumber = PortNumber.portNumber(config.getWanInterface());*/
 
 //            log.info("setted");
             
-            this.inputApp.ipAddress = Ip4Address.valueOf(config.getPrivateAddress());
-            this.outputApp.ipAddress = Ip4Address.valueOf(config.getPublicAddress());
+            //this.inputApp.ipAddress = Ip4Address.valueOf(config.getPrivateAddress());
+            //this.outputApp.ipAddress = Ip4Address.valueOf(config.getPublicAddress());
 
 //            log.info("ip addresses: "+this.inputApp.ipAddress+" "+this.outputApp.ipAddress);
             log.info("Loaded parameters from configuration file.");

@@ -1,13 +1,13 @@
 config-nat : root;
 config-nat/interfaces : void;
 config-nat/interfaces/ifEntry[config-nat/nat/private-interface] : root/inputApp;
-config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/id : root/inputApp/deviceId;
-config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/name : root/inputApp/portNumber;
+config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/id : void;
+config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/name : void;
 config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/ipv4_configuration/address : root/inputApp/ipAddress;
 config-nat/interfaces/ifEntry[config-nat/nat/private-interface]/ipv4_configuration/mac-address : root/privateMac;
 config-nat/interfaces/ifEntry[config-nat/nat/public-interface] : root/outputApp;
-config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/id : root/outputApp/deviceId;
-config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/name : root/outputApp/portNumber;
+config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/id : void;
+config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/name : void;
 config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/ipv4_configuration/address : root/outputApp/ipAddress;
 config-nat/interfaces/ifEntry[config-nat/nat/public-interface]/ipv4_configuration/mac-address : root/publicMac;
 config-nat/nat/private-interface : void;
