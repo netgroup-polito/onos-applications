@@ -119,6 +119,13 @@ public class StateListenerNew extends Thread{
             keyOfYangLists.put("path/Yang/to/natTable", "port")
      */
     private HashMap<String, String> keyOfYangLists;
+    /**
+        voidValueList contains the values of all the information that are in the YANG model but that are not stored in any
+        variables inside the JAVA code. In the mapping file, such variables has 'void' as right 'operand'.
+        e.g.
+            config-nat/nat/private-interface : void;
+     */
+    private HashMap<String, String> voidValueList;
     private HashMap<String, String> YangType;
     private HashMap<String, Boolean> YangMandatory;
     private ConnectionModuleClient cM;
@@ -292,6 +299,7 @@ public class StateListenerNew extends Thread{
         allowedStaticIndexesInList = new HashMap<String, List<String>>();
         staticListIndexes = new HashMap<String, String>();
         keyOfYangLists = new HashMap<String, String>();
+        voidValueList = new HashMap<String, String>();
         //stateList = new HashMap<>();
         //nullValuesToListen = new ArrayList<>();
         //whatHappened = new ArrayList<>();
@@ -1292,7 +1300,11 @@ public class StateListenerNew extends Thread{
             String varJava = fromYangToJava(var);
 //            log.info("the  variable in java "+varJava);
 //            log.info("Var java "+varJava);
-            Object value = getLeafValue(varJava.substring(5));
+            Object value = null;
+            if(varJava.startsWith("void."))
+                value = getLeafValue(varJava);
+            else
+                value = getLeafValue(varJava.substring(5));
 //            log.info("..and the value "+value);
             //SERIALIZE CORRECTLY THE JSON VALUE
             var = noIndexes(var);
@@ -1352,7 +1364,10 @@ public class StateListenerNew extends Thread{
                     }
 //                    log.info("Getting thw value of "+jWithIndex);
                     //jWithIndex is the name of the variable in the Java cose (preceeded by "root."
-                    ((ObjectNode)toRet).put(var, getLeafValue(jWithIndex.substring(5)).toString());
+                    if(jWithIndex.startsWith("void."))
+                        ((ObjectNode)toRet).put(var, getLeafValue(jWithIndex).toString());
+                    else
+                        ((ObjectNode)toRet).put(var, getLeafValue(jWithIndex.substring(5)).toString());
                     field.next();
                 }
                 return toRet;
@@ -1399,7 +1414,11 @@ public class StateListenerNew extends Thread{
 				jWithIndex = key;			
                         //jWithIndex is the name of hte variable in Java (preceeded by "root.")
 //			log.info("prima di getLeafValue, jWithIndex: " + jWithIndex);
-                        Object value = getLeafValue(jWithIndex.substring(5));
+                        Object value = null;
+                        if(jWithIndex.startsWith("void."))
+                            value = getLeafValue(jWithIndex);
+                        else
+                            value = getLeafValue(jWithIndex.substring(5));
 //                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
                         if(value!=null){
                             //PERSONALIZED SERIALIZATION
@@ -2162,8 +2181,13 @@ log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
 	//if it does, it is related to an information that is written in the application YANG model
 	//but that is not present inside the Java code.
 	//Since there is no variable to set, return true (nothing to do, job done c:)
-	if(var.substring(0, 4).equals("void"))
-		return true;
+	if(var.substring(0, 4).equals("void")) {
+	    if(voidValueList.containsKey(var))
+	        voidValueList.replace(var, newVal);
+	    else
+	        voidValueList.put(var, newVal);
+        return true;
+    }
         String[] fs = var.split(Pattern.quote("/"));
         if(fs.length==1){
 //            log.info("**we are in a leaf** - complete "+complete);
@@ -2619,6 +2643,11 @@ log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
     //get the value of a specific leaf
     public Object getLeafValue(String id){
 //	log.info("id of getLeafValue: " + id);
+        if(id.startsWith("void.")){
+            if(voidValueList.containsKey(id))
+                return voidValueList.get(id);
+            return null;
+        }
         if(state.containsKey(id))
             return state.get(id);
         try{
