@@ -180,6 +180,8 @@ public class StateListenerNew extends Thread{
 		}
 		else if(json.equals("UDP")){
 			return IPv4.PROTOCOL_UDP;
+		} else if(json.equals("ICMP")){
+			return IPv4.PROTOCOL_ICMP;
 		}
 
 		return null;
@@ -1807,9 +1809,9 @@ public class StateListenerNew extends Thread{
     
     //-------------------FOR THE NAT
     private boolean natTableModified(String var, String json){
-        if(var.contains("natPortMap"))
+        if(var != null && var.contains("natPortMap"))
             return true;
-        if(json.contains("natTable"))
+        if(json != null && json.contains("nat-session"))
             return true;
         return false;
     }

@@ -103,7 +103,7 @@
                 "mandatory": {
                   "@value": "false"
                 },
-                "@name": "mac-address",
+                "@name": "mac_address",
                 "description": {
                   "text": "name='MAC Address'"
                 }

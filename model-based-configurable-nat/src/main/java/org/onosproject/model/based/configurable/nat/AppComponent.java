@@ -212,10 +212,10 @@ public class AppComponent {
             this.privatePortLabel = config.getPrivatePortLabel();
             this.publicPortLabel = config.getPublicPortLabel();
 
-            this.inputApp.deviceId = DeviceId.deviceId(prop.getProperty("privateSwitchId"));
-            this.outputApp.deviceId = DeviceId.deviceId(prop.getProperty("publicSwitchId"));
-            this.inputApp.portNumber = PortNumber.portNumber(prop.getProperty("privateSwitchPortNumber"));
-            this.outputApp.portNumber = PortNumber.portNumber(prop.getProperty("publicSwitchPortNumber"));
+//            this.inputApp.deviceId = DeviceId.deviceId(prop.getProperty("privateSwitchId"));
+//            this.outputApp.deviceId = DeviceId.deviceId(prop.getProperty("publicSwitchId"));
+//            this.inputApp.portNumber = PortNumber.portNumber(prop.getProperty("privateSwitchPortNumber"));
+//            this.outputApp.portNumber = PortNumber.portNumber(prop.getProperty("publicSwitchPortNumber"));
             this.inputApp.ipAddress = Ip4Address.valueOf(prop.getProperty("privateHostIpAddress"));
             this.outputApp.ipAddress = Ip4Address.valueOf(prop.getProperty("publicHostIpAddress"));
             this.publicMac = MacAddress.valueOf(prop.getProperty("publicHostMacAddress"));
@@ -223,11 +223,11 @@ public class AppComponent {
 
             arpTable.put(this.inputApp.ipAddress, this.privateMac);
             arpTable.put(this.outputApp.ipAddress, this.publicMac);
-            /*
+            
             this.inputApp.deviceId = DeviceId.deviceId(config.getUserDeviceId());
             this.outputApp.deviceId = DeviceId.deviceId(config.getWanDeviceId());
             this.inputApp.portNumber = PortNumber.portNumber(config.getUserInterface());
-            this.outputApp.portNumber = PortNumber.portNumber(config.getWanInterface());*/
+            this.outputApp.portNumber = PortNumber.portNumber(config.getWanInterface());
 
 //            log.info("setted");
             
@@ -622,15 +622,23 @@ public class AppComponent {
                     udpPacket.setDestinationPort(dstPort);
                     ipHeader.setPayload(udpPacket);
                     break;
+		case IPv4.PROTOCOL_ICMP:
+		    log.info("setting icmp packet");
+		    ICMP icmpPacket = new ICMP();
+		    ipHeader.setPayload(icmpPacket);
+		    break;
                 default:
                     log.info("Importing L4 session not supported, protocol code (binary): " + protocol);
                     return;
             }
 
 	    log.info("retrieving src mac address");
-	    arpTable.put(srcIpAddress.getIp4Address(), MacAddress.valueOf("aa:bb:cc:ee:ff:11"));
+//	    arpTable.put(srcIpAddress.getIp4Address(), MacAddress.valueOf("aa:bb:cc:ee:ff:11"));
             MacAddress srcMac = arpTable.get(srcIpAddress.getIp4Address());
             if(srcMac == null){
+		log.info("srcIpAddress to match: " + srcIpAddress.getIp4Address());
+		for(Ip4Address ip : arpTable.keySet())
+			log.info(ip + " -> " + arpTable.get(ip));
                 log.info("source MAC not found in arp table: " + srcIpAddress.getIp4Address());
                 return;
             }
@@ -641,7 +649,7 @@ public class AppComponent {
             PacketContext packetContext = createMyPacketContext(ethPacket);
 
             // first we need to know the destination mac address
-	    arpTable.put(dstIpAddress.getIp4Address(), MacAddress.valueOf("aa:bb:cc:ee:ff:22"));
+//	    arpTable.put(dstIpAddress.getIp4Address(), MacAddress.valueOf("aa:bb:cc:ee:ff:22"));
             MacAddress dstMac = arpTable.get(dstIpAddress.getIp4Address());
             log.info("dstMac: " + dstMac);
             if (dstMac == null) {
@@ -664,7 +672,9 @@ public class AppComponent {
                 installOutcomingNatRule(dstIpAddress.getIp4Address(), srcIpAddress.getIp4Address(), ipHeader.getProtocol(), translatedPort, srcPort, ethPacket.getSourceMAC(), inputApp.portNumber);
             } else {
                 // nat interfaces are on different devices, we need to find a path
-		log.info("nat interfaces are on different devices, we need to find a path");
+		log.info("nat interfaces are on different devices:\nIN: " + inputApp.deviceId + ":" + inputApp.portNumber);
+		log.info("OUT: " + outputApp.deviceId + ":" + outputApp.portNumber);
+		log.info("We need to find a path between the devices");
                 Set<Path> paths = topologyService.getPaths(topologyService.currentTopology(), inputApp.deviceId, outputApp.deviceId);
 		log.info("retrieved paths");
                 Path path = pickForwardPathIfPossible(paths, packetContext.inPacket().receivedFrom().port());
