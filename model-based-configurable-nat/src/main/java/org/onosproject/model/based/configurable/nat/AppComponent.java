@@ -470,14 +470,14 @@ public class AppComponent {
                     FlowIdentifier flowId = new FlowIdentifier();
 
                     flowId.setSrcIp(srcAddress.getIp4Address());
-                    flowId.setSrcPort((short) srcPortNumber);
+                    flowId.setSrcPort(srcPortNumber);
                     flowId.setProtocol(IPv4.PROTOCOL_TCP);
                     flowId.setDstIp(dstAddress.getIp4Address());
-                    flowId.setDstPort((short) tcpHeader.getDestinationPort());
+                    flowId.setDstPort(tcpHeader.getDestinationPort());
                     
                     FlowInfo flowInfo= new FlowInfo();
                     flowInfo.setNattedIp(outputApp.getIpAddress().getIp4Address());
-                    flowInfo.setNattedPort((short) publicPort);
+                    flowInfo.setNattedPort(publicPort);
                     natPortMap.put(flowId, flowInfo);
 
                     log.info(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
@@ -498,14 +498,14 @@ public class AppComponent {
                     FlowIdentifier flowId = new FlowIdentifier();
 
                     flowId.setSrcIp(srcAddress.getIp4Address());
-                    flowId.setSrcPort((short) srcPortNumber);
+                    flowId.setSrcPort(srcPortNumber);
                     flowId.setProtocol(IPv4.PROTOCOL_TCP);
                     flowId.setDstIp(dstAddress.getIp4Address());
-                    flowId.setDstPort((short) udpHeader.getDestinationPort());
+                    flowId.setDstPort(udpHeader.getDestinationPort());
 
                     FlowInfo flowInfo= new FlowInfo();
                     flowInfo.setNattedIp(outputApp.getIpAddress().getIp4Address());
-                    flowInfo.setNattedPort((short) publicPort);
+                    flowInfo.setNattedPort(publicPort);
                     natPortMap.put(flowId, flowInfo);
                     
                     log.debug(" - - Recieved from Device: " + packetContext.inPacket().receivedFrom().deviceId().toString() + " port: " + packetContext.inPacket().receivedFrom().port().toString());
@@ -592,7 +592,7 @@ public class AppComponent {
          * @param translatedPort port exposed to the WAN instead of the local source port
          */
         public void importL4SessionEntry(Ip4Address srcIpAddress, Ip4Address dstIpAddress,
-                                   Long srcPort, Long dstPort, Ip4Address translatedIpAddress, Long translatedPort,
+                                   Integer srcPort, Integer dstPort, Ip4Address translatedIpAddress, Integer translatedPort,
                                    byte protocol, String connectionState){
 
             //Storing tcp/udp session information into natPortMap

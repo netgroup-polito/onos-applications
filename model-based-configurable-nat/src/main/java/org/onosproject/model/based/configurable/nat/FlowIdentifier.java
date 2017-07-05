@@ -14,9 +14,9 @@ import org.onlab.packet.IpAddress;
  */
 public class FlowIdentifier {
     public Ip4Address srcIp;
-    public Long srcPort;
+    public Integer srcPort;
     public Ip4Address dstIp;
-    public Long dstPort;
+    public Integer dstPort;
     public byte protocol;
 
     public FlowIdentifier(){
@@ -27,7 +27,7 @@ public class FlowIdentifier {
 	this.protocol = 0;
     }
 
-    public FlowIdentifier(Ip4Address srcIp, Ip4Address dstIp, Long srcPort, Long dstPort, byte protocol){
+    public FlowIdentifier(Ip4Address srcIp, Ip4Address dstIp, Integer srcPort, Integer dstPort, byte protocol){
         srcIp = this.srcIp;
         dstIp = this.dstIp;
         srcPort = this.srcPort;
@@ -43,11 +43,11 @@ public class FlowIdentifier {
         this.srcIp = srcIp;
     }
 
-    public Long getSrcPort() {
+    public Integer getSrcPort() {
         return srcPort;
     }
 
-    public void setSrcPort(Long srcPort) {
+    public void setSrcPort(Integer srcPort) {
         this.srcPort = srcPort;
     }
 
@@ -59,11 +59,11 @@ public class FlowIdentifier {
         this.dstIp = dstIp;
     }
 
-    public Long getDstPort() {
+    public Integer getDstPort() {
         return dstPort;
     }
 
-    public void setDstPort(Long dstPort) {
+    public void setDstPort(Integer dstPort) {
         this.dstPort = dstPort;
     }
 
