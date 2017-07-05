@@ -14,7 +14,7 @@ import org.onlab.packet.IpAddress;
  */
 public class FlowInfo {
     public Ip4Address nattedIp;
-    public Short nattedPort;
+    public Long nattedPort;
     public String connectionState;
 
     public FlowInfo(){
@@ -23,7 +23,7 @@ public class FlowInfo {
 	this.connectionState = null;
     }
 
-    public FlowInfo(Ip4Address nattedIp, Short nattedPort, String connectionState){
+    public FlowInfo(Ip4Address nattedIp, Long nattedPort, String connectionState){
         nattedIp = this.nattedIp;
         nattedPort = this.nattedPort;
         connectionState = this.connectionState;
@@ -37,11 +37,11 @@ public class FlowInfo {
         this.nattedIp = nattedIp;
     }
 
-    public Short getNattedPort() {
+    public Long getNattedPort() {
         return nattedPort;
     }
 
-    public void setNattedPort(Short nattedPort) {
+    public void setNattedPort(Long nattedPort) {
         this.nattedPort = nattedPort;
     }
 

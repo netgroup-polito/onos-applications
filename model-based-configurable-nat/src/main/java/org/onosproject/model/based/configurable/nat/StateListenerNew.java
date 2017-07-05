@@ -162,10 +162,10 @@ public class StateListenerNew extends Thread{
                 IpAddress value = IpAddress.valueOf(json);
                 return value;
             }
-            if(type == Short.class){
-//		log.info("short recevide: " + json);
-                Short value = Short.parseShort(json);
-//		log.info("short converted: " + value);
+            if(type == Long.class){
+//		log.info("long recevide: " + json);
+                Long value = Long.parseLong(json);
+//		log.info("long converted: " + value);
                 return value;
             }
             if(type == PortNumber.class){
@@ -1968,7 +1968,7 @@ log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
                             ObjectNode entry = (ObjectNode)tableEntries.next();
                             log.info("entry "+entry);
                             Ip4Address srcIp=null, dstIp=null, translatedIp=null;
-                            Short srcPort=null, dstPort=null, translatedPort=null;
+                            Long srcPort=null, dstPort=null, translatedPort=null;
                             String connectionState = null;
 		            byte protocol = 0;
 
@@ -1981,11 +1981,11 @@ log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
                             if(entry.has("translated_address"))
                                 translatedIp = Ip4Address.valueOf(entry.get("translated_address").textValue()); 
                             if(entry.has("src_port"))
-                                srcPort = (short)entry.get("src_port").asLong();
+                                srcPort = (long)entry.get("src_port").asLong();
                             if(entry.has("dst_port"))
-                                dstPort = (short)entry.get("dst_port").asLong();
+                                dstPort = (long)entry.get("dst_port").asLong();
                             if(entry.has("translated_port"))
-                                translatedPort = (short)entry.get("translated_port").asLong();
+                                translatedPort = (long)entry.get("translated_port").asLong();
                             if(entry.has("tcp_state"))
                                 connectionState = entry.get("tcp_state").textValue();	
 			    //byte[] byteArray = entry.get("protocol").toString().getBytes("utf-8");

@@ -592,7 +592,7 @@ public class AppComponent {
          * @param translatedPort port exposed to the WAN instead of the local source port
          */
         public void importL4SessionEntry(Ip4Address srcIpAddress, Ip4Address dstIpAddress,
-                                   Short srcPort, Short dstPort, Ip4Address translatedIpAddress, Short translatedPort,
+                                   Long srcPort, Long dstPort, Ip4Address translatedIpAddress, Long translatedPort,
                                    byte protocol, String connectionState){
 
             //Storing tcp/udp session information into natPortMap
