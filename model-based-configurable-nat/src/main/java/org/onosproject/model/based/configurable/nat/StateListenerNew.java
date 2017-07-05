@@ -1973,14 +1973,14 @@ log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
 
 //                            log.info("prima di prendere i valori");
                             if(entry.has("src_address")){
-                                srcIp = Ip4Address.valueOf(entry.get("src_address").textValue());
-                                IpPrefix prefSrc = IpPrefix.valueOf(srcIp.getIp4Address(), 24);
-                                //srcIp = prefSrc.address().getIp4Address();
+                                IpAddress tmp = IpAddress.valueOf(entry.get("src_address").textValue());
+                                //srcIp = Ip4Address.valueOf(entry.get("src_address").textValue());
+                                srcIp = IpAddress.makeMaskedAddress(tmp, 24).getIp4Address();
                             }
                             if(entry.has("dst_address")) {
-                                dstIp = Ip4Address.valueOf(entry.get("dst_address").textValue());
-                                IpPrefix prefSrc = IpPrefix.valueOf(dstIp.getIp4Address(), 24);
-                                //dstIp = prefSrc.address().getIp4Address();
+                                IpAddress tmp = IpAddress.valueOf(entry.get("dst_address").textValue());
+                                //dstIp = Ip4Address.valueOf(entry.get("dst_address").textValue());
+                                dstIp = IpAddress.makeMaskedAddress(tmp, 24).getIp4Address();
                             }
                             if(entry.has("translated_address"))
                                 translatedIp = Ip4Address.valueOf(entry.get("translated_address").textValue()); 
