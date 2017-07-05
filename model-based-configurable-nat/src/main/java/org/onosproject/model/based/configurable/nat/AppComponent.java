@@ -216,13 +216,13 @@ public class AppComponent {
 //            this.outputApp.deviceId = DeviceId.deviceId(prop.getProperty("publicSwitchId"));
 //            this.inputApp.portNumber = PortNumber.portNumber(prop.getProperty("privateSwitchPortNumber"));
 //            this.outputApp.portNumber = PortNumber.portNumber(prop.getProperty("publicSwitchPortNumber"));
-            this.inputApp.ipAddress = Ip4Address.valueOf(prop.getProperty("privateHostIpAddress"));
-            this.outputApp.ipAddress = Ip4Address.valueOf(prop.getProperty("publicHostIpAddress"));
+            Ip4Address publicIpAddress = Ip4Address.valueOf(prop.getProperty("privateHostIpAddress"));
+            Ip4Address privateIpAddress = Ip4Address.valueOf(prop.getProperty("publicHostIpAddress"));
             this.publicMac = MacAddress.valueOf(prop.getProperty("publicHostMacAddress"));
             this.privateMac = MacAddress.valueOf(prop.getProperty("privateHostMacAddress"));
 
-            arpTable.put(this.inputApp.ipAddress, this.privateMac);
-            arpTable.put(this.outputApp.ipAddress, this.publicMac);
+            arpTable.put(publicIpAddress, this.privateMac);
+            arpTable.put(privateIpAddress, this.publicMac);
 
 //	    log.info("ARP TABLE");
 //	    for(Ip4Address ip : arpTable.keySet())

@@ -1975,12 +1975,12 @@ log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
                             if(entry.has("src_address")){
                                 srcIp = Ip4Address.valueOf(entry.get("src_address").textValue());
                                 IpPrefix prefSrc = IpPrefix.valueOf(srcIp.getIp4Address(), 24);
-                                srcIp = prefSrc.address().getIp4Address();
+                                //srcIp = prefSrc.address().getIp4Address();
                             }
                             if(entry.has("dst_address")) {
                                 dstIp = Ip4Address.valueOf(entry.get("dst_address").textValue());
                                 IpPrefix prefSrc = IpPrefix.valueOf(dstIp.getIp4Address(), 24);
-                                dstIp = prefSrc.address().getIp4Address();
+                                //dstIp = prefSrc.address().getIp4Address();
                             }
                             if(entry.has("translated_address"))
                                 translatedIp = Ip4Address.valueOf(entry.get("translated_address").textValue()); 
