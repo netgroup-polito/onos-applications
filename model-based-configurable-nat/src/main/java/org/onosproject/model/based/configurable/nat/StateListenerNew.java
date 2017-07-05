@@ -364,7 +364,12 @@ public class StateListenerNew extends Thread{
             log.info("*** ***");
 
         } catch (Exception ex) {
-            Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
+	    StringWriter writer = new StringWriter();
+	    PrintWriter printWriter = new PrintWriter(writer);
+	    ex.printStackTrace(printWriter);
+	    printWriter.flush();
+	    log.info(writer.toString());
+            //Logger.getLogger(StateListenerNew.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         //System.out.println("---CONFIG-----");
