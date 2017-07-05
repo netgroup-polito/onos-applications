@@ -52,15 +52,14 @@ import java.util.Map.Entry;
 //import jyang.tools.Yang2Yin;
 import java.util.TimerTask;
 import java.util.Timer;
-import org.onlab.packet.Ip4Address;
+
+import org.onlab.packet.*;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.PortNumber;
+import org.onosproject.net.host.InterfaceIpAddress;
 import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.io.FileInputStream;
-import org.onlab.packet.IpAddress;
-import org.onlab.packet.IPv4;
-import org.onlab.packet.MacAddress;
 
 /**
  *
@@ -1975,9 +1974,14 @@ log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
 //                            log.info("prima di prendere i valori");
                             if(entry.has("src_address")){
                                 srcIp = Ip4Address.valueOf(entry.get("src_address").textValue());
+                                IpPrefix prefSrc = IpPrefix.valueOf(srcIp.getIp4Address(), 24);
+                                srcIp = prefSrc.address().getIp4Address();
                             }
-                            if(entry.has("dst_address"))
+                            if(entry.has("dst_address")) {
                                 dstIp = Ip4Address.valueOf(entry.get("dst_address").textValue());
+                                IpPrefix prefSrc = IpPrefix.valueOf(dstIp.getIp4Address(), 24);
+                                dstIp = prefSrc.address().getIp4Address();
+                            }
                             if(entry.has("translated_address"))
                                 translatedIp = Ip4Address.valueOf(entry.get("translated_address").textValue()); 
                             if(entry.has("src_port"))
@@ -1998,8 +2002,10 @@ log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
 
                             log.info("p3 "+translatedPort); 
                             log.info("source address "+srcIp);
+                            log.info("source prefix " + srcIp.toIpPrefix());
                             log.info("input port "+srcPort);
                             log.info("dst address "+dstIp);
+                            log.info("dst prefix " + dstIp.toIpPrefix());
                             log.info("output port "+dstPort);
                             log.info("nat address "+translatedIp);
                             log.info("nat port "+translatedPort);
