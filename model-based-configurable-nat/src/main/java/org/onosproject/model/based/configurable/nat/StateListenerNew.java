@@ -1534,7 +1534,7 @@ public class StateListenerNew extends Thread{
 
             //check if all the values are configurable
             if(!configVariables(noIndexes(var), toSet)){
-                log.info("not to config..");
+                log.info("Resource " + var + " is not configurable");
                 return 1;
             }		
             return fillVariables(toSet, var);
@@ -1625,11 +1625,11 @@ public class StateListenerNew extends Thread{
                 if(setVariable(pathJava, pathJava, toSet.asText(), root))
                     return 0;
                 else{
-		    log.info("set of variable " + var + " failed");
+		            log.info("set of variable " + var + " failed");
                     return 1;
 		}
             }else{
-		log.info("variable " + var + " does not have a java representation");
+		        log.info("variable " + var + " does not have a java representation");
                 return 2;
             }
         }else{
@@ -1667,14 +1667,14 @@ public class StateListenerNew extends Thread{
                             if(setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root))
                                 return 0;
                             else{
-//				log.info("set of the object list " + var + " failed");
+				                log.info("set of the object list " + var + " failed");
                                 return 1;
 			    }
                         }
-//			log.info("the object list " + var + " does not have a java representation");
+            			log.info("the object list " + var + " does not have a java representation");
                         return 1;
                     }else{
-//			log.info("the object list " + var + " does not have a java representation");
+            			log.info("the object list " + var + " does not have a java representation");
                         return 2;
 		    }
                 }else{
@@ -1688,6 +1688,8 @@ public class StateListenerNew extends Thread{
 //                        log.info("res fillVariables into getComplexObject: "+resc);
                         res = (resc==0)?res:resc;
                     }
+                    if(res != 0)
+                        log.info("Failed during the setting of the object " + var);
                     return res;
                 }
             }else{
@@ -1774,14 +1776,14 @@ public class StateListenerNew extends Thread{
                         JsonNode newValJava = getCorrectItem(mapper.writeValueAsString(iter.next()), varWithoutIndexes+"[]");
                         if(newValJava!=null){
                             if(!setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root)){
-				log.info("set variable failed: " + var);
+				                log.info("set variable failed: " + var);
                                 res = 1;
 			    }
                         }
                     }   
                     return res;
                 }
-		log.info("yang to java di nuovo non contiene il valore: " + var);
+		        log.info("yang to java di nuovo non contiene il valore: " + var);
                 return 2;
             }
         }
