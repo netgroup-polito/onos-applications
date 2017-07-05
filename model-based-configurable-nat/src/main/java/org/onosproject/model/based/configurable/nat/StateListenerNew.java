@@ -139,13 +139,13 @@ public class StateListenerNew extends Thread{
     /*****PERSONALIZABLE FUNCTIONS*******/
     
     private Object personalizedDeserialization(Class<?> type, String json){
-        log.info("In personalized Deserialization the json is "+json);
+//        log.info("In personalized Deserialization the json is "+json);
         try{
 	    if(json.startsWith("\""))
 		json = json.substring(1);
 	    if(json.endsWith("\""))
 		json = json.substring(0, json.length() -1);
-	    log.info("Converted json leaf in personalized deserialization: " + json);
+//	    log.info("Converted json leaf in personalized deserialization: " + json);
             if(type == Ip4Address.class){
                 Ip4Address value = Ip4Address.valueOf(json);
 //                log.info("value is.."+value);
@@ -236,7 +236,7 @@ public class StateListenerNew extends Thread{
             ObjectNode objJson = mapper.createObjectNode();
             for(int i=0; i<objFields.length; i++){
                 String javaField = javaVar+"/"+objFields[i].getName();
-		log.info("javaField: " + javaField);
+//		log.info("javaField: " + javaField);
                 if(YangToJava.containsKey(javaField)){
                     String fieldName = YangToJava.get(javaField).substring(YangToJava.get(javaField).lastIndexOf("/")+1);
                     if(objFields[i].getClass().getPackage()==root.getClass().getPackage()){
@@ -1304,7 +1304,7 @@ public class StateListenerNew extends Thread{
         JsonNode res;// = (ref.isObject())?mapper.createObjectNode():mapper.createArrayNode();
         var=(ref.isArray()&&var.endsWith("[]"))?var.substring(0, var.length()-2):var;
         
-        log.info("To fill the result -> "+var);
+//        log.info("To fill the result -> "+var);
         
         res = fillResult(ref, var);
         
@@ -1371,11 +1371,11 @@ public class StateListenerNew extends Thread{
                             varWithoutIndexes+=varSp[i]+"[]";
                     varWithoutIndexes = varWithoutIndexes.substring(0, varWithoutIndexes.length()-2);
 //		      varWithoutIndexes = transformListIndexes(var + '/' + fieldName);
-                    log.info("varWithoutIndexes is correct? "+varWithoutIndexes);
+//                    log.info("varWithoutIndexes is correct? "+varWithoutIndexes);
 		    String jWithIndex = new String();
-		    log.info("var: " + var);
-		    log.info("fieldName: " + fieldName);
-		    log.info("result of transformListIndexes: " + transformListIndexes(var + '/' + fieldName));
+//		    log.info("var: " + var);
+//		    log.info("fieldName: " + fieldName);
+//		    log.info("result of transformListIndexes: " + transformListIndexes(var + '/' + fieldName));
                     if(YangToJava.containsValue(transformListIndexes(var + '/' + fieldName))){		      
                         String key = null;
                         for(String k:YangToJava.keySet()){
@@ -1398,9 +1398,9 @@ public class StateListenerNew extends Thread{
 			else
 				jWithIndex = key;			
                         //jWithIndex is the name of hte variable in Java (preceeded by "root.")
-			log.info("prima di getLeafValue, jWithIndex: " + jWithIndex);
+//			log.info("prima di getLeafValue, jWithIndex: " + jWithIndex);
                         Object value = getLeafValue(jWithIndex.substring(5));
-                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
+//                        log.info("the variable to search is "+jWithIndex+" and its value: "+value);
                         if(value!=null){
                             //PERSONALIZED SERIALIZATION
                             Object parsed = personalizedSerialization(varWithoutIndexes, value);
@@ -1511,7 +1511,7 @@ public class StateListenerNew extends Thread{
     private int setComplexObject(String var, String newVal) {
         try {
             JsonNode toSet = mapper.readTree(newVal);
-	    log.info("Into setComplexObject, var is: " + var);
+//	    log.info("Into setComplexObject, var is: " + var);
 
             //check if all the values are configurable
             if(!configVariables(noIndexes(var), toSet)){
@@ -1538,9 +1538,11 @@ public class StateListenerNew extends Thread{
         if(toSet.isValueNode()){
             log.info("Is a value Node: "+ var + " value: " + toSet);
 		try{
-		    	String value =  mapper.writerWithDefaultPrettyPrinter().writeValueAsString(toSet);
-			if(staticListIndexes.containsKey(var))
+		    	String value =  mapper.writerWithDefaultPrettyPrinter().writeValueAsString(toSet);			
+			if(staticListIndexes.containsKey(var)){
+				log.info("sono qua -.-");
 				staticListIndexes.replace(var, value);
+			}
 		}catch(Exception e){
 			log.error("Fail during the Json conversion in 'pretty' String");
 		}
@@ -1563,9 +1565,10 @@ public class StateListenerNew extends Thread{
 
                     //Check if the current value is a static list key
                     String currentKey = var + "/" + field.getKey();
-                    if(staticListIndexes.containsKey(currentKey)){			
+                    if(staticListIndexes.containsKey(currentKey)){
+			String value = field.getValue().toString().substring(1, field.getValue().toString().length() - 1);
                         staticListIndexes.replace(currentKey, field.getValue().toString());
-//			log.info("New static index value " + currentKey + " : " + field.getValue().toString());
+			log.info("New static index value " + currentKey + " : " + value);
 		    }
                 }else
                     ok = ok && configVariables(var+"/"+field.getKey(), field.getValue());
@@ -1588,7 +1591,7 @@ public class StateListenerNew extends Thread{
     //1 IF SETTING WAS IMPOSSIBLE
     //2 IF VARIABLE NOT FOUND
     private int fillVariables(JsonNode toSet, String var) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
-        log.info("var "+var+" to Set "+toSet);
+//        log.info("var "+var+" to Set "+toSet);
         if(toSet.isValueNode()){
             //LEAF
 //            log.info("In fillVariables - reached leaf");
@@ -1607,7 +1610,7 @@ public class StateListenerNew extends Thread{
                     return 1;
 		}
             }else{
-//		log.info("variable " + var + " does not have a java representation");
+		log.info("variable " + var + " does not have a java representation");
                 return 2;
             }
         }else{
@@ -1640,7 +1643,7 @@ public class StateListenerNew extends Thread{
                         //transform the list's elements from the Yang denomination to the Java
                         JsonNode newValJava = getCorrectItem(mapper.writeValueAsString(toSet), varWithoutIndexes+"[]");
 			String pretty = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(newValJava);
-			log.info("new val java: \n" + pretty);
+//			log.info("new val java: \n" + pretty);
                         if(newValJava!=null){
                             if(setVariable(jWithIndex+"[]", jWithIndex+"[]",mapper.writeValueAsString(newValJava), root))
                                 return 0;
@@ -1809,10 +1812,13 @@ public class StateListenerNew extends Thread{
     
     //-------------------FOR THE NAT
     private boolean natTableModified(String var, String json){
+//	log.info("nat table modified -> var:  " + var + " json: " + json);
         if(var != null && var.contains("natPortMap"))
             return true;
-        if(json != null && json.contains("nat-session"))
+        if(json != null && json.contains("nat-session")){
+//	    log.info("json contains nat-session!");
             return true;
+	}
         return false;
     }
     //------------------------------
@@ -1821,32 +1827,42 @@ public class StateListenerNew extends Thread{
     //COMMAND CALLED FROM THE CONNECTIONMODULECLIENT - MESSAGE FROM THE SERVICE LAYER
     public void parseCommand(String msgJson) throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException, IOException{
         CommandMsg msg = ((new Gson()).fromJson(msgJson, CommandMsg.class));
-	log.info("prima di fromyangToJava");
+	log.info("Received new " + msg.act + " request for the resource: " + msg.var);
+//	log.info("prima di fromyangToJava");
         String var = fromYangToJava(msg.var);
-	log.info("var: " + var);
-	log.info("dopo fromyangotjava");
+//	log.info("var: " + var);
+//	log.info("dopo fromyangotjava");
 //        log.info("Command "+msg.act);
 //        log.info("Variable "+msg.var);
 //        log.info("Variable in the code "+var);
         switch(msg.act){
             case GET:
                 //get the object
-		log.info("prima di getComplexObj");
+//		log.info("prima di getComplexObj");
                 Object result = getComplexObj(msg.var);
-		log.info("dopo getComplexObj");
+//		log.info("dopo getComplexObj");
                 log.info("result "+result);
 //                log.info("result.."+result);
                 msg.objret = mapper.writeValueAsString(result);
                 //pass the result to the connection module
 //                log.info("Result of the get "+msg.objret);
+		log.info("Retrieved value for: " + msg.var + " :\n " + result);
                 cM.setResourceValue((new Gson().toJson(msg)));
                 break;
                 
-            case CONFIG:		
+            case CONFIG:
+//		log.info("ARP TABLE");
+//	            for(Ip4Address ip : ((AppComponent)root).arpTable.keySet())
+  //      	        log.info(ip + " -> " + ((AppComponent)root).arpTable.get(ip));
+    //        	    log.info("*** ***");
+//		    log.info("Device id public: " + ((AppComponent)root).outputApp.deviceId);
+//		    log.info("Port Number public: " + ((AppComponent)root).outputApp.portNumber);
+//		    log.info("Device id private: " + ((AppComponent)root).inputApp.deviceId);
+  //      	    log.info("Port number private: " + ((AppComponent)root).inputApp.portNumber);
                 String noInd = deleteIndexes(msg.var);
                 if(config.containsKey(noInd) && !isConfigurable(noInd)){
                     //no configurable
-                    log.info("Not configurable");
+                    log.info("Resource " + msg.var + " is not configurable");
                     msg.objret = "2";
                     cM.setResourceValue((new Gson()).toJson(msg));
                     return;
@@ -1868,16 +1884,24 @@ public class StateListenerNew extends Thread{
         	                    }else{
                 	            	//IT ISN'T THE VALUE OF A LEAF CONTAINED IN THE STATE									
                         	    	ret = setComplexObject(msg.var, (String)msg.obj);			
-	       		    		log.info("***STATIC LIST INDEXES AFTER CONFIG***");
-	                            	for (String name: staticListIndexes.keySet()){
-	                                	String value = staticListIndexes.get(name);
-		                                log.info(name + " -> " + value);
-                	                }
-    	                	    	log.info("*** ***");
+					if(staticListIndexes.containsKey(msg.var)){
+                                        	staticListIndexes.replace(msg.var, (String)msg.obj);
+                                  	        log.info("Static list index updated: " + msg.var + " -> " + staticListIndexes.get(msg.var));
+                          	        }
+			
+//	       		    		log.info("***STATIC LIST INDEXES AFTER CONFIG***");
+//	                            	for (String name: staticListIndexes.keySet()){
+//	                                	String value = staticListIndexes.get(name);
+//		                                log.info(name + " -> " + value);
+  //              	                }
+    //	                	    	log.info("*** ***");
                             	   }
 			    }else{
 //				log.info("prima di replace");
-                        	staticListIndexes.replace(msg.var, (String)msg.obj);
+				if(staticListIndexes.containsKey(msg.var)){
+                        		staticListIndexes.replace(msg.var, (String)msg.obj);
+					log.info("Static list index updated: " + msg.var + " -> " + staticListIndexes.get(msg.var));
+				}
 //				log.info("dopo replace");
 			    }
 		    }catch(Exception e){
@@ -1885,7 +1909,17 @@ public class StateListenerNew extends Thread{
 			e.printStackTrace(new PrintWriter(errors));
 			log.info("Eccezione: " + errors.toString());
 		    }
+log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
+            for (String name: staticListIndexes.keySet()){
+                String value = staticListIndexes.get(name);
+                log.info(name + " -> " + value);
+            }
+            log.info("*** ***");
 
+		    if(ret == 0)
+    		        log.info("Resource " + msg.var + " correctly set");
+		    else
+			log.info("ERROR during the set of the resource " + msg.var);
                     msg.objret = ret.toString();
 //                    log.info("Result: "+ret);
                     //return the result to the ConnectionModule			
@@ -1899,10 +1933,10 @@ public class StateListenerNew extends Thread{
 
                     if(natTableModified(var, (String)msg.obj)){
                         //ACTIONS
-                        log.info("Modified nat table");
+                        log.info("Nat table has been modified, some rules need to be forwarded intto the switches...");
                         ArrayNode table = (ArrayNode)getComplexObj("config-nat/nat/nat-table/nat-session");
-			log.info("the nat table is "+table);
-                        
+			log.info("The new NAT table is:\n" + table);
+ 
                         Iterator<JsonNode> tableEntries = table.elements();
                         while(tableEntries.hasNext()){
                             ObjectNode entry = (ObjectNode)tableEntries.next();
@@ -1912,7 +1946,7 @@ public class StateListenerNew extends Thread{
                             String connectionState = null;
 		            byte protocol = 0;
 
-                            log.info("prima di prendere i valori");
+//                            log.info("prima di prendere i valori");
                             if(entry.has("src_address")){
                                 srcIp = Ip4Address.valueOf(entry.get("src_address").textValue());
                             }
@@ -1950,12 +1984,6 @@ public class StateListenerNew extends Thread{
                         }
 			//((AppComponent) root).processor.importL4SessionEntry(Ip4Address.valueOf("10.0.0.5"), Ip4Address.valueOf("130.192.225.183"), (short)3000, (short)2044, Ip4Address.valueOf("30.0.0.2"), (short)2050, IPv4.PROTOCOL_TCP, "ESTABLISHED");
                     }
-		    log.info("***STATIC LIST INDEXES AFTER CONFIG***");
-                        for (String name: staticListIndexes.keySet()){
-                                String value = staticListIndexes.get(name);
-                                log.info(name + " -> " + value);
-                        }
-                    log.info("*** ***");
 
                     //-------
                     return;
@@ -2128,7 +2156,7 @@ public class StateListenerNew extends Thread{
     
     //SETTING A VALUE TO A VARIABLE
     public boolean setVariable(String var, String complete, String newVal, Object actual) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
-        log.info("var -> "+var);
+//        log.info("var -> "+var);
 
 	//Check if the java variable path begins with 'void'
 	//if it does, it is related to an information that is written in the application YANG model
@@ -2272,7 +2300,7 @@ public class StateListenerNew extends Thread{
                         }
                     }else if(index.matches("")){
 			  //The method enters here when the map is empty!
-			  log.info("I am creating a new element of a nat and the map is empty");
+//			  log.info("I am creating a new element of a nat and the map is empty");
 //                        log.info("The index is null but the map not!");
                         //INSERT A NEW ELEMENT IN THE MAP
                         try{
@@ -2416,7 +2444,7 @@ public class StateListenerNew extends Thread{
                    
             }else{
                 //LEAF TO SET
-		log.info("Setting field: " + var);
+//		log.info("Setting field: " + var);
                 Field f = actual.getClass().getField(var);
 //                log.info("--Arrivata al field da configurare "+f.getName()+" "+f.getGenericType());
 //                log.info("Valore: "+newVal);
@@ -2431,15 +2459,15 @@ public class StateListenerNew extends Thread{
 		    //If I am here, the desarialization of the JSON value is failed, for instance, because the Java type of such value is complex and has no useful default constructor
 		    //Hence, for demo purposes, personalizedDeserialization 'switches' among some known complex Java types (e.g., ONOS IP4Address) and create such object with custom commands
                     //classic deserialization failed : PERSONALIZED DESERIALIZATION
-	            log.info("Value not correctly parsed: " + newVal + " of type: " + f.getType());
+//	            log.info("Value not correctly parsed: " + newVal + " of type: " + f.getType());
                     toInsert = personalizedDeserialization(f.getType(), newVal);
                     if(toInsert!=null){
-			log.info("personalized deserialization successful for type: " + f.getType());
+//			log.info("personalized deserialization successful for type: " + f.getType());
                         f.set(actual, toInsert);
-			log.info("New value: " + toInsert.toString() + " setted in actual: " + actual.toString());
+//			log.info("New value: " + toInsert.toString() + " setted in actual: " + actual.toString());
                         return true;
                     }
-		    log.info("personalized deserialization failed for type: " + f.getType());
+//		    log.info("personalized deserialization failed for type: " + f.getType());
                     return false;
                 }
 //                log.info("okk settato");
@@ -2611,7 +2639,7 @@ public class StateListenerNew extends Thread{
                             boolean found = false;
                             for(Object k:((Map)actual).keySet()){
                                 String jsonKey = (new Gson()).toJson(k);
-                                log.info("The k is "+(new Gson()).toJson(k));
+//                                log.info("The k is "+(new Gson()).toJson(k));
 //                                log.info("recompose is "+noIndexes(recompose.substring(1)));
 //                                JsonNode res = getCorrectItem(index, noIndexes(recompose.substring(1)));
 //                                log.info("perché res è null? -> "+res);
@@ -2708,11 +2736,11 @@ public class StateListenerNew extends Thread{
 				
 				boolean found = false;				
 				if(allowedStaticIndexesInList.containsKey(listPath)){
-					log.info("dimensione allowedStaticIndexesinList: " + allowedStaticIndexesInList.size());
+//					log.info("dimensione allowedStaticIndexesinList: " + allowedStaticIndexesInList.size());
 					for(String indexAllowed : allowedStaticIndexesInList.get(listPath)){
 						//log.info("ris: " + staticListIndexes.get(indexAllowed).equals(index));
-						log.info("indexAllowed: " + indexAllowed);
-						log.info("res = " + staticListIndexes.get(indexAllowed));
+//						log.info("indexAllowed: " + indexAllowed);
+//						log.info("res = " + staticListIndexes.get(indexAllowed));						
 						if(staticListIndexes.containsKey(indexAllowed) && staticListIndexes.get(indexAllowed) != null && staticListIndexes.get(indexAllowed).equals(index)){
 							found = true;
 							buildingNewPath.set(i, listPath + '[' + indexAllowed + ']');
@@ -2746,27 +2774,27 @@ public class StateListenerNew extends Thread{
     
     //TRANSLATION FROM THE YANG NAME TO THE JAVA NAME
     public String fromYangToJava(String path){
-	log.info("path: " + path);
+//	log.info("path: " + path);
         String yang = transformListIndexes(path);
-        log.info("yang "+yang);
+//        log.info("yang "+yang);
         String j =null;
         if(YangToJava.containsValue(yang))
             for(String s:YangToJava.keySet())
                 if(YangToJava.get(s).equals(yang))
                     j=s;
-        log.info("j "+j);
+//        log.info("j "+j);
         if(j==null)
             return j;
         String[] java = j.split("["+Pattern.quote("[")+"," +Pattern.quote("]")+"]");
         j=new String();
 	String[] separated = path.split("["+Pattern.quote("[")+Pattern.quote("]")+"]");
-        log.info("java array length:  " + java.length);
-        for(int i = 0; i < java.length; i ++)
-                log.info("java " + i + " " + java[i]);
+//        log.info("java array length:  " + java.length);
+//        for(int i = 0; i < java.length; i ++)
+//                log.info("java " + i + " " + java[i]);
 
-	log.info("separated length:  " + separated.length);
-	for(int i = 0; i < separated.length; i ++)
-		log.info("separated " + i + " " + separated[i]);
+//	log.info("separated length:  " + separated.length);
+//	for(int i = 0; i < separated.length; i ++)
+//		log.info("separated " + i + " " + separated[i]);
 	//Put the indexes inside the lists of the yang string inside java lists
 	//e.g. config-nat/nat/interfaces[5] -> root/ifaceList[] -> root/ifacesList[5]
         for(int i=0; i<java.length; i++){
@@ -2791,7 +2819,7 @@ public class StateListenerNew extends Thread{
                     	j+="["+separated[i]+"]";
             }
         }
-        log.info("j di nuovo "+j);
+//        log.info("j di nuovo "+j);
         //if(path.endsWith("[]"))
             //j+="[]";
         return j;

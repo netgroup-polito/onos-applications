@@ -219,11 +219,17 @@ public class AppComponent {
             this.inputApp.ipAddress = Ip4Address.valueOf(prop.getProperty("privateHostIpAddress"));
             this.outputApp.ipAddress = Ip4Address.valueOf(prop.getProperty("publicHostIpAddress"));
             this.publicMac = MacAddress.valueOf(prop.getProperty("publicHostMacAddress"));
-            this.privateMac = MacAddress.valueOf(prop.getProperty("privateHostMacAddres"));
+            this.privateMac = MacAddress.valueOf(prop.getProperty("privateHostMacAddress"));
 
             arpTable.put(this.inputApp.ipAddress, this.privateMac);
             arpTable.put(this.outputApp.ipAddress, this.publicMac);
+
+//	    log.info("ARP TABLE");
+//	    for(Ip4Address ip : arpTable.keySet())
+//		log.info(ip + " -> " + arpTable.get(ip));
+//	    log.info("*** ***");
             
+
             this.inputApp.deviceId = DeviceId.deviceId(config.getUserDeviceId());
             this.outputApp.deviceId = DeviceId.deviceId(config.getWanDeviceId());
             this.inputApp.portNumber = PortNumber.portNumber(config.getUserInterface());
