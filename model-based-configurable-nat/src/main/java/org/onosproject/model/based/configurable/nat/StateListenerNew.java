@@ -207,16 +207,25 @@ public class StateListenerNew extends Thread{
     }
     
     private Object personalizedSerialization(String field, Object value){
-//        log.info("Il campo è "+field+" il valore "+value);
+        log.info("Il campo è "+field+" il valore "+value);
         if(value==null){
 //            log.info("il valore è null");
             return null;
         }
 //        log.info("Il tipo originale è "+value.getClass());
         String type = YangType.get(field);
-//        log.info("Il tipo è "+type);
-        if(type==null)
+        log.info("Il tipo è "+type);
+        if(type == null)
             return null;
+
+        if(type.equals("enumeration")){
+            if ((byte)value == 0x06)
+                return "TCP";
+            if ((byte)value == 0x05)
+                return "UDP";
+            return value.toString();
+        }
+
         if(type.equals("boolean"))
             return Boolean.parseBoolean(value.toString());
         if(type.equals("uint8"))
@@ -227,13 +236,7 @@ public class StateListenerNew extends Thread{
             return Integer.parseInt(value.toString());
         if(type.equals("inet:port-number"))
             return Integer.parseInt(value.toString());
-        if(field.equals("")) {
-            if ((int) value == 6)
-                return "TCP";
-            if ((int) value == 5)
-                return "UDP";
-            return value.toString();
-        }
+
         return value.toString();
     }
     
@@ -322,8 +325,8 @@ public class StateListenerNew extends Thread{
             Properties prop = new Properties();
             InputStream propFile = loader.getResourceAsStream("configuration/appProperties.properties");
             if (propFile!=null)prop.load(propFile);
-            String baseUri = prop.getProperty("baseUri", "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule");
-            String eventsUri = prop.getProperty("eventsUri", "http://130.192.225.154:8080/frogsssa-1.0-SNAPSHOT/webresources/events");
+            String baseUri = prop.getProperty("baseUri", "http://192.168.122.106:8080/frogsssa-1.0-SNAPSHOT/webresources/ConnectionModule");
+            String eventsUri = prop.getProperty("eventsUri", "http://192.168.122.106:8080/frogsssa-1.0-SNAPSHOT/webresources/events");
             log.info("appId "+AppId);
             log.info("baseUri "+baseUri);
             log.info("eventsUri "+eventsUri);
@@ -1980,17 +1983,17 @@ log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
 
 //                            log.info("prima di prendere i valori");
                             if(entry.has("src_address")){
-                                IpPrefix pref = IpPrefix.valueOf(srcAddress, 24);
-                                InterfaceIpAddress iia = new InterfaceIpAddress(srcAddress, pref);
+                                //IpPrefix pref = IpPrefix.valueOf(srcAddress, 24);
+                                //InterfaceIpAddress iia = new InterfaceIpAddress(srcAddress, pref);
                                 
-                                IpAddress tmp = IpAddress.valueOf(entry.get("src_address").textValue());
-                                //srcIp = Ip4Address.valueOf(entry.get("src_address").textValue());
-                                srcIp = IpAddress.makeMaskedAddress(tmp, 24).getIp4Address();
+                                //IpAddress tmp = IpAddress.valueOf(entry.get("src_address").textValue());
+                                srcIp = Ip4Address.valueOf(entry.get("src_address").textValue());
+                                //srcIp = IpAddress.makeMaskedAddress(tmp, 24).getIp4Address();
                             }
                             if(entry.has("dst_address")) {
                                 IpAddress tmp = IpAddress.valueOf(entry.get("dst_address").textValue());
-                                //dstIp = Ip4Address.valueOf(entry.get("dst_address").textValue());
-                                dstIp = IpAddress.makeMaskedAddress(tmp, 24).getIp4Address();
+                                dstIp = Ip4Address.valueOf(entry.get("dst_address").textValue());
+                                //dstIp = IpAddress.makeMaskedAddress(tmp, 24).getIp4Address();
                             }
                             if(entry.has("translated_address"))
                                 translatedIp = Ip4Address.valueOf(entry.get("translated_address").textValue()); 
