@@ -227,6 +227,13 @@ public class StateListenerNew extends Thread{
             return Integer.parseInt(value.toString());
         if(type.equals("inet:port-number"))
             return Integer.parseInt(value.toString());
+        if(field.equals("")) {
+            if ((int) value == 6)
+                return "TCP";
+            if ((int) value == 5)
+                return "UDP";
+            return value.toString();
+        }
         return value.toString();
     }
     
@@ -1973,6 +1980,9 @@ log.info("***STATIC LIST INDEXES FOUND IN THE MAPPING FILE***");
 
 //                            log.info("prima di prendere i valori");
                             if(entry.has("src_address")){
+                                IpPrefix pref = IpPrefix.valueOf(srcAddress, 24);
+                                InterfaceIpAddress iia = new InterfaceIpAddress(srcAddress, pref);
+                                
                                 IpAddress tmp = IpAddress.valueOf(entry.get("src_address").textValue());
                                 //srcIp = Ip4Address.valueOf(entry.get("src_address").textValue());
                                 srcIp = IpAddress.makeMaskedAddress(tmp, 24).getIp4Address();
