@@ -8,8 +8,8 @@ To install the application on a running onos instance run the following steps.
 
 - first of all, if it is not ready installed, you need to install the ovsdb driver provided by onos. On your onos root directory run:
 
-        $ cd drivers/ovsdb/
-        $ onos-app {onos-address} install target/onos-drivers-ovsdb-1.9.0.oar
+        $ cd buck-out/gen/drivers/ovsdb/onos-drivers-ovsdb-oar
+        $ onos-app {onos-address} install app.oar
 
 - then build the source code of the ovsdbrest application through maven:
 
