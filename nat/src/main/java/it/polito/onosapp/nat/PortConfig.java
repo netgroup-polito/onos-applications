@@ -27,11 +27,18 @@ public class PortConfig extends Config<ApplicationId> {
     public ApplicationPort getPort(String portId) {
 
         JsonNode ports = object.path(PORTS_KEY);
+        log.debug("" + ports);
         JsonNode port = ports.path(portId);
+        log.debug("portId = " + portId);
+        log.debug("" + port);
         String deviceId = port.path(DEVICE_ID).textValue();
+        log.debug("" + deviceId);
         int portNumber = port.path(PORT_NUMBER).asInt();
+        log.debug("" + portNumber);
         int flowPriority = port.path(FLOW_PRIORITY).asInt(DEFAULT_PRIORITY);
+        log.debug("" + flowPriority);
         int externalVlan = port.path(EXTERNAL_VLAN).asInt(0);
+        log.debug("" + externalVlan);
         return new ApplicationPort(
                 DeviceId.deviceId(deviceId),
                 PortNumber.portNumber(portNumber),

@@ -41,13 +41,15 @@ After activating the application you need to configure functional ports that it 
         "ports": {
             "L3Port:1": {
                 "device-id": "of:0000000000000002",
-                "port-number": 4,
-                "flow-priority": 10
+                "port-number": 1,
+                "flow-priority": 40001,
+                "external-vlan": null
             },
             "L3Port:0": {
                 "device-id": "of:0000000000000003",
-                "port-number": 4,
-                "flow-priority": 10
+                "port-number": 1,
+                "flow-priority": 40001,
+                "external-vlan": null
             }
         }
     }

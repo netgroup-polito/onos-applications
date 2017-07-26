@@ -55,9 +55,6 @@ public class AppComponent {
     private static final short FIRST_PORT = 10000;
     private static final short LAST_PORT = 12000;
 
-    // private static final String PRIVATE_PORT_ID = "L2Port:1";
-    // private static final String PUBLIC_PORT_ID = "L2Port:0";
-
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
@@ -88,7 +85,7 @@ public class AppComponent {
 
     private NatPacketProcessor processor = new NatPacketProcessor();
 
-    // default configuration
+    // application parameters
     private String privatePortLabel;
     private String publicPortLabel;
 
@@ -210,6 +207,8 @@ public class AppComponent {
             log.debug("No configuration found");
             return;
         }
+
+        log.info("Updating configuration ...");
 
         // stop current interceptor
         withdrawIntercepts();
